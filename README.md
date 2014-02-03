@@ -142,3 +142,31 @@ class Foo
     }
 }
 ```
+
+### Control Statements
+#### If/Else/Elseif
+Control statements based on the if and elseif constructs __MUST__ have a single space before the opening parenthesis of the conditional and a single space after the closing parenthesis.
+
+Within the conditional statements between the parentheses, operators __MUST__ be separated by spaces for readability. Inner parentheses __SHOULD__ be used to improve logical grouping for larger conditional expressions.
+
+The opening brace __MUST__ be written on the line underneath the control statement. The closing brace MUST be written on its own line. Any content within the braces __MUST__ be indented using four spaces.
+
+#### Switch
+Control statements written with the switch statement __MUST__ have a single space before the opening parenthesis of the conditional statement and after the closing parenthesis.
+
+All content within the switch statement __MUST__ be indented using four spaces. Content under each case statement __MUST__ be indented using an additional four spaces.
+
+```php
+switch ($numPeople) 
+{
+    case 1:
+        break;
+ 
+    case 2:
+        break;
+ 
+    default:
+        break;
+}
+```
+The construct default __MAY__ be omitted from a switch statement, but the code __MUST__ contain a comment indicating deliberate omission in such cases.

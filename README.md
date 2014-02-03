@@ -89,8 +89,11 @@ $school = 'Gjoevik' . ' ' . 'University' . ' ' . 'College';
 ### Classes
 #### Class Declaration
 Classes __MUST__ be named according to Zend Framework's naming conventions.
+
 The brace __MUST__ be written on the line underneath the class name, at the same level of indentation as the class declaration.
+
 Every class __MUST__ have a documentation block that conforms to the PHPDocumentor standard. *
+
 All code in a class __MUST__ be indented with four spaces additional to the level of indentation of the class
 PHP files declaring classes __MUST__ contain a single PHP class only.declaration.
 
@@ -170,3 +173,6 @@ switch ($numPeople)
 }
 ```
 The construct default __MAY__ be omitted from a switch statement, but the code __MUST__ contain a comment indicating deliberate omission in such cases.
+
+
+* http://manual.phpdoc.org/HTMLSmartyConverter/HandS/phpDocumentor/Classes.html

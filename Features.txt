@@ -1,0 +1,11 @@
+USER
+============
+  Registration
+    Username
+    Password
+    Mail
+
+  Forgot password
+    Generate new password -> Send to mail -> Force user to set a new password
+
+  Export list of air dates to ex. iCal

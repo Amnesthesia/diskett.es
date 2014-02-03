@@ -72,6 +72,38 @@ PHP code MUST always be delimited by the full-form, standard PHP tags:
 ```
 The closing PHP tag (?>) __MUST__ be omitted if no markup or code follows it.
 
+### Namespaces
+#### Namespace Declaration
+Files __SHOULD__ contain a single namespace; composing multiple namespaces in a single file is strongly discouraged.
+
+Namespace declarations __MUST__ be the first statement in a file, unless multiple namespaces are declared; the only code that should precede the declaration should be a file-level documentation block, with a single empty line between the docblock and the namespace declaration.
+
+Namespace declarations done according to the above MUST NOT have any indentation.
+
+In the case that multiple namespace declarations must be placed in the same file, such declarations __MUST__ utilize blocks and not single-line declarations. The opening brace __MUST__ be placed on the following line at the same level of indentation, and all code within the block __MUST__ receive an extra level of indentation. For example, the following is invalid:
+```php
+namespace Foo;
+ 
+// some code...
+ 
+namespace Bar;
+ 
+// more code...
+```
+
+But the following is correct:
+```php
+namespace Foo
+{
+    // some code ...
+}
+ 
+namespace Bar
+{
+    // more code ...
+}
+```
+
 ### Strings
 
 #### String Literals

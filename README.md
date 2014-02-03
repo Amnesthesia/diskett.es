@@ -119,11 +119,11 @@ get).
 #### Function and Method Declaration
 Functions MUST be named according to Zend Framework's function naming conventions.
 
-Methods inside classes MUST always declare their visibility by using one of the private, protected, or public visibility modifiers.
+Methods inside classes __MUST__ always declare their visibility by using one of the private, protected, or public visibility modifiers.
 
-As with classes, the brace MUST always be written on the line underneath the function name. Space MUST NOT be inserted between the function name and the opening parenthesis for the arguments.
+As with classes, the brace __MUST__ always be written on the line underneath the function name. Space __MUST NOT__ be inserted between the function name and the opening parenthesis for the arguments.
 
-Functions SHOULD NOT be declared in the global scope.
+Functions __SHOULD NOT__ be declared in the global scope.
 
 The following is an example of an acceptable function declaration in a class:
 ```php

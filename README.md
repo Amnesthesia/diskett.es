@@ -149,7 +149,7 @@ Control statements based on the if and elseif constructs __MUST__ have a single 
 
 Within the conditional statements between the parentheses, operators __MUST__ be separated by spaces for readability. Inner parentheses __SHOULD__ be used to improve logical grouping for larger conditional expressions.
 
-The opening brace __MUST__ be written on the line underneath the control statement. The closing brace MUST be written on its own line. Any content within the braces __MUST__ be indented using four spaces.
+The opening brace __MUST__ be written on the line underneath the control statement. The closing brace __MUST__ be written on its own line. Any content within the braces __MUST__ be indented using four spaces.
 
 #### Switch
 Control statements written with the switch statement __MUST__ have a single space before the opening parenthesis of the conditional statement and after the closing parenthesis.

@@ -118,7 +118,7 @@ The var construct __MUST NOT__ be used. Member variables __MUST__ declare their 
 get).
 
 
-### Functions and Methods
+## Functions and Methods
 #### Function and Method Declaration
 Functions MUST be named according to Zend Framework's function naming conventions.
 

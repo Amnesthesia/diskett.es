@@ -1,6 +1,6 @@
 <?php
 
-class DatabaseHandler implements DatabaseInterface
+class DatabaseHandler implements iDatabase
 {
 	
 }

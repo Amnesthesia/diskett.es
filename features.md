@@ -1,14 +1,14 @@
 
 USER
 ---------------
- * Registration
-..* Username
-..* Password
-..* Mail
- * Forgot password
-..* Generate new password -> Send to mail -> Force user to set a new password
- * Login with Facebook(?)
-..* Recommend or Share TVSeries/Episodes
+* Registration
+* Username
+    * Password
+    * Mail
+* Forgot password
+    * Generate new password -> Send to mail -> Force user to set a new password
+* Login with Facebook(?)
+    * Recommend or Share TVSeries/Episodes
 
 MAIN FEATURES
 --------------

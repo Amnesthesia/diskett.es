@@ -13,12 +13,16 @@ USER
 
 MAIN FEATURES
 ===================
-  "Notify me when TVShows starts (mail)" (ex. after a break)
-
-  Export list of air dates to ex. iCal
-
-  Recommended for me (based on TVSeries the user currently watches/likes)
-
+  + Notify me when TVShows starts (mail)" (ex. after a break)
+  + Export list of air dates to ex. iCal
+  + Recommended for me (based on TVSeries the user currently watches/likes)
+  + Link to torrent
+  + "Delay by 1 day"-option
+  + Trends
+  + Favorite shows
+  + If logged in with Facebook, option to auto-add shows to Facebook's "watched shows"
+  + Featured movies?
+  + Link to subtitles? (OpenSubtitles.org for example)
   
 BEHIND THE SCENES
 ===================

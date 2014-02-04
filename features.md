@@ -15,6 +15,8 @@ MAIN FEATURES
   + Notify me when TVShows starts (mail)" (ex. after a break)
   + Export list of air dates to ex. iCal
   + Recommended for me (based on TVSeries the user currently watches/likes)
+
+#### Suggestions:
   + Link to torrent
   + "Delay by 1 day"-option
   + Trends
@@ -22,6 +24,7 @@ MAIN FEATURES
   + If logged in with Facebook, option to auto-add shows to Facebook's "watched shows"
   + Featured movies?
   + Link to subtitles? (OpenSubtitles.org for example)
+  + NotifyMyAndroid-support
   
 BEHIND THE SCENES
 ----------------

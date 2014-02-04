@@ -1,6 +1,6 @@
 
 USER
-================
+---------------
  * Registration
  ..* Username
  ..* Password
@@ -11,7 +11,7 @@ USER
  ..* Recommend or Share TVSeries/Episodes
 
 MAIN FEATURES
-===================
+--------------
   + Notify me when TVShows starts (mail)" (ex. after a break)
   + Export list of air dates to ex. iCal
   + Recommended for me (based on TVSeries the user currently watches/likes)
@@ -24,7 +24,7 @@ MAIN FEATURES
   + Link to subtitles? (OpenSubtitles.org for example)
   
 BEHIND THE SCENES
-===================
+----------------
  * CACHING, CACHING, CACHING:
   ..* Whenever a user adds a show check if it's cached in the database
   ..* If not already cached, cache both text and images

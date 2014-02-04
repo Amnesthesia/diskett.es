@@ -1,6 +1,6 @@
 <?php
 
-interface iDatabase
+interface DatabaseInterface
 {
 	public function __construct();
 	public function __destruct();

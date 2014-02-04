@@ -25,7 +25,7 @@ MAIN FEATURES
   
 BEHIND THE SCENES
 ----------------
- * CACHING, CACHING, CACHING:
-  ..* Whenever a user adds a show check if it's cached in the database
-  ..* If not already cached, cache both text and images
- * Generate a hopefully unique checksum of images, and check if this checksum already exists in database, before trying to download info from TvDb
+* CACHING, CACHING, CACHING:
+    * Whenever a user adds a show check if it's cached in the database
+    * If not already cached, cache both text and images
+* Generate a hopefully unique checksum of images, and check if this checksum already exists in database, before trying to download info from TvDb

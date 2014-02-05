@@ -16,20 +16,15 @@ class DatabaseHandler extends customException implements iDatabase
 	{
 		$this->dbConfig = parse_ini_file('../config/config.php', true); // Dette må gjøres på en bedre måte.
 
-		try
-		{
-			$this->databaseHandler = new PDO('mysql:host=' . $this->dbConfig['Databases']['Host'] .
-				                             ';dbname=' . $this->dbConfig['Database']['DbName'] .
-				                             ';charset=' . $this->dbConfig['Database']['Charset'],
-				                             $this->dbConfig['Database']['User'], 
-				                             $this->dbConfig['Database']['Password'],
-				                             array(PDO::ATTR_EMULATE_PREPARES => false,
-				                             	   PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
-		} 
-		catch(Exception $e)
-		{
-			throw new customException('test', 'test', 10);
-		}
+
+		// Her kan vi bruke en custom error handler
+		$this->databaseHandler = new PDO('mysql:host=' . $this->dbConfig['Database']['Host'] .
+				                         ';dbname=' . $this->dbConfig['Database']['DbName'] .
+				                         ';charset=' . $this->dbConfig['Database']['Charset'],
+				                          $this->dbConfig['Database']['User'], 
+				                          $this->dbConfig['Database']['Password'],
+				                          array(PDO::ATTR_EMULATE_PREPARES => false,
+				                             	PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
 	}
 
 	public function __destruct()
@@ -37,28 +32,32 @@ class DatabaseHandler extends customException implements iDatabase
 		$this->databaseHandler = NULL;
 	}
 
-	public function insert()
+	public function insert($query)
 	{
 
 	}
 
-	public function update()
+	public function update($query)
 	{
 
 	}
 
-	public function read()
+	public function read($query)
 	{
+		$stmt = $this->databaseHandler->prepare($query);
+		$stmt->execute();
 
+		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
-	public function delete()
+	public function delete($query)
 	{
 
 	}
 }
 
 $db = new DatabaseHandler();
+$db->read('SELECT * FROM `show`');
 
 
 ?>

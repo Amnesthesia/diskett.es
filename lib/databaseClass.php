@@ -2,18 +2,11 @@
 
 error_reporting(-1);
 
-/*
-Host: 198.211.121.199
-User: epguideuser
-Password: (DJSIODH/NC&T#/)NC#
-Database: epguide
-*/
-
 require('../interfaces/databaseInterface.php');
-require('../lib/errorHandlingClass.php');
+require('../lib/customException.php');
 
 
-class DatabaseHandler extends errorHandling implements iDatabase
+class DatabaseHandler extends customException implements iDatabase
 {
 	private $databaseHandler = NULL;
 	private $dbConfig = array();
@@ -21,9 +14,22 @@ class DatabaseHandler extends errorHandling implements iDatabase
 
 	public function __construct()
 	{
-		$this->dbConfig = parse_ini_file('../config/config.php'); // Dette må gjøres på en bedre måte.
+		$this->dbConfig = parse_ini_file('../config/config.php', true); // Dette må gjøres på en bedre måte.
 
-		var_dump($this->dbConfig);
+		try
+		{
+			$this->databaseHandler = new PDO('mysql:host=' . $this->dbConfig['Databases']['Host'] .
+				                             ';dbname=' . $this->dbConfig['Database']['DbName'] .
+				                             ';charset=' . $this->dbConfig['Database']['Charset'],
+				                             $this->dbConfig['Database']['User'], 
+				                             $this->dbConfig['Database']['Password'],
+				                             array(PDO::ATTR_EMULATE_PREPARES => false,
+				                             	   PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+		} 
+		catch(Exception $e)
+		{
+			throw new customException('test', 'test', 10);
+		}
 	}
 
 	public function __destruct()

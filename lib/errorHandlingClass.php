@@ -1,6 +1,6 @@
 <?php
 
-class errorHandling extends Exception
+class customException extends Exception
 {
 	protected $title;
 

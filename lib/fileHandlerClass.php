@@ -2,7 +2,7 @@
 
 class FileHandler
 {
-	private function unzip($zipFile)
+	private function unzip($zipFile) //navn på zip.fil
 	{
 		$file = './temp/' . $zipFile;
 		$path = './temp';

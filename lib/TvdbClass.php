@@ -32,8 +32,9 @@ class TvDB
 	
 	private function getSeriesZip()
     {
-		$url = $mirror . '/api/' . '@apikey@' . '/series/' . '@series id@' . '/all/en.zip';
-		file_put_contents('./temp/series.zip', file_get_contents($url));
+		//$url = $mirror . '/api/' . '@apikey@' . '/series/' . '@series id@' . '/all/en.zip';
+		$url = 'http://thetvdb.com/api/GetSeries.php?seriesname=the%20big%20bang%20theory';
+		file_put_contents('./temp/', file_get_contents($url));
 
     }
 	
@@ -42,5 +43,9 @@ class TvDB
 		
     }
 }
+
+$test = new TvDB();
+
+$test->getSeriesZip();
 
 ?>

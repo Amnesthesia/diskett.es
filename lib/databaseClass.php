@@ -23,7 +23,7 @@ class DatabaseHandler extends errorHandling implements iDatabase
 	{
 		$this->dbConfig = parse_ini_file('../config/config.php'); // Dette må gjøres på en bedre måte.
 
-		echo $this->dbConfig['Host'];
+		var_dump($this->dbConfig);
 	}
 
 	public function __destruct()

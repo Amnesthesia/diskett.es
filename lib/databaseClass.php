@@ -27,7 +27,7 @@ class DatabaseHandler implements iDatabase
 
 	private function __construct()
 	{
-		$this->dbConfig = parse_ini_file('../config/config.php'); // Dette må gjøres på en bedre måte.
+		$this->dbConfig = parse_ini_file('../config/config.php', true); // Dette må gjøres på en bedre måte.
 
 		if (!isset($this->databaseHandler))
 		{

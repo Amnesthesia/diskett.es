@@ -2,7 +2,7 @@
 
 interface iDatabase
 {
-	public function __construct();
+	public static function getDbInstance();
 	public function __destruct();
 
 	public function insert($query);

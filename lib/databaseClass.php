@@ -5,7 +5,6 @@ require('../lib/customException.php');
 
 error_reporting(-1);
 
-
 /*
 Singleton Pattern 
 */
@@ -22,29 +21,6 @@ class DatabaseHandler implements iDatabase
 		}
 
 		return DatabaseHandler::$dbInstance;
-	}
-
-
-	private function __construct()
-	{
-		$this->dbConfig = parse_ini_file('../config/config.php', true); // Dette må gjøres på en bedre måte.
-
-		if (!isset($this->databaseHandler))
-		{
-			// Her kan vi bruke en custom error handler
-			$this->databaseHandler = new PDO('mysql:host=' . $this->dbConfig['Database']['Host'] .
-					                         ';dbname=' . $this->dbConfig['Database']['DbName'] .
-					                         ';charset=' . $this->dbConfig['Database']['Charset'],
-					                          $this->dbConfig['Database']['User'], 
-					                          $this->dbConfig['Database']['Password'],
-					                          array(PDO::ATTR_EMULATE_PREPARES => false,
-					                             	PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
-		}
-	}
-
-	public function __destruct()
-	{
-		$this->databaseHandler = NULL;
 	}
 
 	public function insert($query)
@@ -69,10 +45,31 @@ class DatabaseHandler implements iDatabase
 	{
 
 	}
+
+	public function __destruct()
+	{
+		$this->databaseHandler = NULL;
+	}
+
+	private function __construct()
+	{
+		$this->dbConfig = parse_ini_file('../config/config.php', true); // Dette må gjøres på en bedre måte.
+
+		if (!isset($this->databaseHandler))
+		{
+			// Her kan vi bruke en custom error handler
+			$this->databaseHandler = new PDO('mysql:host=' . $this->dbConfig['Database']['Host'] .
+					                         ';dbname=' . $this->dbConfig['Database']['DbName'] .
+					                         ';charset=' . $this->dbConfig['Database']['Charset'],
+					                          $this->dbConfig['Database']['User'], 
+					                          $this->dbConfig['Database']['Password'],
+					                          array(PDO::ATTR_EMULATE_PREPARES => false,
+					                             	PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+		}
+	}
 }
 
 $db = DatabaseHandler::getDbInstance();
-#var_dump($db->read('SELECT * FROM `show`'));
-
+var_dump($db->read('SELECT `lst_update` FROM `show` WHERE `id` = 10'));
 
 ?>

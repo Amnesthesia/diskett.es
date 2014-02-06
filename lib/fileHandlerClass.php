@@ -2,10 +2,10 @@
 
 class FileHandler
 {
-	private function unzip($zipFile) //navn på zip.fil
+	public function unzip($zipFile) //navn på zip.fil
 	{
-		$file = './temp/' . $zipFile;
-		$path = './temp';
+		$file = '../temp/' . $zipFile;
+		$path = '../temp';
 
 		$zip = new ZipArchive;
 		$res = $zip->open($file);
@@ -21,14 +21,18 @@ class FileHandler
 		}
 	}
 	
-	private function deleteTempFiles()
+	public function deleteTempFiles()
 	{
-		$files = glob('./temp/*.xml'); 
+		$files = glob('../temp/*');
 		foreach($files as $file)
 		{ 
 			if(is_file($file)) unlink($file);
 		}
 	}
 }
+
+//$test = new FileHandler();
+//$test->unzip('series.zip');
+//$test->deleteTempFiles();
 
 ?>

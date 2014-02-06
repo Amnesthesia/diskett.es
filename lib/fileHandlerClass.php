@@ -2,7 +2,7 @@
 
 class FileHandler
 {
-	public function unzip($zipFile) //navn på zip.fil
+	public function unzip($zipFile) //navn på zip.fil (seriesId)
 	{
 		$file = '../temp/' . $zipFile;
 		$path = '../temp';
@@ -17,7 +17,7 @@ class FileHandler
 		} 
 		else 
 		{
-			echo "Doh! I couldn't open $file";
+			echo "Couldn't open $file";
 		}
 	}
 	

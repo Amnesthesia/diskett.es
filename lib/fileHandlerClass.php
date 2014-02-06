@@ -21,14 +21,17 @@ class FileHandler
 		}
 	}
 	
-	private function deleteTempFiles()
+	public function deleteTempFiles()
 	{
-		$files = glob('./temp/*.xml'); 
+		$files = glob('../temp/*');
 		foreach($files as $file)
 		{ 
 			if(is_file($file)) unlink($file);
 		}
 	}
 }
+
+//$test = new FileHandler();
+//$test->deleteTempFiles();
 
 ?>

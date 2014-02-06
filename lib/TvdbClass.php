@@ -27,14 +27,14 @@ class TvDB
 		$xml = simplexml_load_file($url);
 		$mirror = $xml->Mirror->mirrorpath;
 
-		return $mirror;
+		return $this->mirror;
     }
 	
-	private function getSeriesZip()
+	public function getSeriesZip()
     {
 		//$url = $mirror . '/api/' . '@apikey@' . '/series/' . '@series id@' . '/all/en.zip';
-		$url = 'http://thetvdb.com/api/GetSeries.php?seriesname=the%20big%20bang%20theory';
-		file_put_contents('./temp/', file_get_contents($url));
+		$url = 'http://thetvdb.com/api/5AC2A3BD00F821B8/series/80379/all/en.zip'; //test string
+		file_put_contents('../temp/series.zip', file_get_contents($url));
 
     }
 	
@@ -44,8 +44,7 @@ class TvDB
     }
 }
 
-$test = new TvDB();
-
-$test->getSeriesZip();
+//$test = new TvDB();
+//$test->getSeriesZip();
 
 ?>

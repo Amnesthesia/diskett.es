@@ -56,8 +56,8 @@ class DatabaseHandler extends customException implements iDatabase
 	}
 }
 
-//$db = new DatabaseHandler();
-//$db->read('SELECT * FROM `show`');
+$db = new DatabaseHandler();
+$db->read('SELECT * FROM `show`');
 
 
 ?>

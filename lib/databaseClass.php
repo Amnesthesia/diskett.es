@@ -62,12 +62,6 @@ class DatabaseHandler implements iDatabase
 			$insertData->execute($values);
 		else
 			$insertData->execute(array(':value' => $values));
-
-
-
-		/* DEBUG ONLY */
-		$error = $insertData->errorInfo();
-        if ($error[0]) print_r($error);
 	}
 
 	public function update($query)

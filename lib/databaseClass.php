@@ -24,7 +24,7 @@ class DatabaseHandler extends customException implements iDatabase
 				                          $this->dbConfig['Database']['User'], 
 				                          $this->dbConfig['Database']['Password'],
 				                          array(PDO::ATTR_EMULATE_PREPARES => false,
-				                             	PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+				                             	PDO::ATTR_ERRMODE => PDsuO::ERRMODE_EXCEPTION));
 	}
 
 	public function __destruct()
@@ -58,6 +58,3 @@ class DatabaseHandler extends customException implements iDatabase
 
 $db = new DatabaseHandler();
 $db->read('SELECT * FROM `show`');
-
-
-?>

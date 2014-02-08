@@ -1,40 +1,67 @@
 <?php
 
-error_reporting(-1);
-
 require('../interfaces/databaseInterface.php');
 require('../lib/customException.php');
 
+error_reporting(-1);
 
-class DatabaseHandler extends customException implements iDatabase
+/*
+Singleton Pattern 
+*/
+class DatabaseHandler implements iDatabase
 {
-	private $databaseHandler = NULL;
+	public static $dbInstance = NULL;
 	private $dbConfig = array();
 
-
-	public function __construct()
+	public static function getDbInstance()
 	{
-		$this->dbConfig = parse_ini_file('../config/config.php', true); // Dette må gjøres på en bedre måte.
+		if (!isset(DatabaseHandler::$dbInstance))
+		{
+			DatabaseHandler::$dbInstance = new DatabaseHandler();
+		}
 
-
-		// Her kan vi bruke en custom error handler
-		$this->databaseHandler = new PDO('mysql:host=' . $this->dbConfig['Database']['Host'] .
-				                         ';dbname=' . $this->dbConfig['Database']['DbName'] .
-				                         ';charset=' . $this->dbConfig['Database']['Charset'],
-				                          $this->dbConfig['Database']['User'], 
-				                          $this->dbConfig['Database']['Password'],
-				                          array(PDO::ATTR_EMULATE_PREPARES => false,
-				                             	PDO::ATTR_ERRMODE => PDsuO::ERRMODE_EXCEPTION));
+		return DatabaseHandler::$dbInstance;
 	}
 
-	public function __destruct()
+	public function insert($table, $fields, $values)
 	{
-		$this->databaseHandler = NULL;
-	}
+		$queryFields = NULL;
+		$queryValues = NULL;
 
-	public function insert($query)
-	{
+		if (is_array($fields))
+		{
+			foreach($fields as $key => $field)
+			{
+				if ($key == 0)
+					$queryFields .= $field;
+				else
+					$queryFields .= ', ' . $field;
+			}
+		}
+		else
+			$queryFields .= $fields;
 
+
+		if (is_array($values))
+		{
+			foreach($values as $key => $value)
+			{
+				if ($key == 0)
+					$queryValues .= '?';
+				else
+					$queryValues .= ', ?';
+			}
+		}
+		else
+			$queryValues .= ':value';
+
+		$insertData = $this->databaseHandler->prepare('INSERT INTO ' . $table . ' ('. $queryFields .') VALUES (' . $queryValues . ')');
+
+
+		if (is_array($values))
+			$insertData->execute($values);
+		else
+			$insertData->execute(array(':value' => $values));
 	}
 
 	public function update($query)
@@ -54,7 +81,57 @@ class DatabaseHandler extends customException implements iDatabase
 	{
 
 	}
+
+	public function __destruct()
+	{
+		$this->databaseHandler = NULL;
+	}
+
+	private function __construct()
+	{
+		$this->dbConfig = parse_ini_file('../config/config.php', true); // Dette må gjøres på en bedre måte.
+
+		if (!isset($this->databaseHandler))
+		{
+			// Her kan vi bruke en custom error handler
+			$this->databaseHandler = new PDO('mysql:host=' . $this->dbConfig['Database']['Host'] .
+					                         ';dbname=' . $this->dbConfig['Database']['DbName'] .
+					                         ';charset=' . $this->dbConfig['Database']['Charset'],
+					                          $this->dbConfig['Database']['User'], 
+					                          $this->dbConfig['Database']['Password'],
+					                          array(PDO::ATTR_EMULATE_PREPARES => false,
+					                             	PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+		}
+	}
 }
 
-$db = new DatabaseHandler();
-$db->read('SELECT * FROM `show`');
+#$db = DatabaseHandler::getDbInstance();
+#var_dump($db->read('SELECT `lst_update` FROM `show` WHERE `id` = 10'));
+
+#$fields[] = 'id';
+#$fields[] = 'imdb_id';
+#$fields[] = 'zap2_id ';
+#$fields[] = 'channel_id';
+#$fields[] = 'banner_url';
+#$fields[] = 'pilot_date';
+#$fields[] = 'name';
+#$fields[] = 'summary';
+#$fields[] = 'lang';
+#$fields[] = 'rating';
+#$fields[] = 'lst_update';
+
+#$values[] = '11';
+#$values[] = '2321';
+#$values[] = '31321';
+#$values[] = '11';
+#$values[] = 'http...';
+#$values[] = '2014-02-05';
+#$values[] = 'How I Met Your Mother';
+#$values[] = 'Summary here...';
+#$values[] = 'En';
+#$values[] = '10';
+#$values[] = '2014-02-05';
+
+#$db->insert('`show`', $fields, $values);
+
+#var_dump($db->read('SELECT * FROM `show`'));

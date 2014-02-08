@@ -10,7 +10,6 @@ class DatabaseHandler extends customException implements iDatabase
 {
 	private $databaseHandler = NULL;
 	private $dbConfig = array();
-	//test
 
 
 	public function __construct()

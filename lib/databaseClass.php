@@ -3,15 +3,16 @@
 require('../interfaces/databaseInterface.php');
 require('../lib/customException.php');
 
-error_reporting(-1);
+error_reporting(1);
 
 /*
 Singleton Pattern 
 */
 class DatabaseHandler implements iDatabase
 {
-	public static $dbInstance = NULL;
+	private static $dbInstance = NULL;
 	private $dbConfig = array();
+
 
 	public static function getDbInstance()
 	{
@@ -23,7 +24,7 @@ class DatabaseHandler implements iDatabase
 		return DatabaseHandler::$dbInstance;
 	}
 
-	public function insert($table, $fields, $values)
+	public function insert($table, array $fields, array $values)
 	{
 		$queryFields = NULL;
 		$queryValues = NULL;
@@ -69,17 +70,24 @@ class DatabaseHandler implements iDatabase
 
 	}
 
-	public function read($query)
+	public function read()
 	{
+		$arguments = func_get_args();
+		$query = array_shift($arguments);
+
 		$stmt = $this->databaseHandler->prepare($query);
-		$stmt->execute();
+		$stmt->execute($arguments);
 
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
-	public function delete($query)
+	public function delete($table, $id)
 	{
+		$stmt = $this->databaseHandler->prepare('DELETE FROM ' . $table . 'WHERE id=:id');
+		$stmt->bindValue(':id', $id, PDO::PARAM_STR);
+		$stmt->execute();
 
+		return $aff_row = $stmt->rowCount(); // How many affected rows?
 	}
 
 	public function __destruct()
@@ -103,3 +111,4 @@ class DatabaseHandler implements iDatabase
 					                             	PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
 		}
 	}
+}

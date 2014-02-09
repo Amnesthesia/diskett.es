@@ -27,7 +27,7 @@ class DatabaseHandler implements iDatabase
 	{
 		$queryFields = NULL;
 		$queryValues = NULL;
-
+		
 		if (is_array($fields))
 		{
 			foreach($fields as $key => $field)
@@ -104,34 +104,3 @@ class DatabaseHandler implements iDatabase
 		}
 	}
 }
-
-#$db = DatabaseHandler::getDbInstance();
-#var_dump($db->read('SELECT `lst_update` FROM `show` WHERE `id` = 10'));
-
-#$fields[] = 'id';
-#$fields[] = 'imdb_id';
-#$fields[] = 'zap2_id ';
-#$fields[] = 'channel_id';
-#$fields[] = 'banner_url';
-#$fields[] = 'pilot_date';
-#$fields[] = 'name';
-#$fields[] = 'summary';
-#$fields[] = 'lang';
-#$fields[] = 'rating';
-#$fields[] = 'lst_update';
-
-#$values[] = '11';
-#$values[] = '2321';
-#$values[] = '31321';
-#$values[] = '11';
-#$values[] = 'http...';
-#$values[] = '2014-02-05';
-#$values[] = 'How I Met Your Mother';
-#$values[] = 'Summary here...';
-#$values[] = 'En';
-#$values[] = '10';
-#$values[] = '2014-02-05';
-
-#$db->insert('`show`', $fields, $values);
-
-#var_dump($db->read('SELECT * FROM `show`'));

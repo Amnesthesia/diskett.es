@@ -25,6 +25,9 @@ class Table
 		return self::$__table_cache[$class_name];	
 	}
 	
+	/**
+	 * Fetches information about table (column rows)
+	 */
 	private function _getTableInfo()
 	{
 		$db = DatabaseHandler::getInstance();
@@ -37,11 +40,17 @@ class Table
 		
 	}
 	
+	/**
+	 * Returns name of table
+	 */
 	public function getName()
 	{
 		return $this->__table;
 	}
 	
+	/**
+	 * Returns list of column names
+	 */
 	public function getColumns()
 	{
 		return $this->__columns;

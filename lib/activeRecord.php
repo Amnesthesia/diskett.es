@@ -8,20 +8,6 @@ class ActiveRecord
 			$__modified = array(),
 			$__new_record = true;
 	
-	public function __call($name, $arguments)
-	{
-		if(substr($name,0,3) == "set")
-		{
-			echo "Got request";
-			
-			$underscore_capitals = strtolower(preg_replace('/([A-Z])/', '_$1', substr($name,3)));
-			
-			$this->$$underscore_capitals = array_shift($arguments);
-			
-			echo $this->$$varName;
-			
-		}
-	}
 	
 	/**
 	 * Sets an attribute (use this method even if you write custom setters!)
@@ -48,21 +34,36 @@ class ActiveRecord
 		$this->__modified[$name] = 1;
 	}
 	
+	/**
+	 * Loads attributes from database into __attributes
+	 * and makes them accessible.
+	 * 
+	 * @param integer $id 	ID of row to instantiate
+	 */
 	public function create($id = NULL)
 	{
 		$db = DatabaseHandler::getInstance();
-		
-		$this->__attributes = array_shift($db->read("SELECT * FROM " . self::getTable()->getName() . " WHERE id = ?", $id));
-		
+		echo "Running query: " . "SELECT * FROM `" . self::getTable()->getName() . "` WHERE id = ?";
+		$attr = $db->read("SELECT * FROM `" . self::getTable()->getName() . "` WHERE id = ?", $id);
+		$this->__attributes = $attr[0];
 	}
 	
 	
-	
+	/**
+	 * Returns the table for the current class (lowercase version of class name)
+	 * 
+	 * @return Table
+	 */
 	public static function getTable()
 	{
 		return Table::load(get_called_class());
 	}
 	
+	
+	/**
+	 * Saves the object (or creates new row if no existing ID)
+	 * 
+	 */
 	public function save()
 	{
 		

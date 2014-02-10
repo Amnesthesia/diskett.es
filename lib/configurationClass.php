@@ -1,8 +1,10 @@
 <?php
-
 define("PATH", substr(__DIR__, 0, -3)); // Absolute path
 
-class Configuration
+require_once(PATH . '/interfaces/configInterface.php');
+
+
+class Configuration implements iConfiguration
 {
 	private static $instance = NULL;
 	private static $config = array();

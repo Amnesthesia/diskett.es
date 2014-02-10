@@ -152,6 +152,3 @@ class DatabaseHandler implements iDatabase
 		}
 	}
 }
-
-$db = DatabaseHandler::getInstance();
-var_dump($db->read("SELECT * FROM `show`"));

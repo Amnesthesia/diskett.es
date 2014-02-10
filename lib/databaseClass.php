@@ -1,7 +1,6 @@
 <?php
 
-require_once('../lib/configurationClass.php');
-
+require_once('configurationClass.php');
 require_once(PATH . '/interfaces/databaseInterface.php');
 
 /**

@@ -5,14 +5,18 @@ require('../lib/customException.php');
 
 error_reporting(-1);
 
-/*
-Singleton Pattern 
-*/
+/**
+ * 
+ */
 class DatabaseHandler implements iDatabase
 {
 	public static $dbInstance = NULL;
 	private $dbConfig = array();
 
+	/**
+	 * [getDbInstance description]
+	 * @return [type] [description]
+	 */
 	public static function getDbInstance()
 	{
 		if (!isset(DatabaseHandler::$dbInstance))
@@ -23,6 +27,13 @@ class DatabaseHandler implements iDatabase
 		return DatabaseHandler::$dbInstance;
 	}
 
+	/**
+	 * [insert description]
+	 * @param  [type] $table  [description]
+	 * @param  [type] $fields [description]
+	 * @param  [type] $values [description]
+	 * @return [type]         [description]
+	 */
 	public function insert($table, $fields, $values)
 	{
 		$queryFields = NULL;

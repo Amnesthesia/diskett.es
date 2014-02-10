@@ -1,7 +1,8 @@
 <?php
 
-require_once('../interfaces/databaseInterface.php');
 require_once('../lib/configurationClass.php');
+
+require_once(PATH . '/interfaces/databaseInterface.php');
 
 /**
  * 
@@ -101,12 +102,25 @@ class DatabaseHandler implements iDatabase
 	public function read()
 	{
 		$arguments = func_get_args();
+
 		$query = array_shift($arguments);
 
 		$stmt = $this->databaseHandler->prepare($query);
 		$stmt->execute($arguments);
 
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
+	}
+
+	public function readToClass()
+	{
+		$arguments = func_get_args();
+		$class = array_pop($arguments); // Class name
+		$query = array_shift($arguments); // Query
+
+		$stmt = $this->databaseHandler->prepare($query);
+		$stmt->execute($arguments);
+
+		return $stmt->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, $class);
 	}
 
 	/**

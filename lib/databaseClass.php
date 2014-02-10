@@ -74,7 +74,7 @@ class DatabaseHandler implements iDatabase
 			$insertData->execute(array(':value' => $values));
 
 
-		return $insertData->lastInsertId();
+		return $this->databaseHandler->lastInsertId();
 	}
 
 

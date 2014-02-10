@@ -31,7 +31,7 @@ class DatabaseHandler implements iDatabase
 	 * @param  string $table
 	 * @param  array  $fields
 	 * @param  array  $values 
-	 * @return int    Rows affected
+	 * @return string Id of last inserted row
 	 */
 	public function insert($table, array $fields, array $values)
 	{
@@ -74,7 +74,7 @@ class DatabaseHandler implements iDatabase
 			$insertData->execute(array(':value' => $values));
 
 
-		return $insertData->rowCount();
+		return $insertData->lastInsertId();
 	}
 
 

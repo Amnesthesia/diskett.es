@@ -28,7 +28,7 @@
 		 */
     	public function getIMDbID()
 		{
-			return $this->_imdb_id;	
+			return $this->_getAttribute("imdb_id");	
 		}
 		
 		
@@ -39,7 +39,7 @@
 		 */
 		public function getZap2ID()
 		{
-			return $this->_zap2_id;
+			return $this->_getAttribute("zap2_id");
 		}
 		
 		
@@ -54,7 +54,7 @@
 			if($single > 0)
 				if(array_key_exists($single, $this->_banners))
 					return $this->_banners[$single];
-			return $this->_banners;
+			return $this->_getAttribute("banners");
 		}
 		
 		/**
@@ -64,7 +64,7 @@
 		 */
 		public function getPilotDate()
 		{
-			return $þhis->_pilot_date;
+			return $this->_getAttribute("pilot_date");
 		}
 		
 		/**
@@ -74,7 +74,7 @@
 		 */
 		public function getTitle()
 		{
-			return $this->_name;
+			return $this->_getAttribute("name");
 		}
 		
 		/**
@@ -84,7 +84,7 @@
 		 */
 		public function getSummary()
 		{
-			return $this->_summary;
+			return $this->_getAttribute("summary");
 		}
 		
 		/**
@@ -94,7 +94,7 @@
 		 */
 		public function getChannel()
 		{
-			return $this->_channel;
+			return $this->_getAttribute("channel_id");
 		}
 		
 		/**
@@ -104,7 +104,7 @@
 		 */
 		public function getRating()
 		{
-			return $this->_rating;
+			return $this->_getAttribute("rating");
 		}
 		
 		/**
@@ -118,7 +118,7 @@
 			if($character != NULL)
 				if(array_key_exists($character, $this->_actors))
 					return $this->_character[$character];
-			return $this->_actors;
+			return $this->_getAttribute("actors");
 		}
 		
 		/**
@@ -128,7 +128,7 @@
 		 */
 		public function getLastUpdate()
 		{
-			return $this->_lst_update;
+			return $this->_getAttribute("lst_update");
 		}
 		
 		/**
@@ -144,7 +144,7 @@
 		public function setIMDbID($id = NULL)
 		{
 			if($id != NULL)
-				$this->_imdb_id = $id;
+				$this->_setAttribute("imdb_id", $id);
 		}
 		
 		/**
@@ -155,7 +155,7 @@
 		public function setZap2URL($id = NULL)
 		{
 			if($id != NULL)
-				$this->_zap2_id = $id;
+				$this->_setAttribute("zap2_id", $id);
 		}
 
 		/**
@@ -169,9 +169,9 @@
 		public function setBanners($url, $index = NULL)
 		{
 			if($index!=NULL)
-				$this->_banners[$index] = $url;
+				$this->_setAttribute("banners", $url, $index);
 			else
-			    $this->_banners[] = $url;	
+			    $this->_setAttribute("banners", $url);	
 		}
 		
 		
@@ -183,7 +183,7 @@
 		public function setPilotDate($date = NULL)
 		{
 			if($date != NULL)
-				$this->_pilot_date = strtotime($date);
+				$this->_setAttribute("pilot_date", strtotime($date));
 
 		} 
 		
@@ -195,7 +195,7 @@
 		public function setTitle($title = NULL)
 		{
 			if($title != NULL)
-				$this->_title = $title;
+				$this->_setAttribute("title", $title);
 		}
 		
 		/**
@@ -206,18 +206,18 @@
 		public function setSummary($summary = NULL)
 		{
 			if($summary != NULL)
-				$this->_summary = $summary;
+				$this->_setAttribute("summary", $summary);
 		}
 		
 		/**
 		 * Mutator for _channel
 		 * 
-		 * @param Channel $channel
+		 * @param integer $channel
 		 * 
 		 */
-		 public function setChannel(&$channel)
+		 public function setChannel($channel)
 		 {
-		 	$this->_channel = $channel;
+		 	$this->_setAttribute("channel_id",$channel);
 		 }
 		 
 		 /**
@@ -227,7 +227,7 @@
 		  */
 		  public function setRating($rating)
 		  {
-		  	$this->_rating = $rating;
+		  	$this->_setAttribute("rating", $rating);
 		  }
 		  
 		  /**
@@ -247,9 +247,9 @@
 		   	if(get_class($actor) == 'Actor' or get_class($actor) == 'Character')
 			{
 				if($characterName!=NULL)
-					$this->_actors[$characterName] = $actor;
+					$this->_setAttribute("actors", $actor, $characterName);
 				else
-					$this->_actors[] = $actor;
+					$this->_setAttribute("actors", $actor);
 			}
 		   }
 		   
@@ -265,7 +265,7 @@
 		   	if($last_update == NULL)
 				$last_update = time();
 			
-		   	$this->_lst_update = $last_update;
+			$this->_setAttribute("lst_update", $last_update);
 		   }
 		   
 		   /**
@@ -278,7 +278,7 @@
 		    public function setID($id = NULL)
 			{
 				if($id != NULL)
-					$this->_id;
+					$this->_setAttribute("id", $id);
 			}
 		   
 		   	

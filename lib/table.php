@@ -27,13 +27,24 @@ class Table
 	
 	private function _getTableInfo()
 	{
-		$db = DatabaseHandler::getDbInstance();
+		$db = DatabaseHandler::getInstance();
 		
 		foreach($db->read("DESCRIBE `".$this->__table."`") as $col_info)
 		{
 			if(array_key_exists("Field", $col_info))
 				$this->__columns[] = $col_info["Field"]; 
 		}
+		
+	}
+	
+	public function getName()
+	{
+		return $this->__table;
+	}
+	
+	public function getColumns()
+	{
+		return $this->__columns;
 	}
 	
     

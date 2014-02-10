@@ -25,7 +25,7 @@ class Configuration implements iConfiguration
 	/**
 	 * Returns the configuration values
 	 * @param  string $configType
-	 * @return arrar  Configuration data
+	 * @return array  Configuration data
 	 */
 	public static function getConfig($configType)
 	{

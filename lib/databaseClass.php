@@ -3,20 +3,16 @@
 require('../interfaces/databaseInterface.php');
 require('../lib/customException.php');
 
-error_reporting(-1);
+error_reporting(1);
 
 /**
  * 
  */
 class DatabaseHandler implements iDatabase
 {
-	public static $dbInstance = NULL;
+	private static $dbInstance = NULL;
 	private $dbConfig = array();
 
-	/**
-	 * [getDbInstance description]
-	 * @return [type] [description]
-	 */
 	public static function getDbInstance()
 	{
 		if (!isset(DatabaseHandler::$dbInstance))
@@ -27,18 +23,11 @@ class DatabaseHandler implements iDatabase
 		return DatabaseHandler::$dbInstance;
 	}
 
-	/**
-	 * [insert description]
-	 * @param  [type] $table  [description]
-	 * @param  [type] $fields [description]
-	 * @param  [type] $values [description]
-	 * @return [type]         [description]
-	 */
-	public function insert($table, $fields, $values)
+	public function insert($table, array $fields, array $values)
 	{
 		$queryFields = NULL;
 		$queryValues = NULL;
-
+		
 		if (is_array($fields))
 		{
 			foreach($fields as $key => $field)
@@ -80,17 +69,24 @@ class DatabaseHandler implements iDatabase
 
 	}
 
-	public function read($query)
+	public function read()
 	{
+		$arguments = func_get_args();
+		$query = array_shift($arguments);
+
 		$stmt = $this->databaseHandler->prepare($query);
-		$stmt->execute();
+		$stmt->execute($arguments);
 
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
-	public function delete($query)
+	public function delete($table, $id)
 	{
+		$stmt = $this->databaseHandler->prepare('DELETE FROM ' . $table . 'WHERE id=:id');
+		$stmt->bindValue(':id', $id, PDO::PARAM_STR);
+		$stmt->execute();
 
+		return $aff_row = $stmt->rowCount(); // How many affected rows?
 	}
 
 	public function __destruct()
@@ -115,34 +111,3 @@ class DatabaseHandler implements iDatabase
 		}
 	}
 }
-
-#$db = DatabaseHandler::getDbInstance();
-#var_dump($db->read('SELECT `lst_update` FROM `show` WHERE `id` = 10'));
-
-#$fields[] = 'id';
-#$fields[] = 'imdb_id';
-#$fields[] = 'zap2_id ';
-#$fields[] = 'channel_id';
-#$fields[] = 'banner_url';
-#$fields[] = 'pilot_date';
-#$fields[] = 'name';
-#$fields[] = 'summary';
-#$fields[] = 'lang';
-#$fields[] = 'rating';
-#$fields[] = 'lst_update';
-
-#$values[] = '11';
-#$values[] = '2321';
-#$values[] = '31321';
-#$values[] = '11';
-#$values[] = 'http...';
-#$values[] = '2014-02-05';
-#$values[] = 'How I Met Your Mother';
-#$values[] = 'Summary here...';
-#$values[] = 'En';
-#$values[] = '10';
-#$values[] = '2014-02-05';
-
-#$db->insert('`show`', $fields, $values);
-
-#var_dump($db->read('SELECT * FROM `show`'));

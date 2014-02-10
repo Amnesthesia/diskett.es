@@ -9,6 +9,7 @@ interface iDatabase
 	public function update();
 	public function read();
 	public function delete($table, $id);
+	public function readToClass();
 }
 
 ?>

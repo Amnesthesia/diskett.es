@@ -6,7 +6,7 @@ interface iDatabase
 	public function __destruct();
 
 	public function insert($table, array $fields, array $values);
-	public function update($query);
+	public function update();
 	public function read();
 	public function delete($table, $id);
 }

@@ -55,6 +55,3 @@ class Configuration implements iConfiguration
 		Configuration::$config = parse_ini_file(PATH . '/config/config.php', true);
 	}
 }
-/* Example on how to use this class */
-#$conf = Configuration::getInstance();
-#echo $conf->getConfig('Database')['Host'];

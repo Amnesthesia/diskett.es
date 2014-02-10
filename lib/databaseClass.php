@@ -1,9 +1,7 @@
 <?php
+ini_set('error_reporting', E_ALL);
 
-require('../interfaces/databaseInterface.php');
-require('../lib/customException.php');
-
-error_reporting(1);
+require_once('../interfaces/databaseInterface.php');
 
 /**
  * 
@@ -33,6 +31,7 @@ class DatabaseHandler implements iDatabase
 	 * @param  string $table
 	 * @param  array  $fields
 	 * @param  array  $values 
+	 * @return int    Rows affected
 	 */
 	public function insert($table, array $fields, array $values)
 	{
@@ -73,12 +72,27 @@ class DatabaseHandler implements iDatabase
 			$insertData->execute($values);
 		else
 			$insertData->execute(array(':value' => $values));
+
+
+		return $insertData->rowCount();
 	}
 
-	public function update($query)
+
+	/**
+	 * Updated information in the database
+	 * @return int Rows affected
+	 */
+	public function update()
 	{
+		$arguments = func_get_args();
+		$query = array_shift($arguments);
 
+		$stmt = $this->databaseHandler->prepare($query);
+		$stmt->execute($arguments);
+
+		return $stmt->rowCount();
 	}
+
 
 	/**
 	 * Extract information from the database
@@ -107,7 +121,7 @@ class DatabaseHandler implements iDatabase
 		$stmt->bindValue(':id', $id, PDO::PARAM_STR);
 		$stmt->execute();
 
-		return $aff_row = $stmt->rowCount(); // How many affected rows?
+		return $stmt->rowCount(); // How many affected rows?
 	}
 
 	/**

@@ -1,11 +1,11 @@
 <?php
 
-require_once('../interfaces/databaseInterface.php');
+//require_once('../interfaces/databaseInterface.php') or die("I'm in ".__DIR__);
 
 /**
  * 
  */
-class DatabaseHandler implements iDatabase
+class DatabaseHandler //implements iDatabase
 {
 	private static $dbInstance = NULL;
 	private $dbConfig = array();

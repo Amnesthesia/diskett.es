@@ -1,13 +1,14 @@
 <?php
 
 require_once('../interfaces/databaseInterface.php');
+require_once('../lib/configurationClass.php');
 
 /**
  * 
  */
 class DatabaseHandler implements iDatabase
 {
-	private static $dbInstance = NULL;
+	private static $instance = NULL;
 	private $dbConfig = array();
 
 
@@ -15,14 +16,14 @@ class DatabaseHandler implements iDatabase
 	 * Create the database object
 	 * @return object Instance of DatabaseHandler Class
 	 */
-	public static function getDbInstance()
+	public static function getInstance()
 	{
-		if (!isset(DatabaseHandler::$dbInstance))
+		if (!isset(DatabaseHandler::$instance))
 		{
-			DatabaseHandler::$dbInstance = new DatabaseHandler();
+			DatabaseHandler::$instance = new DatabaseHandler();
 		}
 
-		return DatabaseHandler::$dbInstance;
+		return DatabaseHandler::$instance;
 	}
 
 	/**
@@ -136,18 +137,21 @@ class DatabaseHandler implements iDatabase
 	 */
 	private function __construct()
 	{
-		$this->dbConfig = parse_ini_file('../config/config.php', true); // Make a config class?
+		$this->dbConfig = Configuration::getInstance()->getConfig('Database');
 
 		if (!isset($this->databaseHandler))
 		{
 			// Custom error handler?
-			$this->databaseHandler = new PDO('mysql:host=' . $this->dbConfig['Database']['Host'] .
-					                         ';dbname=' . $this->dbConfig['Database']['DbName'] .
-					                         ';charset=' . $this->dbConfig['Database']['Charset'],
-					                          $this->dbConfig['Database']['User'], 
-					                          $this->dbConfig['Database']['Password'],
+			$this->databaseHandler = new PDO('mysql:host=' . $this->dbConfig['Host'] .
+					                         ';dbname=' . $this->dbConfig['DbName'] .
+					                         ';charset=' . $this->dbConfig['Charset'],
+					                          $this->dbConfig['User'], 
+					                          $this->dbConfig['Password'],
 					                          array(PDO::ATTR_EMULATE_PREPARES => false,
 					                             	PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
 		}
 	}
 }
+
+$db = DatabaseHandler::getInstance();
+var_dump($db->read("SELECT * FROM `show`"));

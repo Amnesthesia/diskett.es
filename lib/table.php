@@ -17,8 +17,8 @@ class Table
 	
 	public static function load($class_name)
 	{
-		if(isset(self::$__table_cache[$class_name]))
-			return self::$__table_cache[$class_name];
+		if(isset(self::$table_cache[$class_name]))
+			return self::$table_cache[$class_name];
 		else 
 			self::$table_cache[$class_name] = new Table($class_name);
 		

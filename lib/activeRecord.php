@@ -83,7 +83,7 @@ class ActiveRecord
 		$db = DatabaseHandler::getInstance();
 		
 		
-		foreach($this->__relationships as $relation)
+		foreach($this->relationships as $relation)
 		  if(isset($relation["relation"]) && isset($relation["subject"]) && isset($relation["using"]))
 		  {
 		      if($relation["relation"] == "has_one" || $relation["relation"] == "belongs_to" )
@@ -155,7 +155,7 @@ class ActiveRecord
 			  }
 			
 		  }	
-		if(empty($this->__relationships))
+		if(empty($this->relationships))
 		{
 			$query = "SELECT * FROM `" . self::getTable()->getName() . "` WHERE `".self::getTable()->getName()."` id = ?";
 			$attr = $db->read($query, $id);
@@ -226,7 +226,7 @@ class ActiveRecord
 		 // x being amount of fields to change
 		 if(!empty($modify))
 		 {
-		 	$modify_query = "UPDATE `".self::getTable()->getName()."` SET " . implode(",",array_fill(0,(count($modify)/2),"? = ?"). "WHERE id = ?";
+		 	$modify_query = "UPDATE `".self::getTable()->getName()."` SET " . implode(",",array_fill(0,(count($modify)/2),"? = ?")). " WHERE id = ?";
 			
 			// Prepend the query to the start of the array
 			array_unshift($modify,$modify_query);

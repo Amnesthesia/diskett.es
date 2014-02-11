@@ -43,7 +43,6 @@ class ActiveRecord
 	public function create($id = NULL)
 	{
 		$db = DatabaseHandler::getInstance();
-		echo "Running query: " . "SELECT * FROM `" . self::getTable()->getName() . "` WHERE id = ?";
 		$attr = $db->read("SELECT * FROM `" . self::getTable()->getName() . "` WHERE id = ?", $id);
 		$this->__attributes = $attr[0];
 	}
@@ -69,7 +68,7 @@ class ActiveRecord
 		
 		$db = DatabaseHandler::getInstance();
 		
-		
+		// If new record, do an insert and toggle __new_record
 		if($this->__new_record)
 		{
 			// Find out what columns have values
@@ -87,6 +86,7 @@ class ActiveRecord
 			$this->__new_record = false;
 			
 		}
+		// If an existing object, update row
 		else 
 		{
 		 foreach($this->__modified as $column => $value)

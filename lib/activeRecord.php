@@ -44,13 +44,17 @@ class ActiveRecord
 	
 	/**
 	 * Gets an attribute (use this method even if you write custom getters)
+	 * Returns NULL if none exists.
 	 * 
 	 * @param string $attr
 	 * @return mixed
 	 */
 	public function getAttribute($attr)
 	{
-		if(array_key_exists($attr, $this->attributes));
+		if(array_key_exists($attr, $this->attributes))
+			return $this->attributes[$attr];
+		else
+			return NULL;
 	}
 	
 	/**

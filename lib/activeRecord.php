@@ -4,9 +4,17 @@ require_once("table.php");
 
 class ActiveRecord
 {
-	private $__attributes = array(),
-			$__modified = array(),
-			$__new_record = true;
+	private $attributes = array(),
+			$modified = array(),
+			$new_record = true,
+			$relationships = array();
+	
+	function __construct($id = 0)
+	{
+		if($id > 0)
+			$this->find($id);
+	}		
+	
 	
 	
 	/**
@@ -17,34 +25,95 @@ class ActiveRecord
 	 */
 	public function setAttribute($name, $value, $index = -1)
 	{
-		if(is_array($this->__attributes[$name]))
+		if(is_array($this->attributes[$name]))
 		{
 			if($index != -1)
-				$this->__attributes[$index] = $value;
+				$this->attributes[$index] = $value;
 			else 
-				$this->__attributes[] = $value;
+				$this->attributes[] = $value;
 			
 		}
 		else 
 		{
-			$this->__attributes[$name] = $value;
+			$this->attributes[$name] = $value;
 		}
-		if($name == "id" && isset($this->__attributes["id"]))
+		if($name == "id" && isset($this->attributes["id"]))
 			$this->__new_record = false;
-		$this->__modified[$name] = 1;
+		$this->modified[$name] = 1;
 	}
 	
 	/**
-	 * Loads attributes from database into __attributes
+	 * Gets an attribute (use this method even if you write custom getters)
+	 * 
+	 * @param string $attr
+	 * @return mixed
+	 */
+	public function getAttribute($attr)
+	{
+		if(array_key_exists($attr, $this->attributes));
+	}
+	
+	/**
+	 * Loads attributes from database into attributes
 	 * and makes them accessible.
 	 * 
 	 * @param integer $id 	ID of row to instantiate
 	 */
-	public function create($id = NULL)
+	public function find($id = NULL)
 	{
 		$db = DatabaseHandler::getInstance();
-		$attr = $db->read("SELECT * FROM `" . self::getTable()->getName() . "` WHERE id = ?", $id);
-		$this->__attributes = $attr[0];
+		
+		
+		foreach($this->__relationships as $relation)
+		  if(isset($relation["relation"]) && isset($relation["subject"]) && isset($relation["using"]))
+		  {
+		      if($relation["relation"] == "has_one")
+			  {
+			  	$query = "SELECT `" . self::getTable()->getName() . "`.*,`".$relation["subject"]."`.id FROM `" . self::getTable()->getName() . "` ";
+				$query .= "JOIN `".Table::getTable($relation["subject"])->getName()."` ";
+				
+				if(isset($relation["using"]))
+				{
+					if(is_array($relation["using"]) && count($relation["using"])>1)
+						$query .= " ON (`".array_shift($relation["using"])."` = `".array_shift($relation["using"])."`);";
+					else
+						$query .= " USING ".$relation["using"].";";
+						
+				}
+				
+				$attr = $db->read($query,$id);
+				
+				$class = ucfirst($relation["subject"]);
+				
+				$this->attributes["has_one"] = new $class(array_pop($attr[0]));
+					
+			  }
+			  else if($relation["relation"] == "has_many")
+			  {
+			  	
+				
+			  }
+			  else if($relation["relation"] == "belongs_to")
+			  {
+			  	
+				
+			  }
+			  else if($relation["relation"] == "many_many")
+			  {
+			  		
+			  	
+			  }
+			
+		  }	
+		if(empty($this->__relationships))
+			$query = "SELECT * FROM `" . self::getTable()->getName() . "` ";
+			
+		
+		 "WHERE id = ?";
+		
+		
+		$attr = $db->read(, $id);
+		$this->attributes = $attr[0];
 	}
 	
 	
@@ -75,7 +144,7 @@ class ActiveRecord
 			$new_cols = array();
 			$new_vals = array();
 			
-			foreach($this->__attributes as $colname => $colval)
+			foreach($this->attributes as $colname => $colval)
 				if(isset($colname) && isset($colval))
 				{
 					$new_cols[] = $colname;
@@ -89,21 +158,34 @@ class ActiveRecord
 		// If an existing object, update row
 		else 
 		{
-		 foreach($this->__modified as $column => $value)
+		 // Iterate through all attributes (columns) of this object
+		 // and add column name, followed by value, to $modify array
+		 $modify = array();
+			
+		 foreach($this->modified as $column => $value)
 		 {
-			$col = "_".$column;
 					
 			if($value == 1)
 			{
-				$parameters[] = "UPDATE `".self::getTable()->getName()."` SET ? = ? WHERE id = ?;";
-				$parameters[] = $column;
-				$parameters[] = $this->__attributes[$column];
-				$parameters[] = $this->__attributes["id"];
-				
-				$db->update($parameters);
+				$modify[] = $column;
+				$modify[] = $this->attributes[$column];
 			}
 						
 		 }	
+		 
+		 // Now, make ? = ? x amount of times split by comma in the query; 
+		 // x being amount of fields to change
+		 if(!empty($modify))
+		 {
+		 	$modify_query = "UPDATE `".self::getTable()->getName()."` SET " . implode(",",array_fill(0,(count($modify)/2),"? = ?"). "WHERE id = ?";
+			
+			// Prepend the query to the start of the array
+			array_unshift($modify,$modify_query);
+			
+			
+			// ... and execute it!
+			$db->update($parameters);
+		 }
 		}
 	}
 }

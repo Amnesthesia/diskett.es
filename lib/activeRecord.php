@@ -38,7 +38,7 @@ class ActiveRecord
 			$this->attributes[$name] = $value;
 		}
 		if($name == "id" && isset($this->attributes["id"]))
-			$this->__new_record = false;
+			$this->new_record = false;
 		$this->modified[$name] = 1;
 	}
 	
@@ -141,8 +141,8 @@ class ActiveRecord
 		
 		$db = DatabaseHandler::getInstance();
 		
-		// If new record, do an insert and toggle __new_record
-		if($this->__new_record)
+		// If new record, do an insert and toggle new_record
+		if($this->new_record)
 		{
 			// Find out what columns have values
 			$new_cols = array();
@@ -155,8 +155,8 @@ class ActiveRecord
 					$new_vals[] = $colval;
 				} 
 			
-			$this->_setAttribute("id", $db->insert(self::getTable()->getName(), $new_cols, $new_vals));
-			$this->__new_record = false;
+			$this->setAttribute("id", $db->insert(self::getTable()->getName(), $new_cols, $new_vals));
+			$this->new_record = false;
 			
 		}
 		// If an existing object, update row

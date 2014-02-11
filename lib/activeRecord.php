@@ -9,10 +9,25 @@ class ActiveRecord
 			$new_record = true,
 			$relationships = array();
 	
+	
+	/**
+	 * Creates an object based on its ID
+	 * If an array is passed instead of ID, will mass-assign
+	 * $id elements as attributes.
+	 * 
+	 * @param mixed $id
+	 */
 	function __construct($id = 0)
 	{
-		if($id > 0)
+		if(is_numeric($id) && $id > 0)
 			$this->find($id);
+		else if(is_array($id) && count($id) > 0)
+		{
+			$this->attributes = $id;
+			
+			if(isset($id["id"]) && is_numeric($id) && $id > 0)
+				$this->new_record = false;
+		}
 	}		
 	
 	
@@ -71,9 +86,9 @@ class ActiveRecord
 		foreach($this->__relationships as $relation)
 		  if(isset($relation["relation"]) && isset($relation["subject"]) && isset($relation["using"]))
 		  {
-		      if($relation["relation"] == "has_one")
+		      if($relation["relation"] == "has_one" || $relation["relation"] == "belongs_to" )
 			  {
-			  	$query = "SELECT `" . self::getTable()->getName() . "`.*,`".$relation["subject"]."`.id FROM `" . self::getTable()->getName() . "` ";
+			  	$query = "SELECT `" . self::getTable()->getName() . "`.*,`".$relation["subject"]."`.id as obj_id FROM `" . self::getTable()->getName() . "` ";
 				$query .= "JOIN `".Table::getTable($relation["subject"])->getName()."` ";
 				
 				if(isset($relation["using"]))
@@ -81,7 +96,11 @@ class ActiveRecord
 					if(is_array($relation["using"]) && count($relation["using"])>1)
 						$query .= " ON (`".array_shift($relation["using"])."` = `".array_shift($relation["using"])."`);";
 					else
-						$query .= " USING ".$relation["using"].";";
+					{
+						$query .= " ON `".Table::load($relation["subject"])->getName()."`";
+						$query .= ".`".Table::load($relation["subject"])->getName()."_".$relation["using"];
+						$query .= "` = `".self::getTable()->getName()."`.`id`;";
+					}
 						
 				}
 				
@@ -89,35 +108,61 @@ class ActiveRecord
 				
 				$class = ucfirst($relation["subject"]);
 				
-				$this->attributes["has_one"] = new $class(array_pop($attr[0]));
+				if(array_key_exists("obj_id", $row[0]))
+				{
+					$this->relationships[] = array("type" => $relation["relation"],
+					                               "class" => $class, 
+					                               "object" => new $class($row[0]["obj_id"]));
+					unset($row[0]["obj_id"]);
+				}
+				
 					
 			  }
 			  else if($relation["relation"] == "has_many")
 			  {
 			  	
+				// Get attributes for object first
+				$tmp_attr = $db->read("SELECT * FROM `".self::getTable()->getName()."` WHERE `id` = ? LIMIT 1",$id);
+				$this->attributes = $tmp_attr[0];
 				
-			  }
-			  else if($relation["relation"] == "belongs_to")
-			  {
-			  	
+			  	$query = "SELECT `id` FROM `".Table::load($relation["subject"])->getName()."` WHERE `".self::getTable()->getName()."_id` = ?";
 				
-			  }
-			  else if($relation["relation"] == "many_many")
-			  {
-			  		
-			  	
+				$result = $db->read($query, $this->attributes["id"]);
+				
+				$relationship_with = array();
+				
+				
+				// Populate array with IDs of objects
+				
+				/**
+				 * @todo Decide whether we should store list of IDs or list of objects
+				 */
+				 
+				$class = ucfirst($relation["subject"]);
+				
+				foreach($result as $row)
+					$relationship_with[] = $row["id"]; // Alternative below:
+					// $relationship_with[] = new $class($row["id"]); 
+					
+				
+				$relationship = array("type" => "has_many",
+									  "class" => $class,
+									  "object" => $relationship_with
+									  );
+				
+				
+				
 			  }
 			
 		  }	
 		if(empty($this->__relationships))
-			$query = "SELECT * FROM `" . self::getTable()->getName() . "` ";
+		{
+			$query = "SELECT * FROM `" . self::getTable()->getName() . "` WHERE `".self::getTable()->getName()."` id = ?";
+			$attr = $db->read($query, $id);
+			$attr = $attr[0];
+		}
 			
 		
-		 "WHERE id = ?";
-		
-		
-		$attr = $db->read($query, $id);
-		$this->attributes = $attr[0];
 	}
 	
 	

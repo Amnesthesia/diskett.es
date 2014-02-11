@@ -3,15 +3,15 @@ require_once("databaseClass.php");
 
 class Table
 {
-	private $__table,              //Name of the table
-            $__columns = array();  // List of columns
-	private static $__table_cache = array(); // Keep table-data cached as static
+	private $table,              //Name of the table
+            $columns = array();  // List of columns
+	private static $table_cache = array(); // Keep table-data cached as static
 	
 	
 	function __construct($class_name)
 	{
-		$this->__table = strtolower($class_name);
-		$table_info = $this->_getTableInfo();
+		$this->table = strtolower($class_name);
+		$table_info = $this->getTableInfo();
 	
 	}
 	
@@ -20,22 +20,22 @@ class Table
 		if(isset(self::$__table_cache[$class_name]))
 			return self::$__table_cache[$class_name];
 		else 
-			self::$__table_cache[$class_name] = new Table($class_name);
+			self::$table_cache[$class_name] = new Table($class_name);
 		
-		return self::$__table_cache[$class_name];	
+		return self::$table_cache[$class_name];	
 	}
 	
 	/**
 	 * Fetches information about table (column rows)
 	 */
-	private function _getTableInfo()
+	private function getTableInfo()
 	{
 		$db = DatabaseHandler::getInstance();
 		
-		foreach($db->read("DESCRIBE `".$this->__table."`") as $col_info)
+		foreach($db->read("DESCRIBE `".$this->table."`") as $col_info)
 		{
 			if(array_key_exists("Field", $col_info))
-				$this->__columns[] = $col_info["Field"]; 
+				$this->columns[] = $col_info["Field"]; 
 		}
 		
 	}
@@ -45,7 +45,7 @@ class Table
 	 */
 	public function getName()
 	{
-		return $this->__table;
+		return $this->table;
 	}
 	
 	/**
@@ -53,7 +53,7 @@ class Table
 	 */
 	public function getColumns()
 	{
-		return $this->__columns;
+		return $this->columns;
 	}
 	
     

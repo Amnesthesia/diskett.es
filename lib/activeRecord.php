@@ -116,7 +116,7 @@ class ActiveRecord
 		 "WHERE id = ?";
 		
 		
-		$attr = $db->read(, $id);
+		$attr = $db->read($query, $id);
 		$this->attributes = $attr[0];
 	}
 	

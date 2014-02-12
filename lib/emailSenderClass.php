@@ -50,6 +50,3 @@ class MailSender
 		$this->mailConfig = Configuration::getInstance()->getConfig('Mail');
 	}
 }
-
-MailSender::getInstance()->sendMail('tommy.ingdal@gmail.com', 'Test mail', 'This is the message');
-

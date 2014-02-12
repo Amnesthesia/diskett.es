@@ -44,6 +44,4 @@ class MailSender
 	}
 }
 
-#$mailSender = MailSender::getInstance();
-#$mailSender->sendMail('tommy.ingdal@gmail.com', 'Test mail', 'This is the message');
-echo 'test';
+$mailSender = MailSender::getInstance()->sendMail('tommy.ingdal@gmail.com', 'Test mail', 'This is the message');

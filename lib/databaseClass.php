@@ -6,7 +6,7 @@ require_once(PATH . '/interfaces/databaseInterface.php');
 /**
  * 
  */
-class DatabaseHandler implements iDatabase
+class DatabaseHandler //implements iDatabase
 {
 	private static $instance = NULL;
 	private $dbConfig = array();

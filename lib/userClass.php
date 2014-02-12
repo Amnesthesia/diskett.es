@@ -1,6 +1,7 @@
 <?php
 
 require_once('databaseClass.php');
+require_once('emailSenderClass.php');
 require_once(PATH . '/interfaces/userInterface.php');
 
 /**
@@ -17,7 +18,8 @@ class User implements iUser
 			$email,
 			$password,
 			$role_id,
-			$country_id;
+			$country_id,
+			$last_login;
 
 	// This is used when creating a new user:
 	private $fields = array('email', 'password', 'role_id', 'country_id');
@@ -135,6 +137,33 @@ class User implements iUser
 		$db->insert('user', $this->fields, $this->values);
 	}
 
+	public function login($password)
+	{
+		if (password_verify($password, $this->password))
+		{
+			$db = DatabaseHandler::getInstance();
+			$db->update('UPDATE user SET last_login=NOW() WHERE email=?', $this->email); // 9999-12-31 23:59:59
+
+			// Password did match, do som session() shit right here...
+		}
+		else
+		{
+			// Password did not match, redirect user?
+		}
+	}
+
+	public function forgotPassword() // This function may need to be rewritten!!!
+	{
+		$mailSender = MailSender::getInstance();
+
+		$newPassword = hash('sha1', mt_rand(1, 999999) . $this->getEmail());
+
+		$message = 'Your new password is: ' . $newPassword . '\r\n';
+		$message .= 'Remember to change your password after you login!' . '\r\n';
+
+		return $mailSender->sendMail($this->email, 'Password Reset', $message);
+	}
+
 	/**
 	 * Hash the user's password so we can store it in the database, safely.
 	 * @param  string $password
@@ -145,13 +174,3 @@ class User implements iUser
 		return password_hash($password, PASSWORD_DEFAULT);
 	}
 }
-
-/*
-$db = DatabaseHandler::getInstance();
-$users = $db->readToClass('SELECT * FROM `user`', 'User');
-
-foreach($users as $user)
-{
-	echo $user->getEmail() . ' - ' . $user->getPassword() . '<br />';
-}
-*/

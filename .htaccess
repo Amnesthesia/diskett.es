@@ -1,0 +1,4 @@
+AuthType Basic
+AuthName "restricted area"
+AuthUserFile /home/s1gh/.htpasswd
+require valid-user

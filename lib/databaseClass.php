@@ -6,7 +6,7 @@ require_once(PATH . '/interfaces/databaseInterface.php');
 /**
  * 
  */
-class DatabaseHandler //implements iDatabase
+class DatabaseHandler implements iDatabase
 {
 	private static $instance = NULL;
 	private $dbConfig = array();
@@ -98,7 +98,7 @@ class DatabaseHandler //implements iDatabase
 	 * Extract information from the database
 	 * @return array Data returned from the database
 	 */
-	public function read()
+	public function read() // read('query', 'param1', 'param2', ...);
 	{
 		$arguments = func_get_args();
 
@@ -110,7 +110,11 @@ class DatabaseHandler //implements iDatabase
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
-	public function readToClass()
+	/**
+	 * Read data from database and creates a object of type '<class>'
+	 * @return <class> object
+	 */
+	public function readToClass() // readToClass('query', 'className');
 	{
 		$arguments = func_get_args();
 		$class = array_pop($arguments); // Class name

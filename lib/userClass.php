@@ -155,8 +155,11 @@ class User implements iUser
 	public function forgotPassword() // This function may need to be rewritten!!!
 	{
 		$mailSender = MailSender::getInstance();
+		$db = DatabaseHandler::getInstance();
 
-		$newPassword = hash('sha1', mt_rand(1, 999999) . $this->getEmail());
+		$newPassword = $this->createHash(hash('sha1', mt_rand(1, 999999) . $this->getEmail()));
+
+		$db->update('UPDATE `user` SET password=? WHERE email=?', $newPassword, $this->email);
 
 		$message = 'Your new password is: ' . $newPassword . "\r\n";
 		$message .= 'Remember to change your password after you login!' . "\r\n";

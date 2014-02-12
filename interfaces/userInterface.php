@@ -8,8 +8,6 @@ interface iUser
 	public function getRoleId();
 	public function getCountryId();
 
-
-
 	public function setEmail($_mail);
 	public function setPassword($_password);
 	public function setRoleId($_roleId);

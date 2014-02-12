@@ -1,6 +1,5 @@
 <?php
 
-require_once('databaseClass.php');
 require_once('../interfaces/userInterface.php');
 
 class User implements iUser
@@ -48,7 +47,7 @@ class User implements iUser
 		$this->password = $_password;
 	}
 
-	public function setRoleId($_roleId) 
+	public function setRoleId($_roleId = 0) 
 	{
 		$this->role_id = $_roleId;
 	}

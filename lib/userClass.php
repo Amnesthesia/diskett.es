@@ -158,8 +158,8 @@ class User implements iUser
 
 		$newPassword = hash('sha1', mt_rand(1, 999999) . $this->getEmail());
 
-		$message = 'Your new password is: ' . $newPassword . '\r\n';
-		$message .= 'Remember to change your password after you login!' . '\r\n';
+		$message = 'Your new password is: ' . $newPassword . "\r\n";
+		$message .= 'Remember to change your password after you login!' . "\r\n";
 
 		return $mailSender->sendMail($this->email, 'Password Reset', $message);
 	}

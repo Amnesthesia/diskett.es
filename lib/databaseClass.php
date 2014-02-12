@@ -119,7 +119,7 @@ class DatabaseHandler //implements iDatabase
 		$stmt = $this->databaseHandler->prepare($query);
 		$stmt->execute($arguments);
 
-		return $stmt->fetchAll(PDO::FETCH_CLASS | PDO::FETCH_PROPS_LATE, $class);
+		return $stmt->fetchAll(PDO::FETCH_CLASS, $class);
 	}
 
 	/**

@@ -32,7 +32,6 @@ class MailSender
 		if (!isset($headers))
 			$headers = 'FROM: ' . $this->mailConfig['Sender'] . ' <' . $this->mailConfig['Address'] . '>' . "\r\n";
 
-		var_dump($this->mailConfig);
 
 		return mail($to, $subject, $message, $headers, '-f ' . $this->mailConfig['Address']);
 	}
@@ -44,6 +43,3 @@ class MailSender
 	}
 }
 
-#$mailSender = MailSender::getInstance();
-#$mailSender->sendMail('tommy.ingdal@gmail.com', 'Test mail', 'This is the message');
-echo 'test';

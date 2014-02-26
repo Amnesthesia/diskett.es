@@ -174,6 +174,10 @@ class User implements iUser
 	 */
 	private function createHash($password)
 	{
+		// Striptag, stripslashes.
 		return password_hash($password, PASSWORD_DEFAULT);
 	}
 }
+
+$user = DatabaseHandler::getInstance()->readToClass('SELECT * FROM `user` WHERE email=?', 'tommy.ingdal@gmail.com', 'User');
+$user[0]->forgotPassword();

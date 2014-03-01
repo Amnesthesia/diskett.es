@@ -162,9 +162,9 @@ class User implements iUser
 		{
 			$db = DatabaseHandler::getInstance();
 			session_regenerate_id(true);
-
 			$uniqueSessionToken = hash('sha1', session_id() . $this->getSalt());
-			$_SESSION['uid'] = $uniqueSessionToken;
+			$_SESSION['token'] = $uniqueSessionToken;
+			$_SESSION['uid'] = $this->getId();
 
 			$db->update('UPDATE user SET last_activity=NOW() WHERE email=?', $this->email); // 9999-12-31 23:59:59
 			$db->update("INSERT INTO user_session (id, session_data, session_ip)
@@ -183,10 +183,12 @@ class User implements iUser
 	 */
 	public function logout()
 	{
+		// Delete user's entry in user_session
+		
 		session_unset();
 		session_destroy();
 
-		//Redirect to front page
+		// Redirect to front page
 	}
 
 	public function forgotPassword() 
@@ -195,28 +197,60 @@ class User implements iUser
 	}
 
 	/**
-	 * Check if a specific user is logged in
+	 * Check if a specific user is logged in.
+	 * (This function is not pretty. Rewrite if possible)
 	 * @return boolean User logged in or not
 	 */
 	public static function isLoggedIn()
 	{
 		$db = DatabaseHandler::getInstance();
+		$timeExpired = NULL;
 
-		if (!isset($_SESSION['uid']))
+
+		if (!isset($_SESSION['uid'])) // Session is not set; user is not logged in
 		{
-			return false; // Session is not set; user is not logged in
+			return false;
 		}
-		else
+		else // Session is set, check if session has expired:
 		{
-			$userData = $db->read('SELECT id
-				                   FROM user_session 
-				                   WHERE session_data=? AND session_ip=?', $_SESSION['uid'], $_SERVER['REMOTE_ADDR']);
+			$timeExpired = $db->read('SELECT COUNT(*) as exp
+				                      FROM user 
+				                      WHERE last_activity < (NOW() - INTERVAL 15 MINUTE) AND id=?', $_SESSION['uid']);
 
-			if (!empty($userData[0]['id']))
-				return true; // Ip address and session id does match, user is logged in
+			if (!empty($timeExpired[0]['exp']))
+			{
+				session_unset();
+				session_destroy();
+			}
 			else
-				return false; // Ip address and session id does not match, possible session hijacking.
+			{
+				$userData = $db->read('SELECT id
+					                   FROM user_session 
+					                   WHERE session_data=? AND session_ip=?', $_SESSION['token'], $_SERVER['REMOTE_ADDR']);
+
+				if (!empty($userData[0]['id']))
+				{
+					User::updateSessionTime();
+
+					return true; // Ip address and session id does match, user is logged in
+				}
+				else
+					return false; // Ip address and session id does not match, possible session hijacking.
+			}
 		}
+	}
+
+	/**
+	 * Updates a user's last activity entry in the database.
+	 * @return int Rows affected by the query
+	 */
+	private static function updateSessionTime()
+	{
+		$db = DatabaseHandler::getInstance();
+
+		return $db->update('UPDATE user 
+			                SET last_activity=NOW() 
+			                WHERE id=?', $_SESSION['uid']);
 	}
 
 	/**
@@ -249,7 +283,7 @@ class User implements iUser
 #
 #$user[0]->logout();
 
-if (User::isLoggedIn())
-	echo "User is logged in.";
-else
-	echo "User is not logged in.";
+#if (User::isLoggedIn())
+#	echo "User is logged in.";
+#else
+#	echo "User is not logged in.";

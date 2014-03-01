@@ -4,6 +4,9 @@ require_once('databaseClass.php');
 require_once('emailSenderClass.php');
 require_once(PATH . '/interfaces/userInterface.php');
 
+//DEBUG CODE, REMOVE
+session_start();
+
 /**
  * This class will represent either an existing user or a new user
  * The user object can be created without parameters if we want to
@@ -17,12 +20,13 @@ class User implements iUser
 	private $id,
 			$email,
 			$password,
+			$salt,
 			$role_id,
 			$country_id,
 			$last_login;
 
 	// This is used when creating a new user:
-	private $fields = array('email', 'password', 'role_id', 'country_id');
+	private $fields = array('email', 'password', 'salt', 'role_id', 'country_id');
 	private $values = array();
 
 
@@ -31,6 +35,7 @@ class User implements iUser
 	 * if we create a new user.
 	 * @param string  $_email
 	 * @param string  $_passwd
+	 * @param string  $_salt
 	 * @param int     $_roleId
 	 * @param int     $_countryId
 	 */
@@ -38,8 +43,11 @@ class User implements iUser
 	{
 		if (isset($_email) && isset($_passwd) && isset($_countryId)) //New user obj.?
 		{
+			$_salt = $this->createSalt();
+
 			$this->values[] = $_email;
-			$this->values[] = $this->createHash($_passwd);
+			$this->values[] = $this->createHash($_passwd, $_salt);
+			$this->values[] = $_salt;
 			$this->values[] = $_roleId;
 			$this->values[] = $_countryId;
 		}
@@ -70,6 +78,11 @@ class User implements iUser
 	public function getPassword()
 	{
 		return $this->password;
+	}
+
+	public function getSalt()
+	{
+		return $this->salt;
 	}
 
 	/**
@@ -134,17 +147,30 @@ class User implements iUser
 	public function register()
 	{
 		$db = DatabaseHandler::getInstance();
-		$db->insert('user', $this->fields, $this->values);
+
+		return $db->insert('user', $this->fields, $this->values);
 	}
 
+	/**
+	 * Let a user login
+	 * @param  string $password User's password
+	 * @return [type]           [description]
+	 */
 	public function login($password)
 	{
-		if (password_verify($password, $this->password))
+		if (password_verify($password . $this->getSalt(), $this->password))
 		{
 			$db = DatabaseHandler::getInstance();
-			$db->update('UPDATE user SET last_login=NOW() WHERE email=?', $this->email); // 9999-12-31 23:59:59
+			session_regenerate_id(true);
 
-			// Password did match, do som session() shit right here...
+			$uniqueSessionToken = hash('sha1', session_id() . $this->getSalt());
+			$_SESSION['uid'] = $uniqueSessionToken;
+
+			$db->update('UPDATE user SET last_activity=NOW() WHERE email=?', $this->email); // 9999-12-31 23:59:59
+			$db->update("INSERT INTO user_session (id, session_data, session_ip)
+						 VALUES (" . $this->getId() . ",'" . $uniqueSessionToken . "', '" . $_SERVER['REMOTE_ADDR'] . "')
+			             ON DUPLICATE KEY
+			                UPDATE session_data=?, session_ip=?", $uniqueSessionToken, $_SERVER['REMOTE_ADDR']);
 		}
 		else
 		{
@@ -152,19 +178,45 @@ class User implements iUser
 		}
 	}
 
-	public function forgotPassword() // This function may need to be rewritten!!!
+	/**
+	 * Logout a user and destroy and unset the current session
+	 */
+	public function logout()
 	{
-		$mailSender = MailSender::getInstance();
+		session_unset();
+		session_destroy();
+
+		//Redirect to front page
+	}
+
+	public function forgotPassword() 
+	{
+		// Not yet implemented.
+	}
+
+	/**
+	 * Check if a specific user is logged in
+	 * @return boolean User logged in or not
+	 */
+	public static function isLoggedIn()
+	{
 		$db = DatabaseHandler::getInstance();
 
-		$newPassword = hash('sha1', mt_rand(1, 999999) . $this->getEmail());
+		if (!isset($_SESSION['uid']))
+		{
+			return false; // Session is not set; user is not logged in
+		}
+		else
+		{
+			$userData = $db->read('SELECT id
+				                   FROM user_session 
+				                   WHERE session_data=? AND session_ip=?', $_SESSION['uid'], $_SERVER['REMOTE_ADDR']);
 
-		$db->update('UPDATE `user` SET password=? WHERE email=?', $this->createHash($newPassword), $this->email);
-
-		$message = 'Your new password is: ' . $newPassword . "\r\n";
-		$message .= 'Remember to change your password after you login!' . "\r\n";
-
-		return $mailSender->sendMail($this->email, 'Password Reset', $message);
+			if (!empty($userData[0]['id']))
+				return true; // Ip address and session id does match, user is logged in
+			else
+				return false; // Ip address and session id does not match, possible session hijacking.
+		}
 	}
 
 	/**
@@ -172,12 +224,32 @@ class User implements iUser
 	 * @param  string $password
 	 * @return string Password hash
 	 */
-	private function createHash($password)
+	private function createHash($password, $salt)
 	{
 		// Striptag, stripslashes.
-		return password_hash($password, PASSWORD_DEFAULT);
+		return password_hash($password . $salt, PASSWORD_DEFAULT);
+	}
+
+	/**
+	 * Generates a cryptographically strong salt
+	 * @return string Salt
+	 */
+	private function createSalt()
+	{
+		return bin2hex(mcrypt_create_iv(30, MCRYPT_DEV_URANDOM));
 	}
 }
 
-$user = DatabaseHandler::getInstance()->readToClass('SELECT * FROM `user` WHERE email=?', 'tommy.ingdal@gmail.com', 'User');
-$user[0]->forgotPassword();
+#$user = DatabaseHandler::getInstance()->readToClass('SELECT * FROM user WHERE email=?', 'tommy.ingdal@gmail.com', 'User');
+
+#$user[0]->login('1234');
+
+#$user = new User('test@test.com', '1234', 0, 10);
+#$user->register();
+#
+#$user[0]->logout();
+
+if (User::isLoggedIn())
+	echo "User is logged in.";
+else
+	echo "User is not logged in.";

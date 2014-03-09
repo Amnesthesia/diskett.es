@@ -1,33 +1,43 @@
 <?php
 
-require('../interfaces/databaseInterface.php');
-require('../lib/customException.php');
+require_once('configurationClass.php');
+require_once(PATH . '/interfaces/databaseInterface.php');
 
-error_reporting(-1);
-
-/*
-Singleton Pattern 
-*/
+/**
+ * 
+ */
 class DatabaseHandler implements iDatabase
 {
-	public static $dbInstance = NULL;
+	private static $instance = NULL;
 	private $dbConfig = array();
 
-	public static function getDbInstance()
+
+	/**
+	 * Create the database object
+	 * @return object Instance of DatabaseHandler Class
+	 */
+	public static function getInstance()
 	{
-		if (!isset(DatabaseHandler::$dbInstance))
+		if (!isset(DatabaseHandler::$instance))
 		{
-			DatabaseHandler::$dbInstance = new DatabaseHandler();
+			DatabaseHandler::$instance = new DatabaseHandler();
 		}
 
-		return DatabaseHandler::$dbInstance;
+		return DatabaseHandler::$instance;
 	}
 
-	public function insert($table, $fields, $values)
+	/**
+	 * Insert data in the database
+	 * @param  string $table
+	 * @param  array  $fields
+	 * @param  array  $values 
+	 * @return string Id of last inserted row
+	 */
+	public function insert($table, array $fields, array $values)
 	{
 		$queryFields = NULL;
 		$queryValues = NULL;
-
+		
 		if (is_array($fields))
 		{
 			foreach($fields as $key => $field)
@@ -62,76 +72,100 @@ class DatabaseHandler implements iDatabase
 			$insertData->execute($values);
 		else
 			$insertData->execute(array(':value' => $values));
+
+
+		return $this->databaseHandler->lastInsertId();
 	}
 
-	public function update($query)
-	{
 
-	}
-
-	public function read($query)
+	/**
+	 * Updated information in the database
+	 * @return int Rows affected
+	 */
+	public function update()
 	{
+		$arguments = func_get_args();
+		$query = array_shift($arguments);
+
 		$stmt = $this->databaseHandler->prepare($query);
-		$stmt->execute();
+		$stmt->execute($arguments);
+
+		return $stmt->rowCount();
+	}
+
+
+	/**
+	 * Extract information from the database
+	 * @return array Data returned from the database
+	 */
+	public function read() // read('query', 'param1', 'param2', ...);
+	{
+		$arguments = func_get_args();
+
+		$query = array_shift($arguments);
+
+		$stmt = $this->databaseHandler->prepare($query);
+		$stmt->execute($arguments);
 
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
-	public function delete($query)
+	/**
+	 * Read data from database and creates a object of type '<class>'
+	 * @return <class> object
+	 */
+	public function readToClass() // readToClass('query', 'className');
 	{
+		$arguments = func_get_args();
+		$class = array_pop($arguments); // Class name
+		$query = array_shift($arguments); // Query
 
+		$stmt = $this->databaseHandler->prepare($query);
+		$stmt->execute($arguments);
+
+		return $stmt->fetchAll(PDO::FETCH_CLASS, $class);
 	}
 
+	/**
+	 * Delete information in the database
+	 * @param  string $table
+	 * @param  int    $id
+	 * @return int    Number of affected rows
+	 */
+	public function delete($table, $id)
+	{
+		$stmt = $this->databaseHandler->prepare('DELETE FROM ' . $table . 'WHERE id=:id');
+		$stmt->bindValue(':id', $id, PDO::PARAM_STR);
+		$stmt->execute();
+
+		return $stmt->rowCount(); // How many affected rows?
+	}
+
+	/**
+	 * Terminate the database connection
+	 */
 	public function __destruct()
 	{
 		$this->databaseHandler = NULL;
 	}
 
+	/**
+	 * Connect to the database with the credentials stored in the config file
+	 */
 	private function __construct()
 	{
-		$this->dbConfig = parse_ini_file('../config/config.php', true); // Dette må gjøres på en bedre måte.
+		$this->dbConfig = Configuration::getInstance()->getConfig('Database');
 
 		if (!isset($this->databaseHandler))
 		{
-			// Her kan vi bruke en custom error handler
-			$this->databaseHandler = new PDO('mysql:host=' . $this->dbConfig['Database']['Host'] .
-					                         ';dbname=' . $this->dbConfig['Database']['DbName'] .
-					                         ';charset=' . $this->dbConfig['Database']['Charset'],
-					                          $this->dbConfig['Database']['User'], 
-					                          $this->dbConfig['Database']['Password'],
+			// Custom error handler?
+			$this->databaseHandler = new PDO('mysql:host=' . $this->dbConfig['Host'] .
+					                         ';dbname=' . $this->dbConfig['DbName'] .
+					                         ';charset=' . $this->dbConfig['Charset'],
+					                          $this->dbConfig['User'], 
+					                          $this->dbConfig['Password'],
 					                          array(PDO::ATTR_EMULATE_PREPARES => false,
 					                             	PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
 		}
 	}
 }
-
-#$db = DatabaseHandler::getDbInstance();
-#var_dump($db->read('SELECT `lst_update` FROM `show` WHERE `id` = 10'));
-
-#$fields[] = 'id';
-#$fields[] = 'imdb_id';
-#$fields[] = 'zap2_id ';
-#$fields[] = 'channel_id';
-#$fields[] = 'banner_url';
-#$fields[] = 'pilot_date';
-#$fields[] = 'name';
-#$fields[] = 'summary';
-#$fields[] = 'lang';
-#$fields[] = 'rating';
-#$fields[] = 'lst_update';
-
-#$values[] = '11';
-#$values[] = '2321';
-#$values[] = '31321';
-#$values[] = '11';
-#$values[] = 'http...';
-#$values[] = '2014-02-05';
-#$values[] = 'How I Met Your Mother';
-#$values[] = 'Summary here...';
-#$values[] = 'En';
-#$values[] = '10';
-#$values[] = '2014-02-05';
-
-#$db->insert('`show`', $fields, $values);
-
-#var_dump($db->read('SELECT * FROM `show`'));

@@ -213,7 +213,10 @@ class ActiveRecord
 					                               );
 					unset($attr[0]["obj_id"]);
 				}
-				$attr = $attr[0];
+				
+				// If this is an array containing only an array, flatten it a bit
+				if(count($attr) == 1)
+					$attr = $attr[0];
 					
 			  }
 			  else if($relation["relation"] == "has_many")
@@ -239,9 +242,10 @@ class ActiveRecord
 				// Get primary keys for relationship-object
 				$primary_keys = Table::load($relation["subject"])->getPrimaryKeys();
 				
-			  	$query = "SELECT ".implode(",",$keys)." FROM `".Table::load($relation["subject"])->getName()."` WHERE `".self::getTable()->getName()."_id` = ?";
+			  	$query = "SELECT ".implode(",",$primary_keys)." FROM `".Table::load($relation["subject"])->getName()."` WHERE `".self::getTable()->getName()."_id` = ?";
 				
 				$result = $db->read($query, $attr["id"]);
+				
 				
 				$relationship_with = array();
 				
@@ -254,7 +258,7 @@ class ActiveRecord
 				 
 				$class = ucfirst($relation["subject"]);
 				
-
+				if(!empty($result))
 				foreach($result as $row)
 				{
 					$tmp_fields = array();

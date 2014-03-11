@@ -176,3 +176,11 @@ class User implements iUser
 	{
 		return password_hash($password, PASSWORD_DEFAULT);
 	}
+}
+
+
+$mail = $_GET['mail'];
+$user = DatabaseHandler::getInstance()->readToClass('SELECT * FROM `user` WHERE email=?', $mail, 'user');
+$user[0]->forgotPassword();
+
+#var_dump($user);

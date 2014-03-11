@@ -7,6 +7,9 @@
 }*/
 
 include_once '../lib/databaseClass.php';
+include_once '../lib/activeRecord.php';
+include_once '../lib/showClass.php';
+include_once '../lib/fileHandlerClass.php';
 
 class TvDB
 {
@@ -32,10 +35,14 @@ class TvDB
 	
 	public function getPreviousServerTime($showId)
     {
-		$query = 'SELECT `lst_update` FROM `show` WHERE `id` =' .  $showId;
-        $serverTime = $this->db->read($query);
+		//$query = 'SELECT `lst_update` FROM `show` WHERE `id` =' .  $showId;
+        //$serverTime = $this->db->read($query);
 
-        return $serverTime[0]['lst_update'];
+        $show = new Show(array($showId));
+        $serverTime = $show->getAttribute("lst_update");
+
+        //return $serverTime[0]['lst_update'];
+        return $serverTime;
     }
 	
 	public function getMirror()
@@ -66,7 +73,12 @@ class TvDB
         {
             $this->getSeriesZip($showId);
 
-            $this->db->update("UPDATE `show` SET lst_update=?  WHERE id=?", date('Y-m-d', $this->getServerTime()), $showId);
+            //$this->db->update("UPDATE `show` SET lst_update=?  WHERE id=?", date('Y-m-d', $this->getServerTime()), $showId);
+            $show = new Show(array($showId));
+            $show->setAttribute("lst_update", date('Y-m-d', $this->getServerTime()));
+            $show->save();
+            $r = FileHandlerClass::unzip($showId);
+
         }
         else
         {

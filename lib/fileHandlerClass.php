@@ -2,6 +2,7 @@
 
 class FileHandler
 {
+
 	public function unzip($zipFile) //navn på zip.fil (seriesId)
 	{
 		$file = '../temp/' . $zipFile;
@@ -29,6 +30,14 @@ class FileHandler
 			if(is_file($file)) unlink($file);
 		}
 	}
+
+    /*public function loadDataFromFile($showId)
+    {
+        $xmlData = file_get_contents("../temp/" . $showId . "/.zip");
+        $xml = new SimpleXMLElement($xmlData);
+
+        //foreach($xml->)
+    }*/
 }
 
 //$test = new FileHandler();

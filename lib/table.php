@@ -4,7 +4,8 @@ require_once("databaseClass.php");
 class Table
 {
 	private $table,              //Name of the table
-            $columns = array();  // List of columns
+            $columns = array(),
+			$primary_keys = array();  // List of columns
 	private static $table_cache = array(); // Keep table-data cached as static
 	
 	
@@ -38,6 +39,20 @@ class Table
 				$this->columns[] = $col_info["Field"]; 
 		}
 		
+		foreach($db->read("SHOW keys FROM `".$this->table."` WHERE key_name = 'PRIMARY'") as $row)
+			if(array_key_exists("Column_name", $row))
+				$this->primary_keys[] = $row["Column_name"];
+		
+	}
+	
+	/**
+	 * Returns the primary keys for this table
+	 * 
+	 * @return array
+	 */
+	public function getPrimaryKeys()
+	{
+		return $this->primary_keys;
 	}
 	
 	/**

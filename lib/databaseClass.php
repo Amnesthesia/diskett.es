@@ -105,7 +105,12 @@ class DatabaseHandler implements iDatabase
 		$query = array_shift($arguments);
 
 		$stmt = $this->databaseHandler->prepare($query);
-		$stmt->execute($arguments);
+		echo "Prepared query $query with arguments: ";
+		if(is_array($arguments[0]))
+			$stmt->execute($arguments[0]);
+		else
+			$stmt->execute($arguments);
+		var_dump($arguments);
 
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}

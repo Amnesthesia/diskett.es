@@ -16,9 +16,10 @@
 										  "subject" => "show")
 									);
 	
-	function __construct()
+	function __construct($id = 0)
 	{
-		
+		if($id > 0)
+			parent::__construct($id,$this->relationships);
 	}
  }
 

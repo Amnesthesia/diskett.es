@@ -88,7 +88,7 @@ class TvDB
     }
 }
 
-$test = new TvDB();
+//$test = new TvDB();
 
 //var_dump(strtotime($test->getPreviousServerTime(70327)));
 //echo date("Y-m-d", $test->getServerTime());

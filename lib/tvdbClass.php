@@ -16,7 +16,7 @@ class TvDB
 
     public function __construct()
     {
-        $this->db = DatabaseHandler::getDbInstance();
+        $this->db = DatabaseHandler::getInstance();
         $this->apiConfig = parse_ini_file('../config/config.php', true);
     }
 
@@ -25,8 +25,8 @@ class TvDB
 		$url = 'http://thetvdb.com/api/Updates.php?type=none';
 		
 		$xml = simplexml_load_file($url);
-		$serverTime = $xml->Time;
-		
+		$serverTime = (int)$xml->Time;
+
 		return $serverTime;
     }
 	
@@ -54,9 +54,9 @@ class TvDB
 		file_put_contents('../temp/' . $seriesId . '.zip', file_get_contents($url));
     }
 	
-	public function getUpdates($showId)
+	public function getUpdate($showId)
     {
-        $url = 'http://thetvdb.com/api/Updates.php?type=all&time=' . $this->getPreviousServerTime($showId);
+        $url = 'http://thetvdb.com/api/Updates.php?type=all&time=' . strtotime($this->getPreviousServerTime($showId));
 
         $xmlData = file_get_contents($url);
         $xml = new SimpleXMLElement($xmlData);
@@ -65,7 +65,8 @@ class TvDB
         if($xpath[0]==$showId)
         {
             $this->getSeriesZip($showId);
-            //insert $this->getServerTime() i database til $showId
+
+            $this->db->update("UPDATE `show` SET lst_update=?  WHERE id=?", date('Y-m-d', $this->getServerTime()), $showId);
         }
         else
         {
@@ -87,11 +88,16 @@ class TvDB
     }
 }
 
-//$test = new TvDB();
+$test = new TvDB();
 
-//$test->getUpdates(70327)
-//$test->getShowId('Revolution');
-//$test->getPreviousServerTime(10);
+//var_dump(strtotime($test->getPreviousServerTime(70327)));
+//echo date("Y-m-d", $test->getServerTime());
+//$test->getMirror();
+//$test->getServerTime();
+//$test->getServerTime();
+//$test->getUpdate(70327);
+//var_dump($test->getShowId('The Big Bang Theory'));
+//echo $test->getPreviousServerTime(70327);
 //$test->getSeriesZip('80379');
 
 ?>

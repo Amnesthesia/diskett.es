@@ -1,5 +1,8 @@
 <?php
 require_once("table.php");
+define("ASC",0);
+define("DESC",1);
+define("DEFAULT_LIST_SIZE", 25);
 
 
 class ActiveRecord
@@ -76,6 +79,18 @@ class ActiveRecord
 	}
 
 	/**
+	 * Gets all attributes
+	 * Returns empty array if none exist.
+	 * 
+	 * @param string $attr
+	 * @return mixed
+	 */
+	public function getAttributes()
+	{
+		return $this->attributes;
+	}
+
+	/**
 	 * Gets all relationships (or relationships of a certain type)
 	 * for the object
 	 *
@@ -122,6 +137,24 @@ class ActiveRecord
 				return $r["object"];
 		return NULL;
 	}
+
+	/**
+     * Gets a list of x row-items (as defined by DEFAULT_LIST_SIZE) sorted by $column 
+     * starting at $index.
+     * Returns an array of primary keys to instantiate objects from.
+     *
+     * @param string $column
+     * @param integer $index
+     * @param boolean $descending
+    **/
+   	static public function getKeyList($index = 0, $column = "name", $descending = ASC)
+   	{
+   		$query = "SELECT ".implode(",",self::getTable()->getPrimaryKeys())." FROM `".self::getTable()->getName()."` ORDER BY ".$column;
+   		$query .= ($descending ? " DESC" : " ASC");
+   		$query .= " LIMIT $index,".DEFAULT_LIST_SIZE;
+
+   		return DatabaseHandler::getInstance()->read($query);
+   	}
 	
 	/**
 	 * Loads attributes from database into attributes
@@ -140,7 +173,11 @@ class ActiveRecord
 		      if($relation["relation"] == "has_one" || $relation["relation"] == "belongs_to" )
 			  {
 			  	$query = "SELECT `" . self::getTable()->getName() . "`.*,`".$relation["subject"]."`.id as obj_id FROM `" . self::getTable()->getName() . "` ";
-				$query .= "JOIN `".Table::load($relation["subject"])->getName()."` ";
+				
+			  	/**
+			  	 *	@todo Change JOIN statement from LEFT JOIN (using this during development when referenced rows may not exist)
+			  	 **/
+				$query .= "LEFT JOIN `".Table::load($relation["subject"])->getName()."` ";
 				
 				if(isset($relation["using"]) && is_array($relation["using"]) && count($relation["using"])>1)
 				{
@@ -156,24 +193,24 @@ class ActiveRecord
 				$query .= " WHERE ";
 				$tmpKeyQ = array();
 				foreach(self::getTable()->getPrimaryKeys() as $pk)
-					$tmpKeyQ[] = "`".$pk."` = ?";
+					$tmpKeyQ[] = "`".self::getTable()->getName()."`.`".$pk."` = ?";
 
 				if(count($tmpKeyQ)>1)
 					$query .= implode(" AND ",$tmpKeyQ);
 				else
 					$query .= $tmpKeyQ[0];
 
-				var_dump($keys);
 				
 				$attr = $db->read($query,$keys);
 				
 				$class = ucfirst($relation["subject"]);
 				
-				if(array_key_exists("obj_id", $attr[0]))
+				if(array_key_exists("obj_id", $attr))
 				{
 					$this->relationships[] = array("type" => $relation["relation"],
 					                               "class" => $class, 
-					                               "object" => new $class($attr[0]["obj_id"]));
+					                               "object" => new $class(array($attr[0]["obj_id"]))
+					                               );
 					unset($attr[0]["obj_id"]);
 				}
 				$attr = $attr[0];
@@ -197,14 +234,14 @@ class ActiveRecord
 				
 				$query .= " LIMIT 1";
 				$tmp_attr = $db->read($query,$keys);
-				$this->attributes = $tmp_attr[0];
+				$attr = array_shift($tmp_attr);
 
 				// Get primary keys for relationship-object
-				$keys = Table::load($relation["subject"])->getPrimaryKeys();
+				$primary_keys = Table::load($relation["subject"])->getPrimaryKeys();
 				
 			  	$query = "SELECT ".implode(",",$keys)." FROM `".Table::load($relation["subject"])->getName()."` WHERE `".self::getTable()->getName()."_id` = ?";
 				
-				$result = $db->read($query, $this->attributes["id"]);
+				$result = $db->read($query, $attr["id"]);
 				
 				$relationship_with = array();
 				
@@ -221,7 +258,7 @@ class ActiveRecord
 				foreach($result as $row)
 				{
 					$tmp_fields = array();
-					foreach($keys as $pk)
+					foreach($primary_keys as $pk)
 						$tmp_fields[] = $row[$pk];
 
 					$relationship_with[] = $tmp_fields; // Alternative below:
@@ -230,7 +267,7 @@ class ActiveRecord
 				} 
 					
 				
-				$relationship = array("type" => "has_many",
+				$this->relationships[] = array("type" => "has_many",
 									  "class" => $class,
 									  "object" => $relationship_with
 									  );
@@ -240,7 +277,7 @@ class ActiveRecord
 			  }
 			
 		  }	
-		if(empty($this->relationships))
+		if(empty($this->theoreticalRelationships))
 		{
 			$query = "SELECT * FROM `" . self::getTable()->getName() . "` WHERE ";
 			
@@ -256,7 +293,7 @@ class ActiveRecord
 			$attr = $db->read($query, $keys);
 			$attr = $attr[0];
 		}
-		
+		$this->new_record = false;
 		$this->attributes = $attr;
 		
 	}
@@ -304,15 +341,16 @@ class ActiveRecord
 		else 
 		{
 		 // Iterate through all attributes (columns) of this object
-		 // and add column name, followed by value, to $modify array
+		 // and add column name to $modify_col, followed by value in $modify array
 		 $modify = array();
-			
+		 $modify_col = array();
+
 		 foreach($this->modified as $column => $value)
 		 {
 					
 			if($value == 1)
 			{
-				$modify[] = $column;
+				$modify_col[] = "`".$column."` = ?";
 				$modify[] = $this->attributes[$column];
 			}
 						
@@ -322,7 +360,7 @@ class ActiveRecord
 		 // x being amount of fields to change
 		 if(!empty($modify))
 		 {
-		 	$modify_query = "UPDATE `".self::getTable()->getName()."` SET " . implode(",",array_fill(0,(count($modify)/2),"? = ?")). " WHERE ";
+		 	$modify_query = "UPDATE `".self::getTable()->getName()."` SET ".implode(",",$modify_col)." WHERE ";
 			
 			// Use the appropriate key(s)
 			$tmpKeyQ = array();
@@ -333,9 +371,9 @@ class ActiveRecord
 			}
 
 			if(count($tmpKeyQ)>1)
-				$query .= implode(" AND ",$tmpKeyQ);
+				$modify_query .= implode(" AND ",$tmpKeyQ);
 			else
-				$query .= $tmpKeyQ[0];
+				$modify_query .= $tmpKeyQ[0];
 
 			// Prepend the query to the start of the array
 			array_unshift($modify,$modify_query);

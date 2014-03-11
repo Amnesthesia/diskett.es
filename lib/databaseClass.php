@@ -85,6 +85,12 @@ class DatabaseHandler implements iDatabase
 	public function update()
 	{
 		$arguments = func_get_args();
+
+		// If the arguments are provided in an array,
+		// flatten it first
+		if(is_array($arguments) && count($arguments) == 1 && count($arguments[0])>1)
+			$arguments = array_shift($arguments);
+
 		$query = array_shift($arguments);
 
 		$stmt = $this->databaseHandler->prepare($query);
@@ -105,12 +111,12 @@ class DatabaseHandler implements iDatabase
 		$query = array_shift($arguments);
 
 		$stmt = $this->databaseHandler->prepare($query);
-		echo "Prepared query $query with arguments: ";
-		if(is_array($arguments[0]))
+		
+		if(array_key_exists(0, $arguments) && is_array($arguments[0]))
 			$stmt->execute($arguments[0]);
 		else
 			$stmt->execute($arguments);
-		var_dump($arguments);
+		
 
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}

@@ -1,0 +1,22 @@
+.top-bar
+{
+	#height: 52px;
+}
+
+h1, h2, h3, h4, h5, h6 
+{
+    font-family: "Open Sans","Helvetica Neue","Helvetica",Helvetica,Arial,sans-serif;
+    font-weight: 300;
+    font-style: normal;
+    color: #222;
+    text-rendering: optimizelegibility;
+    line-height: 1.4;
+}
+
+.top-bar .button
+{
+	padding-top: 0.45rem;
+	padding-bottom: 0.35rem;
+	margin-bottom: 0px;
+	font-size: 0.75rem;
+}

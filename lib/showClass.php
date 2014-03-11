@@ -4,18 +4,20 @@
 	
     class Show extends ActiveRecord 
     {
-    	private $_imdb_id, 
-    	        $_zap2_id,
-    	        $_banners = array(),
-    	        $_pilot_date,
-    	        $_name,
-    	        $_summary,
-    	        $_channel,
-    	        $_rating,
-    	        $_actors,
-    	        $_lst_update,
-				$_id;
+    	private $_banners = array();
+    	private $relationships = array(
+ 									array("relation" => "has_many",
+										  "subject" => "episode"),
+
+ 									array("relation" => "belongs_to",
+ 										  "subject" => "channel")
+									);
 		
+		function __construct($id = 0)
+		{
+			if($id != 0)
+				parent::__construct($id,$this->relationships);
+		}
 		
 		/**
 		 * Getters
@@ -28,7 +30,7 @@
 		 */
     	public function getIMDbID()
 		{
-			return $this->_getAttribute("imdb_id");	
+			return $this->getAttribute("imdb_id");	
 		}
 		
 		
@@ -39,7 +41,7 @@
 		 */
 		public function getZap2ID()
 		{
-			return $this->_getAttribute("zap2_id");
+			return $this->getAttribute("zap2_id");
 		}
 		
 		
@@ -54,7 +56,7 @@
 			if($single > 0)
 				if(array_key_exists($single, $this->_banners))
 					return $this->_banners[$single];
-			return $this->_getAttribute("banners");
+			return $this->getAttribute("banners");
 		}
 		
 		/**
@@ -64,7 +66,7 @@
 		 */
 		public function getPilotDate()
 		{
-			return $this->_getAttribute("pilot_date");
+			return $this->getAttribute("pilot_date");
 		}
 		
 		/**
@@ -74,7 +76,7 @@
 		 */
 		public function getTitle()
 		{
-			return $this->_getAttribute("name");
+			return $this->getAttribute("name");
 		}
 		
 		/**
@@ -84,7 +86,7 @@
 		 */
 		public function getSummary()
 		{
-			return $this->_getAttribute("summary");
+			return $this->getAttribute("summary");
 		}
 		
 		/**
@@ -94,7 +96,7 @@
 		 */
 		public function getChannel()
 		{
-			return $this->_getAttribute("channel_id");
+			return $this->getAttribute("channel_id");
 		}
 		
 		/**
@@ -104,7 +106,7 @@
 		 */
 		public function getRating()
 		{
-			return $this->_getAttribute("rating");
+			return $this->getAttribute("rating");
 		}
 		
 		/**
@@ -118,7 +120,7 @@
 			if($character != NULL)
 				if(array_key_exists($character, $this->_actors))
 					return $this->_character[$character];
-			return $this->_getAttribute("actors");
+			return $this->getAttribute("actors");
 		}
 		
 		/**
@@ -128,7 +130,24 @@
 		 */
 		public function getLastUpdate()
 		{
-			return $this->_getAttribute("lst_update");
+			return $this->getAttribute("lst_update");
+		}
+
+
+		/**
+		 * "Wrapper" for static parent method -- returns list of objects instead of keys
+		 *
+		 * @return array
+		**/
+		static public function getList($index = 0, $column = "name", $descending = ASC)
+		{
+			/**
+			 *	@todo THIS FUNCTION MAKES UNNECESSARILY MANY TRANSACTIONS. CUSTOMIZE QUERY FOR THIS, DON'T USE FIND().
+			 */
+			$obj = array();
+			foreach(self::getKeyList($index,$column,$descending) as $row)
+				$obj[] = new Show(array($row["id"]));
+			return $obj;
 		}
 		
 		/**
@@ -144,7 +163,7 @@
 		public function setIMDbID($id = NULL)
 		{
 			if($id != NULL)
-				$this->_setAttribute("imdb_id", $id);
+				$this->setAttribute("imdb_id", $id);
 		}
 		
 		/**
@@ -155,7 +174,7 @@
 		public function setZap2URL($id = NULL)
 		{
 			if($id != NULL)
-				$this->_setAttribute("zap2_id", $id);
+				$this->setAttribute("zap2_id", $id);
 		}
 
 		/**
@@ -169,9 +188,9 @@
 		public function setBanners($url, $index = NULL)
 		{
 			if($index!=NULL)
-				$this->_setAttribute("banners", $url, $index);
+				$this->setAttribute("banners", $url, $index);
 			else
-			    $this->_setAttribute("banners", $url);	
+			    $this->setAttribute("banners", $url);	
 		}
 		
 		
@@ -183,7 +202,7 @@
 		public function setPilotDate($date = NULL)
 		{
 			if($date != NULL)
-				$this->_setAttribute("pilot_date", strtotime($date));
+				$this->setAttribute("pilot_date", strtotime($date));
 
 		} 
 		
@@ -195,7 +214,7 @@
 		public function setTitle($title = NULL)
 		{
 			if($title != NULL)
-				$this->_setAttribute("title", $title);
+				$this->setAttribute("title", $title);
 		}
 		
 		/**
@@ -206,7 +225,7 @@
 		public function setSummary($summary = NULL)
 		{
 			if($summary != NULL)
-				$this->_setAttribute("summary", $summary);
+				$this->setAttribute("summary", $summary);
 		}
 		
 		/**
@@ -217,7 +236,7 @@
 		 */
 		 public function setChannel($channel)
 		 {
-		 	$this->_setAttribute("channel_id",$channel);
+		 	$this->setAttribute("channel_id",$channel);
 		 }
 		 
 		 /**
@@ -227,7 +246,7 @@
 		  */
 		  public function setRating($rating)
 		  {
-		  	$this->_setAttribute("rating", $rating);
+		  	$this->setAttribute("rating", $rating);
 		  }
 		  
 		  /**
@@ -247,9 +266,9 @@
 		   	if(get_class($actor) == 'Actor' or get_class($actor) == 'Character')
 			{
 				if($characterName!=NULL)
-					$this->_setAttribute("actors", $actor, $characterName);
+					$this->setAttribute("actors", $actor, $characterName);
 				else
-					$this->_setAttribute("actors", $actor);
+					$this->setAttribute("actors", $actor);
 			}
 		   }
 		   
@@ -265,11 +284,11 @@
 		   	if($last_update == NULL)
 				$last_update = time();
 			
-			$this->_setAttribute("lst_update", $last_update);
+			$this->setAttribute("lst_update", $last_update);
 		   }
 		   
 		   /**
-		    * Mutator for _id
+		    * Mutator for id
 		    * Changing this to a non-existing ID will cause the creation of a new show.
 		    * Uhm. Also, changing ID to the ID of another show 
 		    * 
@@ -278,10 +297,10 @@
 		    public function setID($id = NULL)
 			{
 				if($id != NULL)
-					$this->_setAttribute("id", $id);
+					$this->setAttribute("id", $id);
 			}
 		   
-		   	
+		   
 		   
 		
     }

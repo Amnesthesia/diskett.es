@@ -28,7 +28,6 @@ class ActiveRecord
 		if(is_array($keys) && count($keys) > 0 && count($keys) !== count(self::getTable()->getPrimaryKeys()))
 		{
 			$this->attributes = $id;
-			
 			if(isset($id["id"]) && is_numeric($id) && $id > 0)
 				$this->new_record = false;
 		}
@@ -331,7 +330,7 @@ class ActiveRecord
 				{
 					$new_cols[] = $colname;
 					$new_vals[] = $colval;
-				} 
+				}
 			
 			$this->setAttribute("id", $db->insert(self::getTable()->getName(), $new_cols, $new_vals));
 			$this->new_record = false;

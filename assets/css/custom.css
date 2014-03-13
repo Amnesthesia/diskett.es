@@ -23,11 +23,25 @@ h1, h2, h3, h4, h5, h6
 
 #content
 {
-    font-family: "Open Sans","Helvetica Neue","Helvetica",Helvetica,Arial,sans-serif;
-    font-weight: 300;
-    font-style: normal;
-    color: #222;
-    text-rendering: optimizelegibility;
-    line-height: 1.4;
-    padding: 20px;
+    padding: 15px;
+}
+
+.overlay {
+    position:fixed;
+    display:none; 
+
+    /* color with alpha channel */
+
+
+        -webkit-filter: blur(10px);
+    -moz-filter: blur(10px);
+    -o-filter: blur(10px);
+    -ms-filter: blur(10px);
+    filter: blur(10px);
+
+    /* stretch to screen edges */
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
 }

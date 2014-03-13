@@ -21,7 +21,7 @@ h1, h2, h3, h4, h5, h6
 	font-size: 0.75rem;
 }
 
-<<<<<<< HEAD
+
 .browse-list h4
 {
     background: #333;
@@ -36,7 +36,7 @@ h1, h2, h3, h4, h5, h6
     white-space: nowrap;
     overflow: hidden;
 }
-=======
+
 #content
 {
     padding: 15px;
@@ -61,4 +61,4 @@ h1, h2, h3, h4, h5, h6
     bottom: 0;
     right: 0;
 }
->>>>>>> 5b6d3c4c3c2e845dc03b6e927312ebcce8a1f166
+

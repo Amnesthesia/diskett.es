@@ -496,8 +496,6 @@ class ActiveRecord
 
 		 $query = "INSERT INTO `".self::getTable()->getName()."` (`".implode("`,`", $cols)."`) VALUES (".implode(",",array_fill(0,count($this->attributes),"?")).")"; // Removed -1, do we need this?
 		 $query .= " ON DUPLICATE KEY UPDATE ".implode(",",$updateCols);
-
-		 echo $query;
 			
 		 // Throw all values (all cols and values ... twice) so far into an array ...
 		 $modify = array_merge($vals,$vals);

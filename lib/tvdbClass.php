@@ -6,21 +6,23 @@
     include_once '../lib/' . $class_name . '.php';
 }*/
 
-include_once '../lib/databaseClass.php';
+//include_once '../lib/databaseClass.php';
 include_once '../lib/activeRecord.php';
 include_once '../lib/showClass.php';
 include_once '../lib/fileHandlerClass.php';
+include_once '../lib/configurationClass.php';
 
 class TvDB
 {
 	//private $mirror = 'http://thetvdb.com'; //test variable
     private $db;
-    private $apiConfig;
+    private $apiConfig = array();
 
     public function __construct()
     {
-        $this->db = DatabaseHandler::getInstance();
-        $this->apiConfig = parse_ini_file('../config/config.php', true);
+        //$this->db = DatabaseHandler::getInstance();
+        //$this->apiConfig = parse_ini_file('../config/config.php', true);
+        $this->apiConfig = Configuration::getInstance()->getConfig('Api');
     }
 
 	public function getServerTime()
@@ -47,12 +49,13 @@ class TvDB
 	
 	public function getMirror()
     {
-		$url = 'http://thetvdb.com/api/' . $this->apiConfig['Api']['Key'] . '/mirrors.xml';
+		$url = 'http://thetvdb.com/api/' . $this->apiConfig['Key'] . '/mirrors.xml';
 		
 		$xml = simplexml_load_file($url);
 		$mirror = $xml->Mirror->mirrorpath;
 
 		return $mirror;
+
     }
 	
 	public function getSeriesZip($showId)

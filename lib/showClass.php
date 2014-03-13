@@ -144,9 +144,10 @@
 			/**
 			 *	@todo THIS FUNCTION MAKES UNNECESSARILY MANY TRANSACTIONS. CUSTOMIZE QUERY FOR THIS, DON'T USE FIND().
 			 */
-			$obj = array();
-			foreach(self::getKeyList($index,$column,$descending) as $row)
-				$obj[] = new Show(array($row["id"]));
+			$q = "SELECT *,(SELECT count(*) FROM episode WHERE show_id=id) as episodecount FROM `show` ORDER BY `$column` ".($descending ? "DESC" : "ASC")." LIMIT ".$index.",".DEFAULT_LIST_SIZE;
+			$rows = DatabaseHandler::getInstance()->read($q);
+			foreach($rows as $row)
+				$obj[] = new Show($row);
 			return $obj;
 		}
 		

@@ -27,10 +27,14 @@ class ActiveRecord
 			$this->theoreticalRelationships = $relationships;
 		if(is_array($keys) && count($keys) > 0 && count($keys) !== count(self::getTable()->getPrimaryKeys()))
 		{
-			$this->attributes = $id;
+			$this->attributes = $keys;
 			
-			if(isset($id["id"]) && is_numeric($id) && $id > 0)
-				$this->new_record = false;
+			// Assume this isn't a new record if it was mass-assigned;
+			// but if ANY primary key is missing, set this to be a new record
+			$this->new_record = false;
+			foreach(self::getTable()->getPrimaryKeys() as $k)
+				if(!array_key_exists($k,$keys))
+					$this->new_record = true;
 		}
 		else
 			$this->find($keys);
@@ -46,7 +50,7 @@ class ActiveRecord
 	 */
 	public function setAttribute($name, $value, $index = -1)
 	{
-		if(is_array($this->attributes[$name]))
+		if(array_key_exists($name,$this->attributes) && is_array($this->attributes[$name]))
 		{
 			if($index != -1)
 				$this->attributes[$index] = $value;
@@ -135,6 +139,28 @@ class ActiveRecord
 		foreach($this->relationships as $r)
 			if($r["type"] == "has_one")
 				return $r["object"];
+		return NULL;
+	}
+
+	/**
+	 * Gets child object for objects with one or more "has_many" relationships
+	 * and returns NULL for objects with other relationship types.
+	 *
+	 * @param string $class
+	 * @return class
+	**/
+	public function getChildren($class = NULL)
+	{
+		$children = array();
+		foreach($this->relationships as $r)
+			if($r["type"] == "has_many")
+				if($class == NULL)
+					$children[$r["class"]] = $r["object"];
+				else
+					return $r["object"];
+
+		if(count($children)>0)
+			return $children;
 		return NULL;
 	}
 
@@ -274,9 +300,7 @@ class ActiveRecord
 				$this->relationships[] = array("type" => "has_many",
 									  "class" => $class,
 									  "object" => $relationship_with
-									  );
-				
-				
+									  );				
 				
 			  }
 			
@@ -299,7 +323,7 @@ class ActiveRecord
 		}
 		$this->new_record = false;
 		$this->attributes = $attr;
-		
+
 	}
 	
 	

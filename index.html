@@ -8,8 +8,10 @@
     <link rel="stylesheet" href="assets/css/foundation.css" />
     <link rel="stylesheet" href="assets/css/custom.css" />
     <script src="assets/js/vendor/modernizr.js"></script>
+
   </head>
   <body>
+  <div class="overlay"></div>
   <nav class="top-bar hide-for-small" data-topbar=""> 
     <ul class="title-area"> 
       <li class="name"> 
@@ -53,21 +55,23 @@
     </li>
   </ul>
   </section>
-  </nav>
-  
-<section id="features-hero">
-<div class="row">
-    <div class="small-12 medium-6 large-6 columns">
-        <h1>The Fastest Foundation Yet.</h1>
-        <br></br>
-        <h4>Foundation 5 is our fastest, best build yet. It’s packed with features to help you code and learn faster than ever before.</h4>
     </div>
-</section>
-
-    <script src="js/vendor/jquery.js"></script>
-    <script src="js/foundation.min.js"></script>
+  </nav>
+  <div id="content">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut ut orci tristique, sodales elit quis, rutrum mauris. Etiam id laoreet risus. Quisque nec tortor rutrum, varius erat eget, dapibus turpis. Praesent laoreet, tellus ornare molestie luctus, libero urna fringilla turpis, et fermentum neque turpis ac dolor. Donec nec ultrices velit. Nam non ultricies nibh. Phasellus sed fringilla elit. Fusce ac molestie odio.
+    Etiam ac sem lectus. Suspendisse id metus pharetra nisl pretium ultrices. Sed imperdiet congue arcu, et egestas felis eleifend id. Nullam eu est ac purus pretium suscipit. Vestibulum commodo purus consequat mi vulputate commodo. Praesent auctor nulla quis justo porttitor mattis. Sed ut felis turpis. Ut turpis erat, pretium id tellus viverra, bibendum placerat tellus. Morbi quis dui sit amet tortor interdum accumsan in pharetra mauris. Vestibulum tellus justo, pellentesque nec euismod in, venenatis ac augue. Integer urna dui, ultricies at venenatis eget, sagittis vitae felis. Fusce ut felis eu ante dignissim adipiscing.
+    Nunc tortor dolor, semper ut ullamcorper non, laoreet ut urna. Cras in sollicitudin sem. Mauris tempus viverra nisi eu tincidunt. Integer id auctor lorem, sed ullamcorper leo. Nulla dapibus placerat nisl in sollicitudin. Integer in magna euismod, fermentum quam nec, blandit eros. Donec non nisl quam. Etiam non luctus enim, quis tristique quam. Cras ut tempor nulla.
+    Sed posuere libero purus, id dictum magna varius nec. Pellentesque eu dui faucibus, commodo lectus in, egestas arcu. In semper semper ullamcorper. Duis pretium ultricies enim nec auctor. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse viverra eros massa, non dictum ipsum dapibus eu. Proin iaculis felis sodales, bibendum tortor ut, adipiscing risus. Vivamus in est quis ipsum iaculis accumsan. Cras non risus vel lorem viverra sollicitudin vitae quis urna. Suspendisse nec justo condimentum nulla scelerisque mattis id sit amet elit. Vestibulum tristique dolor erat, vel ullamcorper odio faucibus a. Ut adipiscing lacus ac dolor tristique, commodo vestibulum urna aliquam.
+    Maecenas pretium malesuada velit nec fermentum. Proin metus lacus, eleifend ac ultricies non, scelerisque vel purus. Vestibulum vulputate consequat leo ut scelerisque. Morbi at enim vel massa bibendum porta at et magna. Maecenas eget turpis a urna tincidunt imperdiet vel quis tellus. Aliquam sit amet viverra quam, vitae placerat velit. Integer porttitor suscipit erat quis facilisis. 
+    <script src="assets/js/vendor/jquery.js"></script>
+    <script src="assets/js/foundation.min.js"></script>
     <script>
       $(document).foundation();
+    </script>
+    <script>
+      $("body").click(function() {
+      $(".overlay").toggle(); // show/hide the overlay
+      });
     </script>
   </body>
 </html>

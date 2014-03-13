@@ -63,6 +63,7 @@ class ActiveRecord
 				if(self::exists($primaryKeyValues))
 					$this->new_record = false;
 			} 
+
 		}
 		else
 			$this->find($keys);
@@ -408,7 +409,7 @@ class ActiveRecord
 				{
 					$new_cols[] = $colname;
 					$new_vals[] = $colval;
-				} 
+				}
 			
 			$this->setAttribute("id", $db->insert(self::getTable()->getName(), $new_cols, $new_vals));
 			$this->new_record = false;

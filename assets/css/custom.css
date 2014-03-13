@@ -21,6 +21,7 @@ h1, h2, h3, h4, h5, h6
 	font-size: 0.75rem;
 }
 
+<<<<<<< HEAD
 .browse-list h4
 {
     background: #333;
@@ -35,3 +36,29 @@ h1, h2, h3, h4, h5, h6
     white-space: nowrap;
     overflow: hidden;
 }
+=======
+#content
+{
+    padding: 15px;
+}
+
+.overlay {
+    position:fixed;
+    display:none; 
+
+    /* color with alpha channel */
+
+
+        -webkit-filter: blur(10px);
+    -moz-filter: blur(10px);
+    -o-filter: blur(10px);
+    -ms-filter: blur(10px);
+    filter: blur(10px);
+
+    /* stretch to screen edges */
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+>>>>>>> 5b6d3c4c3c2e845dc03b6e927312ebcce8a1f166

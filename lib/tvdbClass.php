@@ -48,6 +48,7 @@ class TvDB
                 $fileHandler->unzip($id);
                 $fileHandler->loadDataFromFile($id);
             }
+            $fileHandler->deleteTempFiles();
         }
         else echo "No input";
     }
@@ -136,7 +137,7 @@ class TvDB
 }
 
 //$test = new TvDB();
-//$test->getShow(153021);
+//$test->getShow("Vikings");
 //$test->getShowId("True Detective");
 //var_dump(strtotime($test->getPreviousServerTime(70327)));
 //echo date("Y-m-d", $test->getServerTime());

@@ -29,10 +29,28 @@ class FileHandler
 	public function deleteTempFiles()
 	{
 		$files = glob('../temp/*');
+        $dirs = scandir('../temp/');
 		foreach($files as $file)
 		{ 
 			if(is_file($file)) unlink($file);
 		}
+        //var_dump($dirs);
+        foreach($dirs as $dir)
+        {
+            if ($dir !="." AND $dir !="..") // directories '.' and '..'
+            {
+                if(is_dir("../temp/" . $dir))
+                {
+                    $dirFile = glob("../temp/" . $dir . "/*");
+                    foreach($dirFile as $file)
+                    {
+                        if(is_file($file)) unlink($file);
+                    }
+                    rmdir("../temp/" . $dir);
+                }
+            }
+
+        }
 	}
 
     public function loadDataFromFile($showId)
@@ -49,8 +67,8 @@ class FileHandler
         $id = $xml->Series->id;
         $imdb_id = $xml->Series->IMDB_ID;
         $zap2_id = $xml->Series->zap2it_id;
-        $channelId = $xml->Series->NetworkId;
-        $banner_url = $xml->Series->banner;
+        $channelId = $xml->Series->Network;
+        $poster = $xml->Series->poster;
         $pilot_date = $xml->Series->FirstAired;
         $name = $xml->Series->SeriesName;
         $summary = $xml->Series->Overview;
@@ -60,7 +78,7 @@ class FileHandler
         $lst_update = date("Y-m-d", (string)$xml->Series->lastupdated);
         //var_dump($lst_update);
 
-        $attributes = array("id" => $id, "imdb_id" => $imdb_id, "zap2_id" => $zap2_id, "channel_id" => $channelId, "banner_url" => $banner_url, "pilot_date" => $pilot_date, "name" => $name, "summary" => $summary, "lang" => $lang, "rating" => $rating, "lst_update" => $lst_update);
+        $attributes = array("id" => $id, "imdb_id" => $imdb_id, "zap2_id" => $zap2_id, "channel_id" => $channelId, "poster" => $poster, "pilot_date" => $pilot_date, "name" => $name, "summary" => $summary, "lang" => $lang, "rating" => $rating, "lst_update" => $lst_update);
 
         $show = new Show($attributes);
         $show->save();
@@ -102,6 +120,7 @@ class FileHandler
 }
 
 //$test = new FileHandler();
+//$test->deleteTempFiles();
 //$test->unzip('80379');
 //$test->loadDataFromFile(153021);
 //$test->deleteTempFiles();

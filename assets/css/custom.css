@@ -21,17 +21,27 @@ h1, h2, h3, h4, h5, h6
 	font-size: 0.75rem;
 }
 
-.browse-list h4
+#content
 {
-    background: #333;
-    opacity: 0.5;
-    width: 100%;
-    height: 2em;
-    margin-top: -2em;
-    color: white;
-    padding: 5px;
-    padding-left: 10px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
+    padding: 15px;
+}
+
+.overlay {
+    position:fixed;
+    display:none; 
+
+    /* color with alpha channel */
+
+
+        -webkit-filter: blur(10px);
+    -moz-filter: blur(10px);
+    -o-filter: blur(10px);
+    -ms-filter: blur(10px);
+    filter: blur(10px);
+
+    /* stretch to screen edges */
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
 }

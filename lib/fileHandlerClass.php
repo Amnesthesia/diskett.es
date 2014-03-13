@@ -54,9 +54,9 @@ class FileHandler
         //var_dump($lst_update);
 
         $attributes = array("id" => $showId, "imdb_id" => $imdb_id, "zap2_id" => $zap2_id, "banner_url" => $banner_url, "pilot_date" => $pilot_date, "name" => $name, "summary" => $summary, "lang" => $lang, "rating" => $rating, "lst_update" => $lst_update);
+
         $show = new Show($attributes);
-        var_dump($show);
-        //$show->save();
+        $show->save();
 
         /*$show->setAttribute("id", $id);
         $show->setAttribute("imdb_id", $imdb_id);
@@ -73,9 +73,9 @@ class FileHandler
     }
 }
 
-$test = new FileHandler();
+//$test = new FileHandler();
 //$test->unzip('80379');
-$test->loadDataFromFile(80379);
+//$test->loadDataFromFile(80379);
 //$test->deleteTempFiles();
 //$array = array("id"=>)
 //$show = new Show(70327);

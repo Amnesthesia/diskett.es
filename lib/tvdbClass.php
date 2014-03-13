@@ -55,10 +55,14 @@ class TvDB
 		return $mirror;
     }
 	
-	public function getSeriesZip($seriesId)
+	public function getSeriesZip($showId)
     {
-		$url = $this->getMirror() . '/api/' . $this->apiConfig['Api']['Key'] . '/series/' . $seriesId . '/all/en.zip';
-		file_put_contents('../temp/' . $seriesId . '.zip', file_get_contents($url));
+		$url = $this->getMirror() . '/api/' . $this->apiConfig['Api']['Key'] . '/series/' . $showId . '/all/en.zip';
+		file_put_contents('../temp/' . $showId . '.zip', file_get_contents($url));
+
+        //$fileHandler = new FileHandler(); //testing
+        //$fileHandler->unzip($showId);
+        //$fileHandler->loadDataFromFile($showId);
     }
 	
 	public function getUpdate($showId)
@@ -101,7 +105,7 @@ class TvDB
     }
 }
 
-$test = new TvDB();
+//$test = new TvDB();
 
 //var_dump(strtotime($test->getPreviousServerTime(70327)));
 //echo date("Y-m-d", $test->getServerTime());
@@ -111,6 +115,6 @@ $test = new TvDB();
 //$test->getUpdate(70327);
 //var_dump($test->getShowId('The Big Bang Theory'));
 //echo $test->getPreviousServerTime(70327);
-$test->getSeriesZip('80379');
-
+//$test->getSeriesZip(80379);
+//$test->getSeriesZip($test->getShowId("The Walking Dead"));
 ?>

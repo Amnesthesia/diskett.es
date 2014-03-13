@@ -63,6 +63,7 @@ class ActiveRecord
 				if(self::exists($primaryKeyValues))
 					$this->new_record = false;
 			} 
+
 		}
 		else
 			$this->find($keys);
@@ -387,12 +388,11 @@ class ActiveRecord
 		return Table::load(get_called_class());
 	}
 	
-	
 	/**
 	 * Saves the object (or creates new row if no existing ID)
-	 * 
+	 * @deprecated
 	 */
-	public function save()
+	/*public function save()
 	{
 		
 		$db = DatabaseHandler::getInstance();
@@ -409,7 +409,7 @@ class ActiveRecord
 				{
 					$new_cols[] = $colname;
 					$new_vals[] = $colval;
-				} 
+				}
 			
 			$this->setAttribute("id", $db->insert(self::getTable()->getName(), $new_cols, $new_vals));
 			$this->new_record = false;
@@ -463,6 +463,51 @@ class ActiveRecord
 			$db->update($modify);
 		 }
 		}
+	}*/
+	
+	/**
+	 * Saves the object (or creates new row if no existing ID)
+	 * 
+	 */
+	public function save()
+	{
+		
+		$db = DatabaseHandler::getInstance();
+		
+
+		// Find out what columns have values
+		$cols = array();
+		$vals = array();
+		$updateCols = array();
+
+		foreach($this->attributes as $colname => $colval)
+		{
+			// Skip this column if it's "obj_id" -- that column is solely for
+			// relation-purposes :)
+			if($colname == "obj_id")
+				continue;
+
+			$cols[] = $colname;
+			$vals[] = $colval;
+			$updateCols[] = "`".$colname."` = ?";
+		} 
+		
+		 // Now, construct the query ...
+
+		 $query = "INSERT INTO `".self::getTable()->getName()."` (`".implode("`,`", $cols)."`) VALUES (".implode(",",array_fill(0,count($this->attributes)-1,"?")).")";
+		 $query .= " ON DUPLICATE KEY UPDATE ".implode(",",$updateCols);
+			
+		 // Throw all values (all cols and values ... twice) so far into an array ...
+		 $modify = array_merge($vals,$vals);
+
+
+		// Prepend the query to the start of the array
+		array_unshift($modify,$query);
+
+		// ... and execute it!
+		$db->update($modify);
+		 
+		
 	}
 }
 ?>

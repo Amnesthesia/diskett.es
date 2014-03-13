@@ -25,6 +25,33 @@ class TvDB
         $this->apiConfig = Configuration::getInstance()->getConfig('Api');
     }
 
+    public function getShow($id)
+    {
+        if(!$id == null)
+        {
+            $fileHandler = new FileHandler();
+
+            if(is_string($id))
+            {
+                $id = $this->getShowId($id);
+            }
+
+            if(Show::exists($id))
+            {
+                $this->getUpdate($id);
+                $fileHandler->unzip($id);
+                $fileHandler->loadDataFromFile($id);
+            }
+            else
+            {
+                $this->getShowZip($id);
+                $fileHandler->unzip($id);
+                $fileHandler->loadDataFromFile($id);
+            }
+        }
+        else echo "No input";
+    }
+
 	public function getServerTime()
     {
 		$url = 'http://thetvdb.com/api/Updates.php?type=none';
@@ -58,9 +85,9 @@ class TvDB
 
     }
 	
-	public function getSeriesZip($showId)
+	public function getShowZip($showId)
     {
-		$url = $this->getMirror() . '/api/' . $this->apiConfig['Api']['Key'] . '/series/' . $showId . '/all/en.zip';
+		$url = $this->getMirror() . '/api/' . $this->apiConfig['Key'] . '/series/' . $showId . '/all/en.zip';
 		file_put_contents('../temp/' . $showId . '.zip', file_get_contents($url));
 
         //$fileHandler = new FileHandler(); //testing
@@ -78,7 +105,7 @@ class TvDB
 
         if($xpath[0]==$showId)
         {
-            $this->getSeriesZip($showId);
+            $this->getShowZip($showId);
 
             //$this->db->update("UPDATE `show` SET lst_update=?  WHERE id=?", date('Y-m-d', $this->getServerTime()), $showId);
             //$show = new Show(array($showId));
@@ -94,7 +121,7 @@ class TvDB
         }
     }
 
-    public function getShowId($showName)
+    public function getShowId($showName) //Must be spelled correctly with capital letters
     {
         $url = 'http://thetvdb.com/api/GetSeries.php?seriesname=' . urlencode($showName);
 
@@ -109,7 +136,8 @@ class TvDB
 }
 
 //$test = new TvDB();
-
+//$test->getShow("True Detective");
+//$test->getShowId("True Detective");
 //var_dump(strtotime($test->getPreviousServerTime(70327)));
 //echo date("Y-m-d", $test->getServerTime());
 //$test->getMirror();

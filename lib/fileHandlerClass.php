@@ -39,7 +39,8 @@ class FileHandler
     {
         $xmlData = file_get_contents("../temp/" . $showId . "/en.xml");
         $xml = new SimpleXMLElement($xmlData);
-        //$this->loadShowFromFile($xml);
+
+        $this->loadShowFromFile($xml);
         $this->loadEpisodesFromFile($xml);
     }
 
@@ -81,23 +82,28 @@ class FileHandler
     {
         foreach($xml->Episode AS $episode)
         {
-            $episodeId = $episode->id;
             $seriesId = $episode->seriesid;
             $episodeNr = $episode->EpisodeNumber;
             $season = $episode->SeasonNumber;
-            $name = $episode->EpisodeName;
-            $summary = $episode->Overview;
-            $attributes = array("show_id" => $seriesId, "episode_id" => $episodeId, "season" => $season, "episode" => $episodeNr, "name" => $name, "summary" => $summary);
 
-            $episodeObj = new Episode($attributes);
-            $episodeObj->save();
+            if(!Episode::exists(array($seriesId, $season, $episodeNr)))
+            {
+                $episodeId = $episode->id;
+                $name = $episode->EpisodeName;
+                $summary = $episode->Overview;
+                $attributes = array("show_id" => $seriesId, "episode_id" => $episodeId, "season" => $season, "episode" => $episodeNr, "name" => $name, "summary" => $summary);
+
+                $episodeObj = new Episode($attributes);
+                $episodeObj->save();
+            }
+
         }
     }
 }
 
-$test = new FileHandler();
+//$test = new FileHandler();
 //$test->unzip('80379');
-$test->loadDataFromFile(153021);
+//$test->loadDataFromFile(153021);
 //$test->deleteTempFiles();
 //$array = array("id"=>)
 //$show = new Show(70327);

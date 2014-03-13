@@ -119,7 +119,7 @@ class FileHandler
         }
     }
 
-    public function loadImage($filename)
+    private function loadImage($filename)
     {
         // Hash filename
         $hashName = md5($filename);

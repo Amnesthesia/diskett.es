@@ -1,5 +1,9 @@
 <?php
 require_once("table.php");
+
+/**
+** @todo Move definitions of constants to config
+*/
 define("ASC",0);
 define("DESC",1);
 define("DEFAULT_LIST_SIZE", 25);
@@ -27,15 +31,65 @@ class ActiveRecord
 			$this->theoreticalRelationships = $relationships;
 		if(is_array($keys) && count($keys) > 0 && count($keys) !== count(self::getTable()->getPrimaryKeys()))
 		{
-			$this->attributes = $id;
+			$this->attributes = $keys;
 			
-			if(isset($id["id"]) && is_numeric($id) && $id > 0)
-				$this->new_record = false;
+			// Assume this isn't a new record if it was mass-assigned;
+			// but if ANY primary key is missing, set this to be a new record
+			
+			// Actually, don't assume anything because data may be imported and 
+			// primary keys may or may not indicate a new entry. Check for their existence.
+			#$this->new_record = false;
+
+			$primaryKeyQuery = array();
+			$primaryKeyValues = array();
+
+			foreach(self::getTable()->getPrimaryKeys() as $k)
+			{
+				// If the primary key doesn't exist in mass-assignment,
+				// this must be a new record
+				if(!array_key_exists($k,$keys))
+					$this->new_record = true;
+
+				// Otherwise, add it to $primaryKeyValues for double-checking
+				else
+					$primaryKeyValues[] = $keys[$k];
+
+			}
+
+			// If all primary-keys existed and this *supposedly* is an existing
+			// record, confirm it by checking the database for their existence
+			if($this->new_record && count($primaryKeyValues))
+			{
+				if(self::exists($primaryKeyValues))
+					$this->new_record = false;
+			} 
 		}
 		else
 			$this->find($keys);
 	}		
 	
+	/**
+	 * Checks for the existence of a row with specified primary key values in the database
+	 *
+	 * @param mixed $primaryKeyValues
+	 * @return boolean
+	 **/
+	public static function exists($primaryKeyValues = array())
+	{
+		if(empty($primaryKeyValues))
+			return;
+
+		foreach(self::getTable()->getPrimaryKeys() as $k)
+			$primaryKeyQuery[] = $k." = ?";
+
+		$q = "SELECT count(*) as c FROM `".self::getTable()->getName()."` WHERE ".implode(" AND ",$primaryKeyQuery);
+			
+		$result = DatabaseHandler::getInstance()->read($q,$primaryKeyValues);
+
+		if($result[0]["c"] > 0)
+			return true;
+		return false;
+	} 
 	
 	
 	/**
@@ -46,7 +100,7 @@ class ActiveRecord
 	 */
 	public function setAttribute($name, $value, $index = -1)
 	{
-		if(is_array($this->attributes[$name]))
+		if(array_key_exists($name,$this->attributes) && is_array($this->attributes[$name]))
 		{
 			if($index != -1)
 				$this->attributes[$index] = $value;
@@ -139,6 +193,28 @@ class ActiveRecord
 	}
 
 	/**
+	 * Gets child object for objects with one or more "has_many" relationships
+	 * and returns NULL for objects with other relationship types.
+	 *
+	 * @param string $class
+	 * @return class
+	**/
+	public function getChildren($class = NULL)
+	{
+		$children = array();
+		foreach($this->relationships as $r)
+			if($r["type"] == "has_many")
+				if($class == NULL)
+					$children[$r["class"]] = $r["object"];
+				else
+					return $r["object"];
+
+		if(count($children)>0)
+			return $children;
+		return NULL;
+	}
+
+	/**
      * Gets a list of x row-items (as defined by DEFAULT_LIST_SIZE) sorted by $column 
      * starting at $index.
      * Returns an array of primary keys to instantiate objects from.
@@ -213,7 +289,10 @@ class ActiveRecord
 					                               );
 					unset($attr[0]["obj_id"]);
 				}
-				$attr = $attr[0];
+				
+				// If this is an array containing only an array, flatten it a bit
+				if(count($attr) == 1)
+					$attr = $attr[0];
 					
 			  }
 			  else if($relation["relation"] == "has_many")
@@ -239,9 +318,10 @@ class ActiveRecord
 				// Get primary keys for relationship-object
 				$primary_keys = Table::load($relation["subject"])->getPrimaryKeys();
 				
-			  	$query = "SELECT ".implode(",",$keys)." FROM `".Table::load($relation["subject"])->getName()."` WHERE `".self::getTable()->getName()."_id` = ?";
+			  	$query = "SELECT ".implode(",",$primary_keys)." FROM `".Table::load($relation["subject"])->getName()."` WHERE `".self::getTable()->getName()."_id` = ?";
 				
 				$result = $db->read($query, $attr["id"]);
+				
 				
 				$relationship_with = array();
 				
@@ -254,7 +334,7 @@ class ActiveRecord
 				 
 				$class = ucfirst($relation["subject"]);
 				
-
+				if(!empty($result))
 				foreach($result as $row)
 				{
 					$tmp_fields = array();
@@ -270,9 +350,7 @@ class ActiveRecord
 				$this->relationships[] = array("type" => "has_many",
 									  "class" => $class,
 									  "object" => $relationship_with
-									  );
-				
-				
+									  );				
 				
 			  }
 			
@@ -295,7 +373,7 @@ class ActiveRecord
 		}
 		$this->new_record = false;
 		$this->attributes = $attr;
-		
+
 	}
 	
 	

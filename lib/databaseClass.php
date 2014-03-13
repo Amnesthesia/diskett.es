@@ -65,7 +65,7 @@ class DatabaseHandler implements iDatabase
 		else
 			$queryValues .= ':value';
 
-		$insertData = $this->databaseHandler->prepare('INSERT INTO ' . $table . ' ('. $queryFields .') VALUES (' . $queryValues . ')');
+		$insertData = $this->databaseHandler->prepare('INSERT INTO `' . $table . '` ('. $queryFields .') VALUES (' . $queryValues . ')');
 
 
 		if (is_array($values))

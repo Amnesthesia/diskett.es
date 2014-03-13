@@ -103,22 +103,28 @@ class FileHandler
 
     public function loadImage($filename)
     {
-        // Download poster
-        file_put_contents('../media/' . $filename, file_get_contents('http://www.thetvdb.com/banners/' . $filename));
-        
         // Hash filename
-        $hashName = md5_file('../media/' . $filename);
-        
-        // Move to posters folder
-        rename('../media/' . $filename, '../media/posters/' . $hashName . '.jpg');
+        $hashName = md5($filename);
+
+        // Check if file already exists. Don't want to create a new object here, so I can't use ActiveRecord...?
+        $imageHash = DatabaseHandler::getInstance()->read('select count(*) as exist from `show` where poster=?', md5($filename) . '.jpg');
+
+        if (@$imageHash[0]['exist'] == 0)
+        {
+            // Download poster
+            file_put_contents('../media/' . $filename, file_get_contents('http://www.thetvdb.com/banners/' . $filename));
+                
+            // Move to posters folder
+            rename('../media/' . $filename, '../media/posters/' . $hashName . '.jpg');
+        }
 
         // Return new filename
-        return $hashName . '.jpg';
+        return $hashName . '.jpg';   
     }
 }
 
-//$test = new FileHandler();
-//$test->loadImage('posters/153021-8.jpg');
+#$test = new FileHandler();
+#$test->loadImage('posters/153021-8.jpg');
 //$test->unzip('80379');
 //$test->loadDataFromFile(153021);
 //$test->deleteTempFiles();

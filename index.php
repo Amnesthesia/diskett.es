@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Foundation | Welcome</title>
     <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,700" />
-    <link rel="stylesheet" href="assets/css/foundation.css" />
-    <link rel="stylesheet" href="assets/css/custom.css" />
-    <script src="assets/js/vendor/modernizr.js"></script>
+    <link rel="stylesheet" href="/bugfree-shame/assets/css/foundation.css" />
+    <link rel="stylesheet" href="/bugfree-shame/assets/css/custom.css" />
+    <script src="/bugfree-shame/assets/js/vendor/modernizr.js"></script>
     <?php require_once('lib/includeClass.php');?>
   </head>
   <body>
@@ -63,8 +63,8 @@
     <section id="features-hero">
     <?php include("partials/details.php"); ?>
     </section>
-    <script src="js/vendor/jquery.js"></script>
-    <script src="js/foundation.min.js"></script>
+    <script src="/bugfree-shame/assets/js/vendor/jquery.js"></script>
+    <script src="/bugfree-shame/assets/js/foundation.min.js"></script>
     <script>
       $(document).foundation();
     </script>

@@ -38,7 +38,7 @@ class TvDB
 
             if(Show::exists($id))
             {
-                echo "exists";
+                echo "exists"; //test
                 $this->getUpdate($id);
                 $fileHandler->unzip($id);
                 $fileHandler->loadDataFromFile($id);
@@ -137,8 +137,8 @@ class TvDB
     }
 }
 
-$test = new TvDB();
-$test->getShow("Vikings");
+//$test = new TvDB();
+//$test->getShow("True Detective");
 //$test->getShowId("True Detective");
 //var_dump(strtotime($test->getPreviousServerTime(70327)));
 //echo date("Y-m-d", $test->getServerTime());

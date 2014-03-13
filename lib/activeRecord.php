@@ -50,7 +50,7 @@ class ActiveRecord
 	 */
 	public function setAttribute($name, $value, $index = -1)
 	{
-		if(is_array($this->attributes[$name]))
+		if(array_key_exists($name,$this->attributes) && is_array($this->attributes[$name]))
 		{
 			if($index != -1)
 				$this->attributes[$index] = $value;

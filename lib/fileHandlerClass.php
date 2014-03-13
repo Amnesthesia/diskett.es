@@ -3,6 +3,7 @@
 include_once '../lib/activeRecord.php';
 include_once '../lib/showClass.php';
 include_once '../lib/episodeClass.php';
+include_once '../lib/databaseClass.php';
 
 class FileHandler
 {
@@ -50,7 +51,7 @@ class FileHandler
         $imdb_id = $xml->Series->IMDB_ID;
         $zap2_id = $xml->Series->zap2it_id;
         //$channelId = $xml->Series->
-        $banner_url = $xml->Series->banner;
+        $poster = $this->loadImage($xml->Series->poster);
         $pilot_date = $xml->Series->FirstAired;
         $name = $xml->Series->SeriesName;
         //$summary = $xml->Series->Overview;
@@ -60,7 +61,7 @@ class FileHandler
         $lst_update = date("Y-m-d", (string)$xml->Series->lastupdated);
         //var_dump($lst_update);
 
-        $attributes = array("id" => $id, "imdb_id" => $imdb_id, "zap2_id" => $zap2_id, "banner_url" => $banner_url, "pilot_date" => $pilot_date, "name" => $name, "summary" => $summary, "lang" => $lang, "rating" => $rating, "lst_update" => $lst_update);
+        $attributes = array("id" => $id, "imdb_id" => $imdb_id, "zap2_id" => $zap2_id, "poster" => $poster, "pilot_date" => $pilot_date, "name" => $name, "summary" => $summary, "lang" => $lang, "rating" => $rating, "lst_update" => $lst_update);
 
         $show = new Show($attributes);
         $show->save();
@@ -99,9 +100,25 @@ class FileHandler
 
         }
     }
+
+    public function loadImage($filename)
+    {
+        // Download poster
+        file_put_contents('../media/' . $filename, file_get_contents('http://www.thetvdb.com/banners/' . $filename));
+        
+        // Hash filename
+        $hashName = md5_file('../media/' . $filename);
+        
+        // Move to posters folder
+        rename('../media/' . $filename, '../media/posters/' . $hashName . '.jpg');
+
+        // Return new filename
+        return $hashName . '.jpg';
+    }
 }
 
 //$test = new FileHandler();
+//$test->loadImage('posters/153021-8.jpg');
 //$test->unzip('80379');
 //$test->loadDataFromFile(153021);
 //$test->deleteTempFiles();

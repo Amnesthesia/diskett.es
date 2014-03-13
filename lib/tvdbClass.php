@@ -38,6 +38,7 @@ class TvDB
 
             if(Show::exists($id))
             {
+                echo "exists";
                 $this->getUpdate($id);
                 $fileHandler->unzip($id);
                 $fileHandler->loadDataFromFile($id);
@@ -99,7 +100,7 @@ class TvDB
 	public function getUpdate($showId)
     {
         $url = 'http://thetvdb.com/api/Updates.php?type=all&time=' . strtotime($this->getPreviousServerTime($showId));
-
+        echo "update"; //test
         $xmlData = file_get_contents($url);
         $xml = new SimpleXMLElement($xmlData);
         $xpath = $xml->xpath('//Series[contains(.,' . $showId . ')]/text()');
@@ -107,7 +108,7 @@ class TvDB
         if($xpath[0]==$showId)
         {
             $this->getShowZip($showId);
-
+            echo "nyupdate"; //test
             //$this->db->update("UPDATE `show` SET lst_update=?  WHERE id=?", date('Y-m-d', $this->getServerTime()), $showId);
             //$show = new Show(array($showId));
             //$show->setAttribute("lst_update", date('Y-m-d', $this->getServerTime()));
@@ -136,8 +137,8 @@ class TvDB
     }
 }
 
-//$test = new TvDB();
-//$test->getShow("Vikings");
+$test = new TvDB();
+$test->getShow("Vikings");
 //$test->getShowId("True Detective");
 //var_dump(strtotime($test->getPreviousServerTime(70327)));
 //echo date("Y-m-d", $test->getServerTime());

@@ -1,5 +1,9 @@
 <?php
 require_once("table.php");
+
+/**
+** @todo Move definitions of constants to config
+*/
 define("ASC",0);
 define("DESC",1);
 define("DEFAULT_LIST_SIZE", 25);
@@ -31,7 +35,7 @@ class ActiveRecord
 			
 			// Assume this isn't a new record if it was mass-assigned;
 			// but if ANY primary key is missing, set this to be a new record
-			$this->new_record = false;
+			#$this->new_record = false;
 			foreach(self::getTable()->getPrimaryKeys() as $k)
 				if(!array_key_exists($k,$keys))
 					$this->new_record = true;

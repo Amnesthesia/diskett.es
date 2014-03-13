@@ -60,9 +60,9 @@ class TvDB
 		$url = $this->getMirror() . '/api/' . $this->apiConfig['Api']['Key'] . '/series/' . $showId . '/all/en.zip';
 		file_put_contents('../temp/' . $showId . '.zip', file_get_contents($url));
 
-        $fileHandler = new FileHandler();
-        $fileHandler->unzip($showId);
-        $fileHandler->loadDataFromFile($showId);
+        //$fileHandler = new FileHandler(); //testing
+        //$fileHandler->unzip($showId);
+        //$fileHandler->loadDataFromFile($showId);
     }
 	
 	public function getUpdate($showId)

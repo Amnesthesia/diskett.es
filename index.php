@@ -8,10 +8,9 @@
     <link rel="stylesheet" href="assets/css/foundation.css" />
     <link rel="stylesheet" href="assets/css/custom.css" />
     <script src="assets/js/vendor/modernizr.js"></script>
-    <?php require('lib/includeClass.php'); ?>
+    <?php require_once('lib/includeClass.php');?>
   </head>
   <body>
-  <div class="overlay"></div>
   <nav class="top-bar hide-for-small" data-topbar=""> 
     <ul class="title-area"> 
       <li class="name"> 
@@ -58,17 +57,16 @@
     </div>
   </nav>
   <div id="content">
-  <?php IncludePage::view(@$_GET['page']); ?>
+    <?php IncludePage::view(@$_GET['page']); ?>
   </div>
-    <script src="assets/js/vendor/jquery.js"></script>
-    <script src="assets/js/foundation.min.js"></script>
+  </nav>
+    <section id="features-hero">
+    <?php include("partials/details.php"); ?>
+    </section>
+    <script src="js/vendor/jquery.js"></script>
+    <script src="js/foundation.min.js"></script>
     <script>
       $(document).foundation();
-    </script>
-    <script>
-      $("body").click(function() {
-      $(".overlay").toggle(); // show/hide the overlay
-      });
     </script>
   </body>
 </html>

@@ -35,15 +35,61 @@ class ActiveRecord
 			
 			// Assume this isn't a new record if it was mass-assigned;
 			// but if ANY primary key is missing, set this to be a new record
+			
+			// Actually, don't assume anything because data may be imported and 
+			// primary keys may or may not indicate a new entry. Check for their existence.
 			#$this->new_record = false;
+
+			$primaryKeyQuery = array();
+			$primaryKeyValues = array();
+
 			foreach(self::getTable()->getPrimaryKeys() as $k)
+			{
+				// If the primary key doesn't exist in mass-assignment,
+				// this must be a new record
 				if(!array_key_exists($k,$keys))
 					$this->new_record = true;
+
+				// Otherwise, add it to $primaryKeyValues for double-checking
+				else
+					$primaryKeyValues[] = $keys[$k];
+
+			}
+
+			// If all primary-keys existed and this *supposedly* is an existing
+			// record, confirm it by checking the database for their existence
+			if($this->new_record && count($primaryKeyValues))
+			{
+				if(self::exists($primaryKeyValues))
+					$this->new_record = false;
+			} 
 		}
 		else
 			$this->find($keys);
 	}		
 	
+	/**
+	 * Checks for the existence of a row with specified primary key values in the database
+	 *
+	 * @param mixed $primaryKeyValues
+	 * @return boolean
+	 **/
+	public static function exists($primaryKeyValues = array())
+	{
+		if(empty($primaryKeyValues))
+			return;
+
+		foreach(self::getTable()->getPrimaryKeys() as $k)
+			$primaryKeyQuery[] = $k." = ?";
+
+		$q = "SELECT count(*) as c FROM `".self::getTable()->getName()."` WHERE ".implode(" AND ",$primaryKeyQuery);
+			
+		$result = DatabaseHandler::getInstance()->read($q,$primaryKeyValues);
+
+		if($result[0]["c"] > 0)
+			return true;
+		return false;
+	} 
 	
 	
 	/**

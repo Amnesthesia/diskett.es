@@ -1,5 +1,5 @@
 <?php
-	require_once("/lib/showClass.php");
+	require_once(PATH."/lib/showClass.php");
 
 	// ?p is pagination-multiplier. 1 means second page, i.e 1*DEFAULT_LIST_SIZE, etc
 	if(isset($_GET["p"]))

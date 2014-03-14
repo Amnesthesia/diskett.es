@@ -31,7 +31,6 @@ class ActiveRecord
 			$this->theoreticalRelationships = $relationships;
 		if(is_array($keys) && count($keys) > 0 && count($keys) !== count(self::getTable()->getPrimaryKeys()))
 		{
-<<<<<<< HEAD
 			$this->attributes = $keys;
 			
 			// Assume this isn't a new record if it was mass-assigned;
@@ -64,11 +63,7 @@ class ActiveRecord
 				if(self::exists($primaryKeyValues))
 					$this->new_record = false;
 			} 
-=======
-			$this->attributes = $id;
-			if(isset($id["id"]) && is_numeric($id) && $id > 0)
-				$this->new_record = false;
->>>>>>> 5b6d3c4c3c2e845dc03b6e927312ebcce8a1f166
+
 		}
 		else
 			$this->find($keys);
@@ -393,12 +388,11 @@ class ActiveRecord
 		return Table::load(get_called_class());
 	}
 	
-	
 	/**
 	 * Saves the object (or creates new row if no existing ID)
-	 * 
+	 * @deprecated
 	 */
-	public function save()
+	/*public function save()
 	{
 		
 		$db = DatabaseHandler::getInstance();
@@ -469,6 +463,51 @@ class ActiveRecord
 			$db->update($modify);
 		 }
 		}
+	}*/
+	
+	/**
+	 * Saves the object (or creates new row if no existing ID)
+	 * 
+	 */
+	public function save()
+	{
+		
+		$db = DatabaseHandler::getInstance();
+		
+
+		// Find out what columns have values
+		$cols = array();
+		$vals = array();
+		$updateCols = array();
+
+		foreach($this->attributes as $colname => $colval)
+		{
+			// Skip this column if it's "obj_id" -- that column is solely for
+			// relation-purposes :)
+			if($colname == "obj_id")
+				continue;
+
+			$cols[] = $colname;
+			$vals[] = $colval;
+			$updateCols[] = "`".$colname."` = ?";
+		} 
+		
+		 // Now, construct the query ...
+
+		 $query = "INSERT INTO `".self::getTable()->getName()."` (`".implode("`,`", $cols)."`) VALUES (".implode(",",array_fill(0,count($this->attributes),"?")).")"; // Removed -1, do we need this?
+		 $query .= " ON DUPLICATE KEY UPDATE ".implode(",",$updateCols);
+			
+		 // Throw all values (all cols and values ... twice) so far into an array ...
+		 $modify = array_merge($vals,$vals);
+
+
+		// Prepend the query to the start of the array
+		array_unshift($modify,$query);
+
+		// ... and execute it!
+		$db->update($modify);
+		 
+		
 	}
 }
 ?>

@@ -300,9 +300,5 @@
 				if($id != NULL)
 					$this->setAttribute("id", $id);
 			}
-		   
-		   
-		   
-		
     }
 ?>

@@ -40,6 +40,11 @@ h1, h2, h3, h4, h5, h6
     width: 15em;
 }
 
+@media (max-width: 960px) { 
+    .browse-item { width:100%; }
+    .browse-item a img {width: 100%;}
+}
+
 .row
 {
     max-width: 62.5rem;
@@ -473,6 +478,10 @@ span.loginreg
   color: #113849;
   font-weight: bold;
   letter-spacing: 2px;
+}
+nav.top-bar
+{
+    min-width: 735px;   
 }
 
 .top-bar input 

@@ -1,12 +1,10 @@
 <?php
-//require_once "../lib/configurationClass.php";
 require_once PATH . './lib/activeRecord.php';
 require_once PATH . './lib/showClass.php';
 require_once PATH . './lib/fileHandlerClass.php';
 
 class TvDB
 {
-	//private $mirror = 'http://thetvdb.com'; //test variable
     private $apiConfig = array();
 
     /**
@@ -75,13 +73,9 @@ class TvDB
      */
 	public function getPreviousServerTime($showId)
     {
-		//$query = 'SELECT `lst_update` FROM `show` WHERE `id` =' .  $showId;
-        //$serverTime = $this->db->read($query);
-
         $show = new Show(array($showId));
         $serverTime = $show->getAttribute("lst_update");        //gets attribute from database
 
-        //return $serverTime[0]['lst_update'];
         return $serverTime;
     }
 
@@ -107,10 +101,6 @@ class TvDB
     {
 		$url = $this->getMirror() . '/api/' . $this->apiConfig['Key'] . '/series/' . $showId . '/all/en.zip';
 		file_put_contents(PATH . '/temp/' . $showId . '.zip', file_get_contents($url));
-
-        //$fileHandler = new FileHandler(); //testing
-        //$fileHandler->unzip($showId);
-        //$fileHandler->loadDataFromFile($showId);
     }
 
     /**
@@ -181,7 +171,7 @@ class TvDB
         $xmlData = file_get_contents($url);
 
         $xml = new SimpleXMLElement($xmlData);
-        $xpath = $xml->xpath("//Series[SeriesName[contains(translate(.,'ABCDEFGHJIKLMNOPQRSTUVWXYZ','abcdefghjiklmnopqrstuvwxyz'), translate('" . urlencode($showName) . "','ABCDEFGHJIKLMNOPQRSTUVWXYZ','abcdefghjiklmnopqrstuvwxyz'))]]/seriesid"); //case-insensitive input for xpath
+        $xpath = $xml->xpath("//Series[SeriesName[contains(translate(.,'ABCDEFGHJIKLMNOPQRSTUVWXYZ','abcdefghjiklmnopqrstuvwxyz'), translate('" . $showName . "','ABCDEFGHJIKLMNOPQRSTUVWXYZ','abcdefghjiklmnopqrstuvwxyz'))]]/seriesid"); //case-insensitive input for xpath
 
         if(isset($xpath[0]))
         {
@@ -194,6 +184,7 @@ class TvDB
 
     }
 }
+<<<<<<< HEAD
 
 //$test = new TvDB();
 //$test->getShow(73787);
@@ -209,4 +200,6 @@ class TvDB
 //echo $test->getPreviousServerTime(70327);
 //$test->getSeriesZip(80379);
 //$test->getSeriesZip($test->getShowId("The Walking Dead"));
+=======
+>>>>>>> 8b1faba87b83c5cd178c4f3e5dc9720c6c85e7b8
 ?>

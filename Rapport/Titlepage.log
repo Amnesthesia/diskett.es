@@ -1,7 +1,7 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2013.9.22)  15 FEB 2014 14:11
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2013.9.22)  14 MAR 2014 10:17
 entering extended mode
-**C:/Users/Halvtho/Documents/GitHub/bugfree-shame/Rapport/Titlepage.tex
-(C:/Users/Halvtho/Documents/GitHub/bugfree-shame/Rapport/Titlepage.tex
+**C:/xampp/htdocs/bugfree-shame/Rapport/Titlepage.tex
+(C:/xampp/htdocs/bugfree-shame/Rapport/Titlepage.tex
 LaTeX2e <2011/06/27>
 Babel <v3.8m> and hyphenation patterns for english, afrikaans, ancientgreek, ar
 abic, armenian, assamese, basque, bengali, bokmal, bulgarian, catalan, coptic, 
@@ -35,10 +35,10 @@ or  <return>  to continue without it.
  
 Here is how much of TeX's memory you used:
  9 strings out of 493921
- 414 string characters out of 3147276
+ 360 string characters out of 3147276
  49031 words of memory out of 3000000
  3401 multiletter control sequences out of 15000+200000
  3640 words of font info for 14 fonts, out of 3000000 for 9000
  841 hyphenation exceptions out of 8191
- 5i,0n,4p,162b,16s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 5i,0n,4p,144b,16s stack positions out of 5000i,500n,10000p,200000b,50000s
 !  ==> Fatal error occurred, no output PDF file produced!

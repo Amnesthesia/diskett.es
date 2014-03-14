@@ -80,34 +80,29 @@
 
   <!-- For small screens -->
   <nav class="top-bar show-for-small-only" data-topbar=""> 
-    <ul class="title-area" style="width: 300px;"> 
+    <ul class="title-area" style="width: 100%"> 
       <li class="name"> 
         <h1 ><a href="?">EpisodeGuide</a></h1>
       </li>
-      <li class="toggle-topbar menu-icon"><a href="#">Menu</a></li> 
-    </ul>
-  <section class="top-bar-section"> 
-  <!-- Right Nav Section --> 
-  <ul class="right"> 
-    <li class="has-form"> 
-      <div class="row collapse"> 
-        <div class="small-5 columns">
-          <form method="get" action="">
-            <input type="hidden" name="page" value="search" /> 
-            <input type="text" name="searchquery" placeholder="Search shows"> 
-        </div> 
-            <div class="small-3 columns">
+      <li class="has-form"> 
+        <div class="row collapse"> 
+          <div class="small-5 columns">
+            <form method="get" action="">
+              <input type="hidden" name="page" value="search" /> 
+              <input type="text" name="searchquery" placeholder="Search shows"> 
+          </div> 
+          <div class="small-3 columns">
             <input type="submit" value="Search" class="alert button expand">
-          </form>
+            </form>
+          </div>
         </div>
-      </div>
-    </li>
+      </li>
     
-    <li class="has-form">
-      <?php echo (User::isLoggedIn() == true) ? '<a href="#" id="reg" class="small button">Account</a>' : '<a href="#" id="reg" class="small button">Login</a>'; ?>
-    </li>
-  </ul>
-  </section>
+      <li class="has-form">
+        <?php echo (User::isLoggedIn() == true) ? '<a href="#" id="reg" class="small button">Account</a>' : '<a href="#" id="reg" class="small button">Login</a>'; ?>
+      </li> 
+    </ul>
+
   </nav>
   <div id="content">
     <?php IncludePage::view(@$_GET['page']); ?>

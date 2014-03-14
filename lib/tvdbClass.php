@@ -1,12 +1,10 @@
 <?php
-//require_once "../lib/configurationClass.php";
 require_once PATH . './lib/activeRecord.php';
 require_once PATH . './lib/showClass.php';
 require_once PATH . './lib/fileHandlerClass.php';
 
 class TvDB
 {
-	//private $mirror = 'http://thetvdb.com'; //test variable
     private $apiConfig = array();
 
     /**
@@ -75,13 +73,9 @@ class TvDB
      */
 	public function getPreviousServerTime($showId)
     {
-		//$query = 'SELECT `lst_update` FROM `show` WHERE `id` =' .  $showId;
-        //$serverTime = $this->db->read($query);
-
         $show = new Show(array($showId));
         $serverTime = $show->getAttribute("lst_update");        //gets attribute from database
 
-        //return $serverTime[0]['lst_update'];
         return $serverTime;
     }
 
@@ -107,10 +101,6 @@ class TvDB
     {
 		$url = $this->getMirror() . '/api/' . $this->apiConfig['Key'] . '/series/' . $showId . '/all/en.zip';
 		file_put_contents(PATH . '/temp/' . $showId . '.zip', file_get_contents($url));
-
-        //$fileHandler = new FileHandler(); //testing
-        //$fileHandler->unzip($showId);
-        //$fileHandler->loadDataFromFile($showId);
     }
 
     /**
@@ -194,19 +184,4 @@ class TvDB
 
     }
 }
-
-//$test = new TvDB();
-//$test->getShow("That '70s Show");
-//$test->getShow("Lone Target");
-//$test->getShowId("true detective");
-//var_dump(strtotime($test->getPreviousServerTime(70327)));
-//echo date("Y-m-d", $test->getServerTime());
-//$test->getMirror();
-//$test->getServerTime();
-//$test->getServerTime();
-//$test->getUpdate(70327);
-//var_dump($test->getShowId('The Big Bang Theory'));
-//echo $test->getPreviousServerTime(70327);
-//$test->getSeriesZip(80379);
-//$test->getSeriesZip($test->getShowId("The Walking Dead"));
 ?>

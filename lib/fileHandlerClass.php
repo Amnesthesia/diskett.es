@@ -65,7 +65,6 @@ class FileHandler
 		{ 
 			if(is_file($file)) unlink($file);
 		}
-        //var_dump($dirs);
         foreach($dirs as $dir)          //runs through all directories in directory
         {
             if ($dir !="." AND $dir !="..") // directories '.' and '..'
@@ -114,28 +113,15 @@ class FileHandler
         $pilot_date = trim($xml->Series->FirstAired);
         $name = trim($xml->Series->SeriesName);
         $summary = trim($xml->Series->Overview);
-        //$summary = "random text";
         $lang = trim($xml->Series->Language);
         $rating = trim($xml->Series->Rating);
         $lst_update = trim(date("Y-m-d", (string)$xml->Series->lastupdated)); //reads and convert value to right format
-        //var_dump($lst_update);
 
         $attributes = array("id" => $id, "imdb_id" => $imdb_id, "zap2_id" => $zap2_id, "channel_id" => $channelId, "poster" => $poster, "pilot_date" => $pilot_date, "name" => $name, "summary" => $summary, "lang" => $lang, "rating" => $rating, "lst_update" => $lst_update);
 
         $show = new Show($attributes);  //creates show object filled with all info and saves to database
         $show->save();
 
-        /*$show->setAttribute("id", $id);
-        $show->setAttribute("imdb_id", $imdb_id);
-        $show->setAttribute("zap2_id", $zap2_id);
-        $show->setAttribute("banner_url", $banner_url);
-        $show->setAttribute("pilot_date", $pilot_date);
-        $show->setAttribute("name", $name);
-        $show->setAttribute("summary", $summary);
-        $show->setAttribute("lang", $lang);
-        $show->setAttribute("rating", $rating);
-        $show->setAttribute("lst_update", $lst_update);
-        $show->save();*/
     }
 
     /**
@@ -188,8 +174,6 @@ class FileHandler
             // Move to posters folder
             rename(PATH . '/media/' . $filename, PATH . '/media/posters/' . $hashName . '.jpg');
         }
-
-        // Return new filename
         return $hashName . '.jpg';   
     }
 }

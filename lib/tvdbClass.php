@@ -141,21 +141,17 @@ class TvDB
                     return true;                            //return true that update took place
                 }
                 else
-                {
-                    echo "No new updates the past week";
-
                     return false;                           //no new updates
-                }
 
             }
         }
         if($found == false)                                 //if file not found, download from scratch and run function again
         {
             $fileHandler = new FileHandler();
+
             $url = $this->getMirror() . '/api/' . $this->apiConfig['Key'] . '/updates/updates_week.zip';
             file_put_contents(PATH . '/updates/updates_week.zip', file_get_contents($url));
             $fileHandler->unzip("updates_week.zip");
-            //last ned ny update
             $this->getUpdate($showId);                      //runs the getUpdate again after getting updates
         }
     }
@@ -174,32 +170,8 @@ class TvDB
         $xpath = $xml->xpath("//Series[SeriesName[contains(translate(.,'ABCDEFGHJIKLMNOPQRSTUVWXYZ','abcdefghjiklmnopqrstuvwxyz'), translate('" . $showName . "','ABCDEFGHJIKLMNOPQRSTUVWXYZ','abcdefghjiklmnopqrstuvwxyz'))]]/seriesid"); //case-insensitive input for xpath
 
         if(isset($xpath[0]))
-        {
             return $xpath[0];                       //element with the ID
-        }
         else
-        {
             echo "Could not find Tv-show";
-        }
-
     }
 }
-<<<<<<< HEAD
-
-//$test = new TvDB();
-//$test->getShow(73787);
-//$test->getShow("Lone Target");
-//$test->getShowId("true detective");
-//var_dump(strtotime($test->getPreviousServerTime(70327)));
-//echo date("Y-m-d", $test->getServerTime());
-//$test->getMirror();
-//$test->getServerTime();
-//$test->getServerTime();
-//$test->getUpdate(70327);
-//var_dump($test->getShowId('The Big Bang Theory'));
-//echo $test->getPreviousServerTime(70327);
-//$test->getSeriesZip(80379);
-//$test->getSeriesZip($test->getShowId("The Walking Dead"));
-=======
->>>>>>> 8b1faba87b83c5cd178c4f3e5dc9720c6c85e7b8
-?>

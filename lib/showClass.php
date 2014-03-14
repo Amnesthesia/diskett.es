@@ -272,8 +272,7 @@
 				else
 					$this->setAttribute("actors", $actor);
 			}
-		   }
-		   
+		}
 		   
 		   /**
 		    * Mutator for _last_update
@@ -301,9 +300,5 @@
 				if($id != NULL)
 					$this->setAttribute("id", $id);
 			}
-		   
-		   
-		   
-		
     }
 ?>

@@ -70,9 +70,4 @@ class Table
 	{
 		return $this->columns;
 	}
-	
-    
-    	
 }
-
-?>

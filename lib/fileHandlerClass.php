@@ -8,23 +8,45 @@ include_once '../lib/databaseClass.php';
 class FileHandler
 {
 
-	public function unzip($zipFile) //navn på zip.fil (seriesId)
+	public function unzip($zipFile) //navn på zip.fil (seriesId) eller update zip (navn)
 	{
-		$file = '../temp/' . $zipFile . '.zip';
-		$path = '../temp/' . $zipFile;
+        if(is_int($zipFile))
+        {
+            $file = '../temp/' . $zipFile . '.zip';
+            $path = '../temp/' . $zipFile;
 
-		$zip = new ZipArchive;
-		$res = $zip->open($file);
-		
-		if ($res === TRUE) 
-		{
-			$zip->extractTo($path);
-			$zip->close();
-		} 
-		else 
-		{
-			echo "Couldn't open $file";
-		}
+            $zip = new ZipArchive;
+            $res = $zip->open($file);
+
+            if ($res === TRUE)
+            {
+                $zip->extractTo($path);
+                $zip->close();
+            }
+            else
+            {
+                echo "Couldn't open $file";
+            }
+        }
+        if(is_string($zipFile))
+        {
+            $file = '../updates/' . $zipFile;
+            $path = '../updates/';
+
+            $zip = new ZipArchive;
+            $res = $zip->open($file);
+
+            if ($res === TRUE)
+            {
+                $zip->extractTo($path);
+                $zip->close();
+            }
+            else
+            {
+                echo "Couldn't open $file";
+            }
+        }
+
 	}
 	
 	public function deleteTempFiles()

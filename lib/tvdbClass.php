@@ -1,5 +1,4 @@
 <?php
-#require_once './lib/configurationClass.php';
 require_once PATH . './lib/activeRecord.php';
 require_once PATH . './lib/showClass.php';
 require_once PATH . './lib/fileHandlerClass.php';
@@ -127,9 +126,12 @@ class TvDB
                 $found = true;                      //found the file
                 $xmlData = file_get_contents(PATH . "/updates/updates_week.xml");
                 $xml = new SimpleXMLElement($xmlData);
-                $xpath = $xml->xpath('//Data/@time');   //Time of when the file was last updated
+                $xpathT = $xml->xpath('//Data/@time');   //Time of when the file was last updated
 
-                if(!(time()-(60*60*24*7)) < $xpath[0])              //checks if file older then 7days
+                $show = new Show(array($showId));
+                $serverTime = strtotime($show->getAttribute("lst_update"));        //gets attribute from database
+
+                if(!(time()-(60*60*24*7)) < $xpathT[0])              //checks if file older then 7days
                 {
                     $fileHandler = new FileHandler();
                     $url = $this->getMirror() . '/api/' . $this->apiConfig['Key']  . '/updates/updates_week.zip';
@@ -139,7 +141,7 @@ class TvDB
 
                 $xpath = $xml->xpath('//Series/id[contains(.,' . $showId . ')]/text()'); //finds element of show
 
-                if(isset($xpath[0]) AND $xpath[0] == $showId)       //if element found and is right get zip with info
+                if(isset($xpath[0]) AND $xpath[0] == $showId AND (time() - $serverTime) > (60*60*24*6)) //if element found and is right get zip with info and 6days have passed since last update
                 {
                     $this->getShowZip($showId);
                     return true;                            //return true that update took place

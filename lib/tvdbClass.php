@@ -1,5 +1,4 @@
 <?php
-#require_once '../lib/configurationClass.php';
 require_once PATH . './lib/activeRecord.php';
 require_once PATH . './lib/showClass.php';
 require_once PATH . './lib/fileHandlerClass.php';

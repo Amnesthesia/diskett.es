@@ -145,7 +145,7 @@
     </script>
     <script>
       $(document).on('keydown', function (e) {
-          if ( e.keyCode === 27 ) { // ESC
+          if (e.keyCode === 27) { // ESC
             $('.overlay').hide();
             $('#wrapper').hide();
       } });

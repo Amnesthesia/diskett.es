@@ -29,9 +29,7 @@
 			<div class="row">
 				<div class="large-8 columns">
 					<div class="progress">
-						<span class="meter" style="width: <?php echo $show->getAttribute("rating")*10; ?>%;">
-							
-						</span>
+						<span class="meter" style="width: <?php echo $show->getAttribute("rating")*10; ?>%;"><?php echo round($show->getAttribute("rating"), 2); ?></span> <!-- Find a better way to display rating -->
 
 					</div>
 				</div>

@@ -159,8 +159,8 @@ class TvDB
     }
 }
 
-//$test = new TvDB();
-//$test->getShow("The Big Bang Theory");
+$test = new TvDB();
+$test->getShow("True Detective");
 //$test->getShow("Lone Target");
 //$test->getShowId("True Detective");
 //var_dump(strtotime($test->getPreviousServerTime(70327)));

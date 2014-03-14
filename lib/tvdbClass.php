@@ -1,16 +1,8 @@
 <?php
-
-
-/*function __autoload($class_name)
-{
-    include_once '../lib/' . $class_name . '.php';
-}*/
-
-//include_once '../lib/databaseClass.php';
-require_once '../lib/activeRecord.php';
-require_once '../lib/showClass.php';
-require_once '../lib/fileHandlerClass.php';
-require_once '../lib/configurationClass.php';
+#require_once './lib/configurationClass.php';
+require_once './lib/activeRecord.php';
+require_once './lib/showClass.php';
+require_once './lib/fileHandlerClass.php';
 
 class TvDB
 {

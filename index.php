@@ -30,8 +30,9 @@
 <li class="has-form"> 
 <div class="row collapse"> 
 <div class="large-8 small-9 columns">
-<form method="get" action="?page=test">
-<input type="text" placeholder="Search shows"> 
+<form method="get" action="">
+<input type="hidden" name="page" value="search" /> 
+<input type="text" name="searchquery" placeholder="Search shows"> 
 </div> 
 <div class="large-4 small-3 columns">
 <input type="submit" value="Search" class="alert button expand">

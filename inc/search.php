@@ -1,5 +1,2 @@
 <?php
-
-$q = $_GET['searchquery'];
-
-echo $q;
+require(PATH . '/lib/tvdbClass.php');

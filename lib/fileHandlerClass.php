@@ -8,6 +8,11 @@ include_once '../lib/databaseClass.php';
 class FileHandler
 {
 
+    /**
+     * Unzips the given file based on input
+     *
+     * @param integer $zipFile 	name of the zipfile to unzip
+     */
 	public function unzip($zipFile) //navn på zip.fil (seriesId) eller update zip (navn)
 	{
         if(is_int($zipFile))
@@ -48,7 +53,10 @@ class FileHandler
         }
 
 	}
-	
+
+    /**
+     * Deletes all files in temp folder
+     */
 	public function deleteTempFiles()
 	{
 		$files = glob('../temp/*');
@@ -76,6 +84,12 @@ class FileHandler
         }
 	}
 
+    /**
+     * Initiates the right functions to load info from
+     * downloaded xml files
+     *
+     * @param integer $showId	ID of the show to load info to
+     */
     public function loadDataFromFile($showId)
     {
         $xmlData = file_get_contents("../temp/" . $showId . "/en.xml");
@@ -85,6 +99,11 @@ class FileHandler
         $this->loadEpisodesFromFile($xml);
     }
 
+    /**
+     * Loads all info about a given show and saves to database
+     *
+     * @param integer $xml	xml document with all info about the show
+     */
     public function loadShowFromFile($xml)
     {
         $id = trim($xml->Series->id);
@@ -119,6 +138,11 @@ class FileHandler
         $show->save();*/
     }
 
+    /**
+     * Loads all info about a given show and saves to database
+     *
+     * @param integer $xml	xml document with all info about the episode
+     */
     public function loadEpisodesFromFile($xml)
     {
         foreach($xml->Episode AS $episode)

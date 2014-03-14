@@ -15,16 +15,21 @@ include_once '../lib/configurationClass.php';
 class TvDB
 {
 	//private $mirror = 'http://thetvdb.com'; //test variable
-    private $db;
     private $apiConfig = array();
 
+    /**
+     * Create object and initiate config variables
+     */
     public function __construct()
     {
-        //$this->db = DatabaseHandler::getInstance();
-        //$this->apiConfig = parse_ini_file('../config/config.php', true);
         $this->apiConfig = Configuration::getInstance()->getConfig('Api');
     }
 
+    /**
+     * Executes functions to get to get shows from tvdb and into the database based on show id
+     *
+     * @param integer $id 	ID to what show to initiate
+     */
     public function getShow($id)
     {
         if(!$id == null)
@@ -55,6 +60,9 @@ class TvDB
         else echo "No input";
     }
 
+    /**
+     * Gets the Unix-timespamp from tvdb server
+     */
 	public function getServerTime()
     {
 		$url = 'http://thetvdb.com/api/Updates.php?type=none';
@@ -64,7 +72,12 @@ class TvDB
 
 		return $serverTime;
     }
-	
+
+    /**
+     * Gets the the timestamp stored in the database
+     *
+     * @param integer $showId 	ID to the show to get timestamp from
+     */
 	public function getPreviousServerTime($showId)
     {
 		//$query = 'SELECT `lst_update` FROM `show` WHERE `id` =' .  $showId;
@@ -76,7 +89,10 @@ class TvDB
         //return $serverTime[0]['lst_update'];
         return $serverTime;
     }
-	
+
+    /**
+     * Gets the current mirror from tvdb
+     */
 	public function getMirror()
     {
 		$url = 'http://thetvdb.com/api/' . $this->apiConfig['Key'] . '/mirrors.xml';
@@ -86,7 +102,12 @@ class TvDB
 
 		return $mirror;
     }
-	
+
+    /**
+     * Downloads the zip with all the show info
+     *
+     * @param integer $showId 	ID to the show to download
+     */
 	public function getShowZip($showId)
     {
 		$url = $this->getMirror() . '/api/' . $this->apiConfig['Key'] . '/series/' . $showId . '/all/en.zip';
@@ -96,7 +117,13 @@ class TvDB
         //$fileHandler->unzip($showId);
         //$fileHandler->loadDataFromFile($showId);
     }
-	
+
+    /**
+     * If show already exists, checks if any new updates the past 7days.
+     * Downloads updates if there are any.
+     *
+     * @param integer $showId 	ID to the show to update
+     */
 	public function getUpdate($showId)
     {
         $files = scandir('../updates/');
@@ -145,6 +172,11 @@ class TvDB
         }
     }
 
+    /**
+     * Gets the ID for a show, based on its name
+     *
+     * @param integer $showName 	Exact name of show to get ID
+     */
     public function getShowId($showName) //Must be spelled correctly with capital letters
     {
         $url = 'http://thetvdb.com/api/GetSeries.php?seriesname=' . urlencode($showName);
@@ -160,7 +192,7 @@ class TvDB
 }
 
 //$test = new TvDB();
-//$test->getShow("The Big Bang Theory");
+//$test->getShow("Vikings");
 //$test->getShow("Lone Target");
 //$test->getShowId("True Detective");
 //var_dump(strtotime($test->getPreviousServerTime(70327)));

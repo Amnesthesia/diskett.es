@@ -5,7 +5,6 @@ require_once PATH . './lib/fileHandlerClass.php';
 
 class TvDB
 {
-	//private $mirror = 'http://thetvdb.com'; //test variable
     private $apiConfig = array();
 
     /**
@@ -42,9 +41,12 @@ class TvDB
             }
             else                                        //if not exists, get all show info
             {
-                $this->getShowZip($id);
-                $fileHandler->unzip($id);
-                $fileHandler->loadDataFromFile($id);
+                if($id != 0)
+                {
+                    $this->getShowZip($id);
+                    $fileHandler->unzip($id);
+                    $fileHandler->loadDataFromFile($id);
+                }
             }
             $fileHandler->deleteTempFiles();
         }
@@ -71,13 +73,9 @@ class TvDB
      */
 	public function getPreviousServerTime($showId)
     {
-		//$query = 'SELECT `lst_update` FROM `show` WHERE `id` =' .  $showId;
-        //$serverTime = $this->db->read($query);
-
         $show = new Show(array($showId));
         $serverTime = $show->getAttribute("lst_update");        //gets attribute from database
 
-        //return $serverTime[0]['lst_update'];
         return $serverTime;
     }
 
@@ -103,10 +101,6 @@ class TvDB
     {
 		$url = $this->getMirror() . '/api/' . $this->apiConfig['Key'] . '/series/' . $showId . '/all/en.zip';
 		file_put_contents(PATH . '/temp/' . $showId . '.zip', file_get_contents($url));
-
-        //$fileHandler = new FileHandler(); //testing
-        //$fileHandler->unzip($showId);
-        //$fileHandler->loadDataFromFile($showId);
     }
 
     /**
@@ -179,23 +173,15 @@ class TvDB
         $xml = new SimpleXMLElement($xmlData);
         $xpath = $xml->xpath("//Series[SeriesName[contains(translate(.,'ABCDEFGHJIKLMNOPQRSTUVWXYZ','abcdefghjiklmnopqrstuvwxyz'), translate('" . $showName . "','ABCDEFGHJIKLMNOPQRSTUVWXYZ','abcdefghjiklmnopqrstuvwxyz'))]]/seriesid"); //case-insensitive input for xpath
 
-        return $xpath[0];                       //element with the ID
+        if(isset($xpath[0]))
+        {
+            return $xpath[0];                       //element with the ID
+        }
+        else
+        {
+            echo "Could not find Tv-show";
+        }
 
     }
 }
-
-//$test = new TvDB();
-//$test->getShow("Vikings");
-//$test->getShow("Lone Target");
-//$test->getShowId("true detective");
-//var_dump(strtotime($test->getPreviousServerTime(70327)));
-//echo date("Y-m-d", $test->getServerTime());
-//$test->getMirror();
-//$test->getServerTime();
-//$test->getServerTime();
-//$test->getUpdate(70327);
-//var_dump($test->getShowId('The Big Bang Theory'));
-//echo $test->getPreviousServerTime(70327);
-//$test->getSeriesZip(80379);
-//$test->getSeriesZip($test->getShowId("The Walking Dead"));
 ?>

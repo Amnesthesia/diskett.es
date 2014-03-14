@@ -26,6 +26,7 @@
   <section class="top-bar-section"> 
   <!-- Right Nav Section --> 
   <ul class="right"> 
+
     <li class="divider"></li>
     <li class="has-dropdown not-click">
       <a class="" href="#">Test</a>
@@ -146,6 +147,9 @@ if (isset($_POST['login']) || isset($_POST['register']))
   {
     $user = DatabaseHandler::getInstance()->readToClass('SELECT * FROM user WHERE email=?', $_POST['email'], 'User');
     $user[0]->login($_POST['password']);
+
+    // TODO: Make sure a user is logged in before redirect
+    header('Location: ?');
   }
   else // Register new user - TODO: Check if user already exist and catch exception
   {

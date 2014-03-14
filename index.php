@@ -1,4 +1,5 @@
 <!doctype html>
+<?php require_once("lib/configurationClass.php");?>
 <?php session_start(); ob_start(); ?>
 <html class="no-js" lang="en">
   <head>
@@ -6,13 +7,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Foundation | Welcome</title>
     <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,700" />
-    <link rel="stylesheet" href="/bugfree-shame/assets/css/foundation.css" />
-    <link rel="stylesheet" href="/bugfree-shame/assets/css/custom.css" />
-    <link rel="stylesheet" type="text/css" href="/bugfree-shame/assets/css/animate-custom.css" />
-    <script src="/bugfree-shame/assets/js/vendor/modernizr.js"></script>
+    <link rel="stylesheet" href="assets/css/foundation.css" />
+    <link rel="stylesheet" href="assets/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="<?php echo PATH; ?>assets/css/animate-custom.css" />
+    <script src="assets/js/vendor/modernizr.js"></script>
     <script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
-    <?php require_once('lib/includeClass.php');?>
-    <?php require_once('lib/userClass.php'); ?>
+    <?php require_once(PATH.'lib/includeClass.php');?>
+    <?php require_once(PATH.'lib/userClass.php'); ?>
   </head>
   <body>
 <div class="overlay"></div>

@@ -1,5 +1,6 @@
 <?php
     require_once("activeRecord.php");
+    require_once("episodeClass.php");
 	
 	
     class Show extends ActiveRecord 

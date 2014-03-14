@@ -1,6 +1,6 @@
 <?php
-	require_once("lib/showClass.php");
-	require_once("lib/episodeClass.php");
+	require_once(PATH."/lib/showClass.php");
+	require_once(PATH."/lib/episodeClass.php");
 
 	// ?p is pagination-multiplier. 1 means second page, i.e 1*DEFAULT_LIST_SIZE, etc
 	if(isset($_GET["p"]))
@@ -54,7 +54,7 @@
 		<div class="large-12 columns">
 			<table class="episode-table">
 				<tr>
-					<th>Date</th>
+					<th width="140">Date</th>
 					<th>Season</th>
 					<th>Episode</th>
 					<th width="250">Title</th>

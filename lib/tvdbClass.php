@@ -196,7 +196,7 @@ class TvDB
 }
 
 //$test = new TvDB();
-//$test->getShow("That '70s Show");
+//$test->getShow(73787);
 //$test->getShow("Lone Target");
 //$test->getShowId("true detective");
 //var_dump(strtotime($test->getPreviousServerTime(70327)));

@@ -28,7 +28,7 @@
 	?>
 
 	<div class="small-3 columns browse-list">
-		<a href="#" title="<?php echo $item->getAttribute("name"); ?>">
+		<a href="?page=details&amp;id=<?php echo $item->getAttribute("id");?>" title="<?php echo $item->getAttribute("name"); ?>">
 			<img src="media/posters/<?php echo strstr($item->getAttribute("poster"),".jpg") ? $item->getAttribute("poster") : 'assets/img/placeholder.jpg'; ?>" />
 		</a>
 		<a href="#" title="<?php echo $item->getAttribute("name"); ?>">

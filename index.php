@@ -80,7 +80,7 @@
 
   <!-- For small screens -->
   <nav class="top-bar show-for-small-only" data-topbar=""> 
-    <ul class="title-area" style="width: 150px;"> 
+    <ul class="title-area" style="width: 300px;"> 
       <li class="name"> 
         <h1 ><a href="?">EpisodeGuide</a></h1>
       </li>

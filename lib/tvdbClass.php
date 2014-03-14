@@ -33,12 +33,11 @@ class TvDB
 
             if(is_string($id))
             {
-                $id = $this->getShowId($id);
+                $id = (int)$this->getShowId($id);
             }
 
             if(Show::exists(array($id)))
             {
-                echo "hei";
                 if($this->getUpdate($id))
                 {
                     $fileHandler->unzip($id);
@@ -86,7 +85,6 @@ class TvDB
 		$mirror = $xml->Mirror->mirrorpath;
 
 		return $mirror;
-
     }
 	
 	public function getShowZip($showId)
@@ -101,27 +99,19 @@ class TvDB
 	
 	public function getUpdate($showId)
     {
-        /*
-        $url = 'http://thetvdb.com/api/Updates.php?type=all&time=' . strtotime($this->getPreviousServerTime($showId));
-        $xmlData = file_get_contents($url);
-        $xml = new SimpleXMLElement($xmlData);
-        $xpath = $xml->xpath('//Series[contains(.,' . $showId . ')]/text()');
-        */
         $files = scandir('../updates/');
+        $found = false;                      //found updates_week.xml?
         foreach($files as $file)
         {
-            echo " på";
             if($file == "updates_week.xml")
             {
+                $found = true;
                 $xmlData = file_get_contents("../updates/updates_week.xml");
                 $xml = new SimpleXMLElement($xmlData);
                 $xpath = $xml->xpath('//Data/@time');
-                echo " deg";
-                if(!(time()-(60*60*24*7)) < $xpath[0])
-                {
-                    echo " din";
-                    $xpath = $xml->xpath('//Data/@time');
 
+                if(!(time()-(60*60*24*7)) < $xpath[0])              //checks if file older then 7days
+                {
                     $fileHandler = new FileHandler();
                     $url = $this->getMirror() . '/api/' . $this->apiConfig['Key'] . '/updates/updates_week.zip';
                     file_put_contents('../updates/updates_week.zip', file_get_contents($url));
@@ -129,67 +119,30 @@ class TvDB
                 }
 
                 $xpath = $xml->xpath('//Series/id[contains(.,' . $showId . ')]/text()');
-                var_dump($xpath);
-                if($xpath[0]==$showId)
-                {
-                    echo " sokk";
-                    $this->getShowZip($showId);
 
+                if(isset($xpath[0]) AND $xpath[0] == $showId)
+                {
+                    $this->getShowZip($showId);
                     return true;
                 }
                 else
                 {
-                    echo "No new updates the last week";
-                }
-                /*if(!((time()-(60*60*24*7)) < $xpath[0])) //checks if file older then 7days
-                {
-                    $xpath = $xml->xpath('//Series/id[contains(.,' . $showId . ')]/text()');
-                    if($xpath[0]==$showId)
-                    {
-                        $this->getShowZip($showId);
+                    echo "No new updates the past week";
 
-                        return true;
-                    }
-                    else
-                    {
-                        echo "No new updates the last week";
-                    }
+                    return false;
                 }
-                else
-                {
-                    $fileHandler = new FileHandler();
-                    $url = $this->getMirror() . '/api/' . $this->apiConfig['Key'] . '/updates/updates_week.zip';
-                    file_put_contents('../updates/updates_week.zip', file_get_contents($url));
-                    $fileHandler->unzip("updates_week.zip");
-                    //last ned ny update
-                }*/
-            }
-            else
-            {
-                $fileHandler = new FileHandler();
-                $url = $this->getMirror() . '/api/' . $this->apiConfig['Key'] . '/updates/updates_week.zip';
-                file_put_contents('../updates/updates_week.zip', file_get_contents($url));
-                $fileHandler->unzip("updates_week.zip");
-                //last ned ny update
+
             }
         }
-
-        /*if($xpath[0]==$showId)
+        if($found == false)
         {
-            $this->getShowZip($showId);
-            //$this->db->update("UPDATE `show` SET lst_update=?  WHERE id=?", date('Y-m-d', $this->getServerTime()), $showId);
-            //$show = new Show(array($showId));
-            //$show->setAttribute("lst_update", date('Y-m-d', $this->getServerTime()));
-            //$show->save();
-            //$r = FileHandlerClass::unzip($showId); //test var
-            return true;
-
+            $fileHandler = new FileHandler();
+            $url = $this->getMirror() . '/api/' . $this->apiConfig['Key'] . '/updates/updates_week.zip';
+            file_put_contents('../updates/updates_week.zip', file_get_contents($url));
+            $fileHandler->unzip("updates_week.zip");
+            //last ned ny update
+            $this->getUpdate($showId);                      //runs the getUpdate again after getting updates
         }
-        else
-        {
-            echo 'No new episodes since last update';
-            return false;
-        }*/
     }
 
     public function getShowId($showName) //Must be spelled correctly with capital letters
@@ -208,7 +161,7 @@ class TvDB
 
 $test = new TvDB();
 
-$test->getShow(278524);
+$test->getShow("Lone Target");
 //$test->getShowId("True Detective");
 //var_dump(strtotime($test->getPreviousServerTime(70327)));
 //echo date("Y-m-d", $test->getServerTime());

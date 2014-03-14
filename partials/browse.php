@@ -8,8 +8,6 @@
 		$pagination = 0;
 
 	$showList = Show::getList($pagination);
-
-	// Add one empty row because I'm too lazy to add padding to the CSS, deal with it
 ?>
 	<div class="row">
 

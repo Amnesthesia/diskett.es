@@ -57,11 +57,10 @@
     </li>
   </ul>
   </section>
-    </div>
   </nav>
   <div id="content">
     <?php IncludePage::view(@$_GET['page']); ?>
-    <div id="container" >
+    <div id="container">
     <!-- hidden anchor to stop jump  -->
       <a class="hiddenanchor" id="toregister"></a>
       <a class="hiddenanchor" id="tologin"></a>
@@ -116,9 +115,8 @@
           </form>
         </div>
     </div>
-</div> 
-  </div>
-  </nav>
+    </div>
+    </div>
     <script src="/bugfree-shame/assets/js/vendor/jquery.js"></script>
     <script src="/bugfree-shame/assets/js/foundation.min.js"></script>
     <script>
@@ -128,16 +126,15 @@
       $(document).ready(function(){
         $('#reg').click(function(e) {
         $('.overlay').show();
-        $('#login').css('display','block');
-        $('#register').css('display','block');
+        $('#wrapper').show();
+        $('html, body').animate({ scrollTop: $('#wrapper').offset().top }, 'slow');
       }); });
     </script>
     <script>
       $(document).on('keydown', function (e) {
           if ( e.keyCode === 27 ) { // ESC
-            $('#login').hide();
-            $('#register').hide();
             $('.overlay').hide();
+            $('#wrapper').hide();
       } });
     </script>
   </body>

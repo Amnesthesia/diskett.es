@@ -106,6 +106,7 @@ a.hiddenanchor{
   margin: 0px auto; 
   width: 500px;
   position: relative; 
+    display: none;
 }
 /**** Styling the form elements **/
 
@@ -378,7 +379,7 @@ p.change_link{
 }
 #login{
   z-index: 22;
-  display: none;
+
 }
 #toregister:target ~ #wrapper #register,
 #tologin:target ~ #wrapper #login{

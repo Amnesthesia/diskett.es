@@ -22,7 +22,7 @@
 	$imageFile = (file_exists('media/posters/' . $item->getAttribute("poster")) ? 'media/posters/' . $item->getAttribute("poster") : 'assets/img/placeholder.png');	
 	?>
 
-	<div class="small-3 columns browse-list">
+	<div class="small-3 columns browse-list browse-item">
 		<a href="?page=details&amp;id=<?php echo $item->getAttribute("id");?>" title="<?php echo $item->getAttribute("name"); ?>">
 			<img src="<?php echo $imageFile ?>" alt="<?php echo $imageFile ?>" />
 		</a>

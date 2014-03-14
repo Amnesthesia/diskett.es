@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<Data time="1394780401"><Series><id>70327</id><time>1394699216</time></Series>
+<Data time="1394781001"><Series><id>70327</id><time>1394699216</time></Series>
 <Series><id>70328</id><time>1394593910</time></Series>
 <Series><id>70340</id><time>1394381447</time></Series>
 <Series><id>70365</id><time>1394728494</time></Series>
@@ -164,7 +164,7 @@
 <Series><id>73247</id><time>1394744575</time></Series>
 <Series><id>73255</id><time>1394699185</time></Series>
 <Series><id>73266</id><time>1394778637</time></Series>
-<Series><id>73267</id><time>1394780649</time></Series>
+<Series><id>73267</id><time>1394781166</time></Series>
 <Series><id>73274</id><time>1394589757</time></Series>
 <Series><id>73282</id><time>1394242502</time></Series>
 <Series><id>73287</id><time>1394267484</time></Series>
@@ -787,7 +787,7 @@
 <Series><id>83231</id><time>1394399938</time></Series>
 <Series><id>83237</id><time>1394476486</time></Series>
 <Series><id>83267</id><time>1394418638</time></Series>
-<Series><id>83268</id><time>1394755365</time></Series>
+<Series><id>83268</id><time>1394781091</time></Series>
 <Series><id>83269</id><time>1394371428</time></Series>
 <Series><id>202241</id><time>1394378056</time></Series>
 <Series><id>83317</id><time>1394737424</time></Series>
@@ -1010,7 +1010,7 @@
 <Series><id>182461</id><time>1394541483</time></Series>
 <Series><id>132591</id><time>1394766602</time></Series>
 <Series><id>134231</id><time>1394292792</time></Series>
-<Series><id>134241</id><time>1394716734</time></Series>
+<Series><id>134241</id><time>1394780810</time></Series>
 <Series><id>134511</id><time>1394499286</time></Series>
 <Series><id>262380</id><time>1394743842</time></Series>
 <Series><id>135171</id><time>1394701256</time></Series>
@@ -1298,7 +1298,7 @@
 <Series><id>248736</id><time>1394751109</time></Series>
 <Series><id>248741</id><time>1394760798</time></Series>
 <Series><id>248742</id><time>1394778975</time></Series>
-<Series><id>248783</id><time>1394780656</time></Series>
+<Series><id>248783</id><time>1394781236</time></Series>
 <Series><id>248799</id><time>1394254427</time></Series>
 <Series><id>248812</id><time>1394618026</time></Series>
 <Series><id>248813</id><time>1394617979</time></Series>
@@ -1797,7 +1797,7 @@
 <Series><id>270110</id><time>1394479809</time></Series>
 <Series><id>271085</id><time>1394241582</time></Series>
 <Series><id>270267</id><time>1394435249</time></Series>
-<Series><id>270261</id><time>1394758081</time></Series>
+<Series><id>270261</id><time>1394781173</time></Series>
 <Series><id>270262</id><time>1394687543</time></Series>
 <Series><id>270376</id><time>1394615953</time></Series>
 <Series><id>270403</id><time>1394379932</time></Series>
@@ -2017,7 +2017,7 @@
 <Series><id>276438</id><time>1394698877</time></Series>
 <Series><id>279412</id><time>1394448881</time></Series>
 <Series><id>276469</id><time>1394395823</time></Series>
-<Series><id>276478</id><time>1394780657</time></Series>
+<Series><id>276478</id><time>1394780861</time></Series>
 <Series><id>276525</id><time>1394399553</time></Series>
 <Series><id>276536</id><time>1394766774</time></Series>
 <Series><id>276543</id><time>1394741688</time></Series>
@@ -3505,6 +3505,7 @@
 <Episode><id>4493552</id><Series>242871</Series><time>1394624933</time></Episode>
 <Episode><id>4493553</id><Series>242871</Series><time>1394625037</time></Episode>
 <Episode><id>4493554</id><Series>242871</Series><time>1394625164</time></Episode>
+<Episode><id>4494765</id><Series>134241</Series><time>1394780544</time></Episode>
 <Episode><id>4496086</id><Series>149671</Series><time>1394676002</time></Episode>
 <Episode><id>4497510</id><Series>266080</Series><time>1394753600</time></Episode>
 <Episode><id>4497511</id><Series>266080</Series><time>1394756287</time></Episode>
@@ -3712,10 +3713,6 @@
 <Episode><id>4822664</id><Series>265599</Series><time>1394541771</time></Episode>
 <Episode><id>4822665</id><Series>272041</Series><time>1394541602</time></Episode>
 <Episode><id>4822666</id><Series>272041</Series><time>1394541591</time></Episode>
-<Episode><id>4824392</id><Series>279504</Series><time>1394704045</time></Episode>
-<Episode><id>4824393</id><Series>279504</Series><time>1394704072</time></Episode>
-<Episode><id>4824394</id><Series>279504</Series><time>1394704103</time></Episode>
-<Episode><id>4824395</id><Series>279504</Series><time>1394704177</time></Episode>
 <Episode><id>4822667</id><Series>275658</Series><time>1394542019</time></Episode>
 <Episode><id>4822657</id><Series>175221</Series><time>1394541924</time></Episode>
 <Episode><id>4822658</id><Series>175221</Series><time>1394541938</time></Episode>
@@ -3799,7 +3796,6 @@
 <Episode><id>4822583</id><Series>277223</Series><time>1394533618</time></Episode>
 <Episode><id>4822582</id><Series>255101</Series><time>1394533332</time></Episode>
 <Episode><id>4822556</id><Series>252528</Series><time>1394522595</time></Episode>
-<Episode><id>4822555</id><Series>278776</Series><time>1394521760</time></Episode>
 <Episode><id>4512933</id><Series>262938</Series><time>1394713239</time></Episode>
 <Episode><id>4512936</id><Series>262938</Series><time>1394538022</time></Episode>
 <Episode><id>4513145</id><Series>149671</Series><time>1394675988</time></Episode>
@@ -3825,7 +3821,6 @@
 <Episode><id>4561081</id><Series>82280</Series><time>1394632840</time></Episode>
 <Episode><id>4823768</id><Series>279485</Series><time>1394633709</time></Episode>
 <Episode><id>4823769</id><Series>279485</Series><time>1394633716</time></Episode>
-<Episode><id>4824391</id><Series>279504</Series><time>1394704018</time></Episode>
 <Episode><id>4823770</id><Series>279485</Series><time>1394633825</time></Episode>
 <Episode><id>4534813</id><Series>255046</Series><time>1394750002</time></Episode>
 <Episode><id>4516866</id><Series>248741</Series><time>1394736313</time></Episode>
@@ -5289,7 +5284,6 @@
 <Episode><id>4821409</id><Series>279407</Series><time>1394661501</time></Episode>
 <Episode><id>4821542</id><Series>274337</Series><time>1394626317</time></Episode>
 <Episode><id>4821619</id><Series>82148</Series><time>1394545217</time></Episode>
-<Episode><id>4822554</id><Series>271557</Series><time>1394521658</time></Episode>
 <Episode><id>4821896</id><Series>279293</Series><time>1394643565</time></Episode>
 <Episode><id>4821913</id><Series>83196</Series><time>1394723618</time></Episode>
 <Episode><id>4823558</id><Series>279473</Series><time>1394616320</time></Episode>
@@ -6664,107 +6658,13 @@
 <Episode><id>4824330</id><Series>279443</Series><time>1394700125</time></Episode>
 <Episode><id>4824331</id><Series>279443</Series><time>1394700138</time></Episode>
 <Episode><id>4824332</id><Series>279443</Series><time>1394700157</time></Episode>
-<Episode><id>4824333</id><Series>279487</Series><time>1394700776</time></Episode>
-<Episode><id>4824334</id><Series>279487</Series><time>1394700787</time></Episode>
-<Episode><id>4824335</id><Series>274623</Series><time>1394700951</time></Episode>
-<Episode><id>4824336</id><Series>274623</Series><time>1394700959</time></Episode>
-<Episode><id>4824337</id><Series>274623</Series><time>1394700966</time></Episode>
-<Episode><id>4824338</id><Series>274623</Series><time>1394700971</time></Episode>
-<Episode><id>4824339</id><Series>274623</Series><time>1394700976</time></Episode>
-<Episode><id>4824340</id><Series>274623</Series><time>1394700983</time></Episode>
-<Episode><id>4824341</id><Series>274623</Series><time>1394700988</time></Episode>
-<Episode><id>4824342</id><Series>274623</Series><time>1394700993</time></Episode>
-<Episode><id>4824343</id><Series>274623</Series><time>1394701000</time></Episode>
-<Episode><id>4824344</id><Series>274623</Series><time>1394701012</time></Episode>
-<Episode><id>4824345</id><Series>274623</Series><time>1394701038</time></Episode>
-<Episode><id>4824346</id><Series>274623</Series><time>1394701045</time></Episode>
-<Episode><id>4824347</id><Series>274623</Series><time>1394701051</time></Episode>
-<Episode><id>4824348</id><Series>274623</Series><time>1394701057</time></Episode>
-<Episode><id>4824349</id><Series>274623</Series><time>1394701062</time></Episode>
-<Episode><id>4824350</id><Series>274623</Series><time>1394701070</time></Episode>
-<Episode><id>4824351</id><Series>274623</Series><time>1394701076</time></Episode>
-<Episode><id>4824352</id><Series>274623</Series><time>1394701087</time></Episode>
-<Episode><id>4824353</id><Series>274623</Series><time>1394701100</time></Episode>
-<Episode><id>4824354</id><Series>274623</Series><time>1394701105</time></Episode>
-<Episode><id>4824355</id><Series>274623</Series><time>1394701111</time></Episode>
-<Episode><id>4824356</id><Series>274623</Series><time>1394701130</time></Episode>
-<Episode><id>4824357</id><Series>274623</Series><time>1394701149</time></Episode>
-<Episode><id>4824358</id><Series>274623</Series><time>1394701153</time></Episode>
-<Episode><id>4824359</id><Series>274623</Series><time>1394701289</time></Episode>
-<Episode><id>4824360</id><Series>274623</Series><time>1394701298</time></Episode>
-<Episode><id>4824361</id><Series>274623</Series><time>1394701307</time></Episode>
-<Episode><id>4824362</id><Series>274623</Series><time>1394701311</time></Episode>
-<Episode><id>4824363</id><Series>274623</Series><time>1394701317</time></Episode>
-<Episode><id>4824364</id><Series>274623</Series><time>1394701323</time></Episode>
-<Episode><id>4824365</id><Series>274623</Series><time>1394701331</time></Episode>
-<Episode><id>4824366</id><Series>274623</Series><time>1394701340</time></Episode>
-<Episode><id>4824367</id><Series>274623</Series><time>1394701349</time></Episode>
-<Episode><id>4824368</id><Series>274623</Series><time>1394701432</time></Episode>
-<Episode><id>4824369</id><Series>274623</Series><time>1394701440</time></Episode>
-<Episode><id>4824370</id><Series>274623</Series><time>1394701445</time></Episode>
-<Episode><id>4824371</id><Series>274623</Series><time>1394701452</time></Episode>
-<Episode><id>4824372</id><Series>274623</Series><time>1394701459</time></Episode>
-<Episode><id>4824373</id><Series>274623</Series><time>1394701465</time></Episode>
-<Episode><id>4824374</id><Series>274623</Series><time>1394701475</time></Episode>
-<Episode><id>4824375</id><Series>274623</Series><time>1394701484</time></Episode>
-<Episode><id>4824376</id><Series>274623</Series><time>1394701494</time></Episode>
-<Episode><id>4824377</id><Series>274623</Series><time>1394701504</time></Episode>
-<Episode><id>4824378</id><Series>274623</Series><time>1394701512</time></Episode>
-<Episode><id>4824379</id><Series>274623</Series><time>1394701521</time></Episode>
 <Episode><id>4824380</id><Series>278423</Series><time>1394702046</time></Episode>
-<Episode><id>4824381</id><Series>279504</Series><time>1394703707</time></Episode>
-<Episode><id>4824382</id><Series>279504</Series><time>1394703780</time></Episode>
-<Episode><id>4824383</id><Series>279504</Series><time>1394703838</time></Episode>
-<Episode><id>4824384</id><Series>279504</Series><time>1394703900</time></Episode>
 <Episode><id>4824385</id><Series>75669</Series><time>1394704163</time></Episode>
 <Episode><id>4824386</id><Series>75669</Series><time>1394704177</time></Episode>
 <Episode><id>4824387</id><Series>75669</Series><time>1394704188</time></Episode>
-<Episode><id>4824388</id><Series>279504</Series><time>1394703934</time></Episode>
 <Episode><id>4824389</id><Series>75669</Series><time>1394704201</time></Episode>
-<Episode><id>4824390</id><Series>279504</Series><time>1394703959</time></Episode>
-<Episode><id>4824396</id><Series>279504</Series><time>1394704200</time></Episode>
-<Episode><id>4824397</id><Series>279504</Series><time>1394704232</time></Episode>
-<Episode><id>4824398</id><Series>279504</Series><time>1394704262</time></Episode>
-<Episode><id>4824399</id><Series>279504</Series><time>1394704289</time></Episode>
-<Episode><id>4824400</id><Series>279504</Series><time>1394704328</time></Episode>
-<Episode><id>4824401</id><Series>279504</Series><time>1394704385</time></Episode>
-<Episode><id>4824402</id><Series>279504</Series><time>1394704413</time></Episode>
-<Episode><id>4824403</id><Series>279504</Series><time>1394704446</time></Episode>
-<Episode><id>4824404</id><Series>279504</Series><time>1394704490</time></Episode>
-<Episode><id>4824405</id><Series>279504</Series><time>1394704521</time></Episode>
-<Episode><id>4824406</id><Series>279504</Series><time>1394704558</time></Episode>
-<Episode><id>4824407</id><Series>279504</Series><time>1394704582</time></Episode>
-<Episode><id>4824408</id><Series>279504</Series><time>1394704606</time></Episode>
-<Episode><id>4824409</id><Series>279504</Series><time>1394704774</time></Episode>
-<Episode><id>4824410</id><Series>279504</Series><time>1394704813</time></Episode>
-<Episode><id>4824411</id><Series>279504</Series><time>1394704848</time></Episode>
-<Episode><id>4824412</id><Series>279504</Series><time>1394704895</time></Episode>
-<Episode><id>4824413</id><Series>279504</Series><time>1394704925</time></Episode>
-<Episode><id>4824414</id><Series>279504</Series><time>1394704964</time></Episode>
-<Episode><id>4824415</id><Series>279504</Series><time>1394705003</time></Episode>
-<Episode><id>4824416</id><Series>279504</Series><time>1394705025</time></Episode>
-<Episode><id>4824417</id><Series>279504</Series><time>1394705066</time></Episode>
-<Episode><id>4824418</id><Series>279504</Series><time>1394705087</time></Episode>
-<Episode><id>4824419</id><Series>279504</Series><time>1394705110</time></Episode>
-<Episode><id>4824420</id><Series>279504</Series><time>1394705135</time></Episode>
-<Episode><id>4824421</id><Series>279504</Series><time>1394705166</time></Episode>
-<Episode><id>4824422</id><Series>279504</Series><time>1394705184</time></Episode>
-<Episode><id>4824423</id><Series>279504</Series><time>1394705216</time></Episode>
-<Episode><id>4824424</id><Series>279504</Series><time>1394705260</time></Episode>
-<Episode><id>4824425</id><Series>279504</Series><time>1394705290</time></Episode>
-<Episode><id>4824426</id><Series>279504</Series><time>1394705330</time></Episode>
 <Episode><id>4824427</id><Series>193941</Series><time>1394705611</time></Episode>
-<Episode><id>4824428</id><Series>279504</Series><time>1394705359</time></Episode>
-<Episode><id>4824429</id><Series>279504</Series><time>1394705384</time></Episode>
-<Episode><id>4824430</id><Series>279504</Series><time>1394705406</time></Episode>
-<Episode><id>4824431</id><Series>279504</Series><time>1394705435</time></Episode>
-<Episode><id>4824432</id><Series>279504</Series><time>1394705458</time></Episode>
-<Episode><id>4824433</id><Series>279504</Series><time>1394705485</time></Episode>
-<Episode><id>4824434</id><Series>279504</Series><time>1394705509</time></Episode>
-<Episode><id>4824435</id><Series>279504</Series><time>1394705538</time></Episode>
-<Episode><id>4824436</id><Series>279504</Series><time>1394705575</time></Episode>
-<Episode><id>4824437</id><Series>279504</Series><time>1394705603</time></Episode>
-<Episode><id>4824438</id><Series>279504</Series><time>1394705655</time></Episode>
+<Episode><id>4825359</id><Series>73267</Series><time>1394781165</time></Episode>
 <Episode><id>4824439</id><Series>279505</Series><time>1394707731</time></Episode>
 <Episode><id>4824440</id><Series>279506</Series><time>1394708108</time></Episode>
 <Episode><id>4824441</id><Series>279506</Series><time>1394708115</time></Episode>
@@ -7668,8 +7568,10 @@
 <Episode><id>4825352</id><Series>276478</Series><time>1394780334</time></Episode>
 <Episode><id>4825353</id><Series>276478</Series><time>1394780362</time></Episode>
 <Episode><id>4825354</id><Series>276478</Series><time>1394780370</time></Episode>
-<Episode><id>4825355</id><Series>73267</Series><time>1394780649</time></Episode>
+<Episode><id>4825355</id><Series>73267</Series><time>1394780890</time></Episode>
 <Episode><id>4825356</id><Series>276478</Series><time>1394780400</time></Episode>
+<Episode><id>4825357</id><Series>276478</Series><time>1394780599</time></Episode>
+<Episode><id>4825358</id><Series>276478</Series><time>1394780604</time></Episode>
 <Banner>
   <Series>70522</Series>
   <format>1920x1080</format>
@@ -8044,23 +7946,6 @@
   <language>en</language>
   <path>graphical/264450-g.jpg</path>
   <time>1394225307</time>
-  <type>series</type>
-</Banner>
-<Banner>
-  <SeasonNum>2</SeasonNum>
-  <Series>225661</Series>
-  <format>wide</format>
-  <language>it</language>
-  <path>seasonswide/225661-2.jpg</path>
-  <time>1394176101</time>
-  <type>season</type>
-</Banner>
-<Banner>
-  <Series>128051</Series>
-  <format>graphical</format>
-  <language>en</language>
-  <path>graphical/128051-g2.jpg</path>
-  <time>1394176198</time>
   <type>series</type>
 </Banner>
 <Banner>
@@ -14946,6 +14831,20 @@
   <format>680x1000</format>
   <path>posters/276262-1.jpg</path>
   <time>1394780164</time>
+  <type>poster</type>
+</Banner>
+<Banner>
+  <Series>270261</Series>
+  <format>680x1000</format>
+  <path>posters/270261-4.jpg</path>
+  <time>1394780864</time>
+  <type>poster</type>
+</Banner>
+<Banner>
+  <Series>270261</Series>
+  <format>680x1000</format>
+  <path>posters/270261-5.jpg</path>
+  <time>1394780915</time>
   <type>poster</type>
 </Banner>
 </Data>

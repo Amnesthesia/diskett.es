@@ -78,11 +78,11 @@
   </section>
   </nav>
 
-
+  <!-- For small screens -->
   <nav class="top-bar show-for-small-only" data-topbar=""> 
-    <ul class="title-area"> 
+    <ul class="title-area" style="width: 150px;"> 
       <li class="name"> 
-        <h1><a href="?">[Logo]</a></h1>
+        <h1 ><a href="?">EpisodeGuide</a></h1>
       </li>
       <li class="toggle-topbar menu-icon"><a href="#">Menu</a></li> 
     </ul>
@@ -91,12 +91,12 @@
   <ul class="right"> 
     <li class="has-form"> 
       <div class="row collapse"> 
-        <div class="large-4 small-5 columns">
+        <div class="small-5 columns">
           <form method="get" action="">
             <input type="hidden" name="page" value="search" /> 
             <input type="text" name="searchquery" placeholder="Search shows"> 
         </div> 
-            <div class="large-4 small-3 columns">
+            <div class="small-3 columns">
             <input type="submit" value="Search" class="alert button expand">
           </form>
         </div>

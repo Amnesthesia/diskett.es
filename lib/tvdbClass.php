@@ -1,5 +1,5 @@
 <?php
-require_once '../lib/configurationClass.php';
+#require_once '../lib/configurationClass.php';
 require_once PATH . './lib/activeRecord.php';
 require_once PATH . './lib/showClass.php';
 require_once PATH . './lib/fileHandlerClass.php';
@@ -185,8 +185,8 @@ class TvDB
     }
 }
 
-$test = new TvDB();
-$test->getShow("Vikings");
+//$test = new TvDB();
+//$test->getShow("Vikings");
 //$test->getShow("Lone Target");
 //$test->getShowId("true detective");
 //var_dump(strtotime($test->getPreviousServerTime(70327)));

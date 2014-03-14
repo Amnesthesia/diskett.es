@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.3-1.40.12 (MiKTeX 2.9) (preloaded format=pdflatex 2012.2.1)  14 MAR 2014 11:06
+This is pdfTeX, Version 3.1415926-2.3-1.40.12 (MiKTeX 2.9) (preloaded format=pdflatex 2012.2.1)  14 MAR 2014 11:15
 entering extended mode
 **C:/www/htdocs/bugfree-shame/Rapport/Report.tex
 (C:/www/htdocs/bugfree-shame/Rapport/Report.tex
@@ -280,7 +280,7 @@ Package: ltxcmds 2011/04/18 v1.20 LaTeX kernel commands for general use (HO)
 \Gin@req@width=\dimen104
 )
 (C:\www\htdocs\bugfree-shame\Rapport\Report.aux
-(C:\www\htdocs\bugfree-shame\Rapport\Database.aux)
+(C:\www\htdocs\bugfree-shame\Rapport\database.aux)
 (C:\www\htdocs\bugfree-shame\Rapport\Workload.aux))
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 7.
 LaTeX Font Info:    ... okay on input line 7.
@@ -351,7 +351,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 39--42
 
  []
 
-[2] (C:\www\htdocs\bugfree-shame\Rapport\Database.tex [3
+[2] (C:\www\htdocs\bugfree-shame\Rapport\database.tex [3
 
 ]
 Overfull \hbox (86.88144pt too wide) in paragraph at lines 37--38
@@ -363,50 +363,49 @@ mary,lang,rating,lst[]update)
 File: erd.png Graphic file (type png)
  <use erd.png>
 Package pdftex.def Info: erd.png used on input line 66.
-(pdftex.def)             Requested size: 1365.09668pt x 1766.5957pt.
+(pdftex.def)             Requested size: 532.38687pt x 688.97124pt.
 
-Overfull \hbox (975.09668pt too wide) in paragraph at lines 66--67
+Overfull \hbox (142.38687pt too wide) in paragraph at lines 66--67
 [] 
  []
 
 [4]
-Overfull \vbox (1218.0957pt too high) has occurred while \output is active []
+Overfull \vbox (140.47124pt too high) has occurred while \output is active []
 
 
-[5 <C:/www/htdocs/bugfree-shame/Rapport/erd.png>]) [6] [7
-
-]
+[5 <C:/www/htdocs/bugfree-shame/Rapport/erd.png>]) [6]
 (C:\www\htdocs\bugfree-shame\Rapport\Workload.tex
-Underfull \hbox (badness 10000) in paragraph at lines 2--4
+Underfull \hbox (badness 10000) in paragraph at lines 3--5
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 19--20
+Underfull \hbox (badness 10000) in paragraph at lines 20--21
 
  []
 
-[8
+[7
+
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 21--22
+Underfull \hbox (badness 10000) in paragraph at lines 22--23
 
  []
 
 )
-Overfull \hbox (11.25183pt too wide) in paragraph at lines 23--47
+Overfull \hbox (11.25183pt too wide) in paragraph at lines 24--46
 [][] 
  []
 
-[9] [10
+[8] [9
 
 ] (C:\www\htdocs\bugfree-shame\Rapport\Report.aux
-(C:\www\htdocs\bugfree-shame\Rapport\Database.aux)
+(C:\www\htdocs\bugfree-shame\Rapport\database.aux)
 (C:\www\htdocs\bugfree-shame\Rapport\Workload.aux)) ) 
 Here is how much of TeX's memory you used:
  1385 strings out of 494045
  18070 string characters out of 3145973
- 69787 words of memory out of 3000000
+ 69786 words of memory out of 3000000
  4678 multiletter control sequences out of 15000+200000
  10051 words of font info for 35 fonts, out of 3000000 for 9000
  715 hyphenation exceptions out of 8191
@@ -417,9 +416,9 @@ eX 2.9/fonts/type1/public/amsfonts/cm/cmcsc10.pfb><C:/Program Files (x86)/MiKTe
 X 2.9/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Program Files (x86)/MiKTeX 2
 .9/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Program Files (x86)/MiKTeX 2.9
 /fonts/type1/public/amsfonts/cm/cmti12.pfb>
-Output written on Report.pdf (11 pages, 177894 bytes).
+Output written on Report.pdf (10 pages, 178769 bytes).
 PDF statistics:
- 62 PDF objects out of 1000 (max. 8388607)
+ 59 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  11 words of extra memory for PDF output out of 10000 (max. 10000000)
 

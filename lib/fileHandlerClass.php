@@ -17,8 +17,8 @@ class FileHandler
 	{
         if(is_int($zipFile))
         {
-            $file = '../temp/' . $zipFile . '.zip';
-            $path = '../temp/' . $zipFile;
+            $file = PATH . '/temp/' . $zipFile . '.zip';
+            $path = PATH . '/temp/' . $zipFile;
 
             $zip = new ZipArchive;
             $res = $zip->open($file);
@@ -35,8 +35,8 @@ class FileHandler
         }
         if(is_string($zipFile))
         {
-            $file = '../updates/' . $zipFile;
-            $path = '../updates/';
+            $file = PATH . '/updates/' . $zipFile;
+            $path = PATH . '/updates/';
 
             $zip = new ZipArchive;
             $res = $zip->open($file);
@@ -59,8 +59,8 @@ class FileHandler
      */
 	public function deleteTempFiles()
 	{
-		$files = glob('../temp/*');
-        $dirs = scandir('../temp/');
+		$files = glob(PATH . '/temp/*');
+        $dirs = scandir(PATH . '/temp/');
 		foreach($files as $file)        //runs through all files and deletes them
 		{ 
 			if(is_file($file)) unlink($file);
@@ -70,14 +70,14 @@ class FileHandler
         {
             if ($dir !="." AND $dir !="..") // directories '.' and '..'
             {
-                if(is_dir("../temp/" . $dir))
+                if(is_dir(PATH . "/temp/" . $dir))
                 {
-                    $dirFile = glob("../temp/" . $dir . "/*");
+                    $dirFile = glob(PATH . "/temp/" . $dir . "/*");
                     foreach($dirFile as $file)  //deletes all files in directory
                     {
                         if(is_file($file)) unlink($file);
                     }
-                    rmdir("../temp/" . $dir);
+                    rmdir(PATH . "/temp/" . $dir);
                 }
             }
 
@@ -92,7 +92,7 @@ class FileHandler
      */
     public function loadDataFromFile($showId)
     {
-        $xmlData = file_get_contents("../temp/" . $showId . "/en.xml");
+        $xmlData = file_get_contents(PATH . "temp/" . $showId . "/en.xml");
         $xml = new SimpleXMLElement($xmlData);
 
         $this->loadShowFromFile($xml);
@@ -183,10 +183,10 @@ class FileHandler
         if (@$imageHash[0]['exist'] == 0)
         {
             // Download poster
-            file_put_contents('../media/' . $filename, file_get_contents('http://www.thetvdb.com/banners/' . $filename));
+            file_put_contents(PATH . '/media/' . $filename, file_get_contents('http://www.thetvdb.com/banners/' . $filename));
                 
             // Move to posters folder
-            rename('../media/' . $filename, '../media/posters/' . $hashName . '.jpg');
+            rename(PATH . '/media/' . $filename, PATH . '/media/posters/' . $hashName . '.jpg');
         }
 
         // Return new filename

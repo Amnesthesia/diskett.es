@@ -1,8 +1,8 @@
 <?php
 #require_once './lib/configurationClass.php';
-require_once './lib/activeRecord.php';
-require_once './lib/showClass.php';
-require_once './lib/fileHandlerClass.php';
+require_once PATH . './lib/activeRecord.php';
+require_once PATH . './lib/showClass.php';
+require_once PATH . './lib/fileHandlerClass.php';
 
 class TvDB
 {
@@ -103,7 +103,7 @@ class TvDB
 	public function getShowZip($showId)
     {
 		$url = $this->getMirror() . '/api/' . $this->apiConfig['Key'] . '/series/' . $showId . '/all/en.zip';
-		file_put_contents('../temp/' . $showId . '.zip', file_get_contents($url));
+		file_put_contents(PATH . '/temp/' . $showId . '.zip', file_get_contents($url));
 
         //$fileHandler = new FileHandler(); //testing
         //$fileHandler->unzip($showId);
@@ -118,22 +118,22 @@ class TvDB
      */
 	public function getUpdate($showId)
     {
-        $files = scandir('../updates/');            //gets a list of all files/dirs in directory
+        $files = scandir(PATH . '/updates/');            //gets a list of all files/dirs in directory
         $found = false;                             //found updates_week.xml?
         foreach($files as $file)                    //loops through files
         {
             if($file == "updates_week.xml")         //if the right file found
             {
                 $found = true;                      //found the file
-                $xmlData = file_get_contents("../updates/updates_week.xml");
+                $xmlData = file_get_contents(PATH . "/updates/updates_week.xml");
                 $xml = new SimpleXMLElement($xmlData);
                 $xpath = $xml->xpath('//Data/@time');   //Time of when the file was last updated
 
                 if(!(time()-(60*60*24*7)) < $xpath[0])              //checks if file older then 7days
                 {
                     $fileHandler = new FileHandler();
-                    $url = $this->getMirror() . '/api/' . $this->apiConfig['Key'] . '/updates/updates_week.zip';
-                    file_put_contents('../updates/updates_week.zip', file_get_contents($url));
+                    $url = $this->getMirror() . '/api/' . $this->apiConfig['Key']  . '/updates/updates_week.zip';
+                    file_put_contents(PATH . '/updates/updates_week.zip', file_get_contents($url));
                     $fileHandler->unzip("updates_week.zip");
                 }
 
@@ -157,7 +157,7 @@ class TvDB
         {
             $fileHandler = new FileHandler();
             $url = $this->getMirror() . '/api/' . $this->apiConfig['Key'] . '/updates/updates_week.zip';
-            file_put_contents('../updates/updates_week.zip', file_get_contents($url));
+            file_put_contents(PATH . '/updates/updates_week.zip', file_get_contents($url));
             $fileHandler->unzip("updates_week.zip");
             //last ned ny update
             $this->getUpdate($showId);                      //runs the getUpdate again after getting updates

@@ -56,7 +56,7 @@
       </li>
     <li class="divider"></li>
     <li class="has-form">
-      <?php echo (User::isLoggedIn() == true) ? '<a href="#" id="reg" class="small button">Accounts</a>' : '<a href="#" id="reg" class="small button">Create Account</a>'; ?>
+      <?php echo (User::isLoggedIn() == true) ? '<a href="#" id="reg" class="small button">Account</a>' : '<a href="#" id="reg" class="small button">Login</a>'; ?>
     </li>
   </ul>
   </section>

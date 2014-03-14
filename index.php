@@ -133,8 +133,8 @@
     </div>
     </div>
     </div>
-    <script src="/bugfree-shame/assets/js/vendor/jquery.js"></script>
-    <script src="/bugfree-shame/assets/js/foundation.min.js"></script>
+    <script src="assets/js/vendor/jquery.js"></script>
+    <script src="assets/js/foundation.min.js"></script>
     <script>
       $(document).foundation();
     </script>
@@ -148,7 +148,7 @@
     </script>
     <script>
       $(document).on('keydown', function (e) {
-          if ( e.keyCode === 27 ) { // ESC
+          if (e.keyCode == 27) { // ESC
             $('.overlay').hide();
             $('#wrapper').hide();
       } });

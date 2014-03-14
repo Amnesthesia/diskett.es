@@ -1,9 +1,9 @@
 <?php
 
-include_once '../lib/activeRecord.php';
-include_once '../lib/showClass.php';
-include_once '../lib/episodeClass.php';
-include_once '../lib/databaseClass.php';
+require_once '../lib/activeRecord.php';
+require_once '../lib/showClass.php';
+require_once '../lib/episodeClass.php';
+require_once '../lib/databaseClass.php';
 
 class FileHandler
 {

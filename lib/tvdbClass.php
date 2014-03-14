@@ -7,10 +7,10 @@
 }*/
 
 //include_once '../lib/databaseClass.php';
-include_once '../lib/activeRecord.php';
-include_once '../lib/showClass.php';
-include_once '../lib/fileHandlerClass.php';
-include_once '../lib/configurationClass.php';
+require_once '../lib/activeRecord.php';
+require_once '../lib/showClass.php';
+require_once '../lib/fileHandlerClass.php';
+require_once '../lib/configurationClass.php';
 
 class TvDB
 {

@@ -27,6 +27,7 @@
   <section class="top-bar-section"> 
   <!-- Right Nav Section --> 
   <ul class="right"> 
+<li class="has-form"> <div class="row collapse"> <div class="large-8 small-9 columns"> <input type="text" placeholder="Search shows"> </div> <div class="large-4 small-3 columns"> <a href="#" class="alert button expand">Search</a> </div> </div> </li>
     <li class="divider"></li>
     <li class="has-dropdown not-click">
       <a class="" href="#">Test</a>
@@ -56,7 +57,7 @@
       </li>
     <li class="divider"></li>
     <li class="has-form">
-      <?php echo (User::isLoggedIn() == true) ? '<a href="#" id="reg" class="small button">Accounts</a>' : '<a href="#" id="reg" class="small button">Create Account</a>'; ?>
+      <?php echo (User::isLoggedIn() == true) ? '<a href="#" id="reg" class="small button">Account</a>' : '<a href="#" id="reg" class="small button">Login</a>'; ?>
     </li>
   </ul>
   </section>
@@ -147,6 +148,9 @@ if (isset($_POST['login']) || isset($_POST['register']))
   {
     $user = DatabaseHandler::getInstance()->readToClass('SELECT * FROM user WHERE email=?', $_POST['email'], 'User');
     $user[0]->login($_POST['password']);
+
+    // TODO: Make sure a user is logged in before redirect
+    header('Location: ?');
   }
   else // Register new user - TODO: Check if user already exist and catch exception
   {

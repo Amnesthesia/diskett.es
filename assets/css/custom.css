@@ -469,3 +469,13 @@ span.loginreg
   font-weight: bold;
   letter-spacing: 2px;
 }
+
+.top-bar input 
+{
+  height: 29px; 
+  margin-top: 1px;
+}
+.alert
+{
+  margin-top: 1px;
+}

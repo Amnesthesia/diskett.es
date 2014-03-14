@@ -4,9 +4,6 @@ require_once('databaseClass.php');
 require_once('emailSenderClass.php');
 require_once(PATH . '/interfaces/userInterface.php');
 
-//DEBUG CODE, REMOVE
-session_start();
-
 /**
  * This class will represent either an existing user or a new user
  * The user object can be created without parameters if we want to
@@ -231,7 +228,6 @@ class User implements iUser
 				if (!empty($userData[0]['id']))
 				{
 					User::updateSessionTime();
-
 					return true; // Ip address and session id does match, user is logged in
 				}
 				else

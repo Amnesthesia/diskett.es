@@ -1,9 +1,9 @@
 <?php
 
-require_once '../lib/activeRecord.php';
-require_once '../lib/showClass.php';
-require_once '../lib/episodeClass.php';
-require_once '../lib/databaseClass.php';
+require_once PATH . '/lib/activeRecord.php';
+require_once PATH . '/lib/showClass.php';
+require_once PATH . '/lib/episodeClass.php';
+require_once PATH . '/lib/databaseClass.php';
 
 class FileHandler
 {

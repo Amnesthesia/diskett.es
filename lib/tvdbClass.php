@@ -1,16 +1,8 @@
 <?php
-
-
-/*function __autoload($class_name)
-{
-    include_once '../lib/' . $class_name . '.php';
-}*/
-
-//include_once '../lib/databaseClass.php';
-require_once '../lib/activeRecord.php';
-require_once '../lib/showClass.php';
-require_once '../lib/fileHandlerClass.php';
-require_once '../lib/configurationClass.php';
+#require_once './lib/configurationClass.php';
+require_once './lib/activeRecord.php';
+require_once './lib/showClass.php';
+require_once './lib/fileHandlerClass.php';
 
 class TvDB
 {
@@ -180,11 +172,10 @@ class TvDB
     public function getShowId($showName) //Must be spelled correctly with capital letters
     {
         $url = 'http://thetvdb.com/api/GetSeries.php?seriesname=' . urlencode($showName);
-
         $xmlData = file_get_contents($url);
 
         $xml = new SimpleXMLElement($xmlData);
-        $xpath = $xml->xpath('//Series[SeriesName ="' . $showName . '"]/seriesid');
+        $xpath = $xml->xpath("//Series[SeriesName[contains(translate(.,'ABCDEFGHJIKLMNOPQRSTUVWXYZ','abcdefghjiklmnopqrstuvwxyz'), translate('" . $showName . "','ABCDEFGHJIKLMNOPQRSTUVWXYZ','abcdefghjiklmnopqrstuvwxyz'))]]/seriesid"); //case-insensitive input for xpath
 
         return $xpath[0];                       //element with the ID
 
@@ -194,7 +185,7 @@ class TvDB
 //$test = new TvDB();
 //$test->getShow("Vikings");
 //$test->getShow("Lone Target");
-//$test->getShowId("True Detective");
+//$test->getShowId("true detective");
 //var_dump(strtotime($test->getPreviousServerTime(70327)));
 //echo date("Y-m-d", $test->getServerTime());
 //$test->getMirror();

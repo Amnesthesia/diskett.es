@@ -12,7 +12,7 @@
     <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,700" />
     <link rel="stylesheet" href="assets/css/foundation.css" />
     <link rel="stylesheet" href="assets/css/custom.css" />
-    <link rel="stylesheet" type="text/css" href="<?php echo PATH; ?>assets/css/animate-custom.css" />
+    <link rel="stylesheet" type="text/css" href="assets/css/animate-custom.css" />
     <script src="assets/js/vendor/modernizr.js"></script>
     <script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
     <?php require_once(PATH.'lib/includeClass.php');?>
@@ -30,7 +30,19 @@
   <section class="top-bar-section"> 
   <!-- Right Nav Section --> 
   <ul class="right"> 
-<li class="has-form"> <div class="row collapse"> <div class="large-8 small-9 columns"> <input type="text" placeholder="Search shows"> </div> <div class="large-4 small-3 columns"> <a href="#" class="alert button expand">Search</a> </div> </div> </li>
+<li class="has-form"> 
+<div class="row collapse"> 
+<div class="large-8 small-9 columns">
+<form method="get" action="">
+<input type="hidden" name="page" value="search" /> 
+<input type="text" name="searchquery" placeholder="Search shows"> 
+</div> 
+<div class="large-4 small-3 columns">
+<input type="submit" value="Search" class="alert button expand">
+</form>
+</div>
+</div>
+</li>
     <li class="divider"></li>
     <li class="has-dropdown not-click">
       <a class="" href="#">Test</a>
@@ -117,6 +129,7 @@
             </p>
           </form>
         </div>
+    </div>
     </div>
     </div>
     </div>

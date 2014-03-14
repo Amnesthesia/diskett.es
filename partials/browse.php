@@ -16,10 +16,7 @@
 	foreach($showList as $item):
 		$count++;
 ?>
-	<?php if($count % 11 == 0): ?>
-	</div>
-	<div class="row">
-	<?php endif; ?>
+	
 
 	<?php
 	$imageFile = (file_exists('media/posters/' . $item->getAttribute("poster")) ? 'media/posters/' . $item->getAttribute("poster") : 'assets/img/placeholder.png');	

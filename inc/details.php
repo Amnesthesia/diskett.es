@@ -54,7 +54,7 @@
 		<div class="large-12 columns">
 			<table class="episode-table">
 				<tr>
-					<th>Date</th>
+					<th width="140">Date</th>
 					<th>Season</th>
 					<th>Episode</th>
 					<th width="250">Title</th>

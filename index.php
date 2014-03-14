@@ -1,4 +1,5 @@
 <!doctype html>
+<?php session_start(); ob_start(); ?>
 <html class="no-js" lang="en">
   <head>
     <meta charset="utf-8" />
@@ -11,6 +12,7 @@
     <script src="/bugfree-shame/assets/js/vendor/modernizr.js"></script>
     <script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
     <?php require_once('lib/includeClass.php');?>
+    <?php require_once('lib/userClass.php'); ?>
   </head>
   <body>
 <div class="overlay"></div>
@@ -53,7 +55,7 @@
       </li>
     <li class="divider"></li>
     <li class="has-form">
-      <a href="#" id="reg" class="small button">Create Account</a>
+      <?php echo (User::isLoggedIn() == true) ? '<a href="#" id="reg" class="small button">Accounts</a>' : '<a href="#" id="reg" class="small button">Create Account</a>'; ?>
     </li>
   </ul>
   </section>
@@ -66,11 +68,11 @@
       <a class="hiddenanchor" id="tologin"></a>
         <div id="wrapper">
           <div id="login" class="animate form">
-            <form  action="mysuperscript.php" autocomplete="on"> 
+            <form action="#" method="post" autocomplete="on"> 
               <h1>Log in</h1> 
               <p> 
-              <label for="username" class="uname" data-icon="u" > Your email or username </label>
-              <input id="username" name="username" required="required" type="text" placeholder="myusername or mymail@mail.com"/>
+              <label for="email" class="uname" data-icon="u" > Your email address </label>
+              <input id="email" name="email" required="required" type="email" placeholder="mymail@mail.com"/>
               </p>
               <p> 
               <label for="password" class="youpasswd" data-icon="p"> Your password </label>
@@ -80,7 +82,7 @@
               <input type="checkbox" name="loginkeeping" id="loginkeeping" value="loginkeeping" /> 
               <label for="loginkeeping">Keep me logged in</label>
               </p>
-              <a href="#" class="button expand">LOGIN</a>
+              <input type="submit" name="login" value="Login">
               <p class="change_link">
               Not a member yet ?
               <a href="#toregister" class="to_register">Join us</a>
@@ -89,12 +91,8 @@
           </div>
 
         <div id="register" class="animate form">
-          <form  action="mysuperscript.php" autocomplete="on"> 
+          <form action="#" method="post" autocomplete="on"> 
             <h1> Sign up </h1> 
-            <p> 
-            <label for="usernamesignup" class="uname" data-icon="u">Your username</label>
-            <input id="usernamesignup" name="usernamesignup" required="required" type="text" placeholder="mysuperusername690" />
-            </p>
             <p> 
             <label for="emailsignup" class="youmail" data-icon="e" > Your email</label>
             <input id="emailsignup" name="emailsignup" required="required" type="email" placeholder="mysupermail@mail.com"/> 
@@ -107,7 +105,7 @@
             <label for="passwordsignup_confirm" class="youpasswd" data-icon="p">Please confirm your password </label>
             <input id="passwordsignup_confirm" name="passwordsignup_confirm" required="required" type="password" placeholder="eg. X8df!90EO"/>
             </p>
-            <a href="#" class="button expand">REGISTER</a>
+            <input type="submit" name="register" value="Register account">
             <p class="change_link">  
             Already a member ?
             <a href="#tologin" class="to_register"> Go and log in </a>
@@ -139,3 +137,21 @@
     </script>
   </body>
 </html>
+
+<?php
+
+if (isset($_POST['login']) || isset($_POST['register']))
+{
+  if (isset($_POST['login'])) // Login for existing users
+  {
+    $user = DatabaseHandler::getInstance()->readToClass('SELECT * FROM user WHERE email=?', $_POST['email'], 'User');
+    $user[0]->login($_POST['password']);
+  }
+  else // Register new user - TODO: Check if user already exist and catch exception
+  {
+    $user = new User($_POST['emailsignup'], $_POST['passwordsignup'], 0, 'en'); // Do we need the user to specify a country?
+    $user->register();
+  }
+}
+ob_end_flush();
+?>

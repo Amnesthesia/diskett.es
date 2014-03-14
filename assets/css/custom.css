@@ -463,3 +463,9 @@ p.change_link{
     top: 0;
     z-index: 10;
 }
+span.loginreg
+{
+  color: #113849;
+  font-weight: bold;
+  letter-spacing: 2px;
+}

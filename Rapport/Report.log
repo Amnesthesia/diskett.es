@@ -1,7 +1,7 @@
-This is pdfTeX, Version 3.1415926-2.3-1.40.12 (MiKTeX 2.9) (preloaded format=pdflatex 2012.2.1)  15 FEB 2014 14:01
+This is pdfTeX, Version 3.1415926-2.3-1.40.12 (MiKTeX 2.9) (preloaded format=pdflatex 2012.2.1)  14 MAR 2014 10:49
 entering extended mode
-**C:/Users/s1gh/Desktop/Rapport*WWW/Report.tex
-("C:/Users/s1gh/Desktop/Rapport WWW/Report.tex"
+**C:/www/htdocs/bugfree-shame/Rapport/Report.tex
+(C:/www/htdocs/bugfree-shame/Rapport/Report.tex
 LaTeX2e <2011/06/27>
 Babel <v3.8m> and hyphenation patterns for english, afrikaans, ancientgreek, ar
 abic, armenian, assamese, basque, bengali, bokmal, bulgarian, catalan, coptic, 
@@ -279,7 +279,7 @@ Package: ltxcmds 2011/04/18 v1.20 LaTeX kernel commands for general use (HO)
 \Gin@req@height=\dimen103
 \Gin@req@width=\dimen104
 )
-("C:\Users\s1gh\Desktop\Rapport WWW\Report.aux")
+(C:\www\htdocs\bugfree-shame\Rapport\Report.aux)
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 7.
 LaTeX Font Info:    ... okay on input line 7.
 LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 7.
@@ -306,7 +306,7 @@ LaTeX Font Info:    ... okay on input line 7.
 \MPnumerator=\count92
 \makeMPintoPDFobject=\count93
 \everyMPtoPDFconversion=\toks18
-) ("C:\Users\s1gh\Desktop\Rapport WWW\Titlepage.tex"
+) (C:\www\htdocs\bugfree-shame\Rapport\Titlepage.tex
 <Logo.png, id=1, 818.05624pt x 818.05624pt>
 File: Logo.png Graphic file (type png)
  <use Logo.png>
@@ -320,27 +320,53 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <6> on input line 70.
  [1
 
-{C:/ProgramData/MiKTeX/2.9/pdftex/config/pdftex.map} <C:/Users/s1gh/Desktop/Rap
-port WWW/Logo.png>]) ("C:\Users\s1gh\Desktop\Rapport WWW\Report.toc")
+{C:/ProgramData/MiKTeX/2.9/pdftex/config/pdftex.map} <C:/www/htdocs/bugfree-sha
+me/Rapport/Logo.png>]) (C:\www\htdocs\bugfree-shame\Rapport\Report.toc)
 \tf@toc=\write3
- [1] [2]
-("C:\Users\s1gh\Desktop\Rapport WWW\Report.aux") ) 
+
+Underfull \hbox (badness 10000) in paragraph at lines 13--16
+
+ []
+
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 17.
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\base\omscmr.fd"
+File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 17.
+
+Underfull \hbox (badness 10000) in paragraph at lines 23--28
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 23--28
+
+ []
+
+[1]
+Underfull \hbox (badness 10000) in paragraph at lines 39--42
+
+ []
+
+[2] [3] (C:\www\htdocs\bugfree-shame\Rapport\Report.aux) ) 
 Here is how much of TeX's memory you used:
- 1346 strings out of 494045
- 17062 string characters out of 3145973
- 68316 words of memory out of 3000000
- 4657 multiletter control sequences out of 15000+200000
+ 1363 strings out of 494045
+ 17384 string characters out of 3145973
+ 69316 words of memory out of 3000000
+ 4671 multiletter control sequences out of 15000+200000
  10051 words of font info for 35 fonts, out of 3000000 for 9000
  715 hyphenation exceptions out of 8191
- 27i,5n,19p,252b,250s stack positions out of 5000i,500n,10000p,200000b,50000s
-<C:/Program Files (x86)/MiKTe
-X 2.9/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Program Files (x86)/MiKTeX 
-2.9/fonts/type1/public/amsfonts/cm/cmcsc10.pfb><C:/Program Files (x86)/MiKTeX 2
-.9/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Program Files (x86)/MiKTeX 2.9/
-fonts/type1/public/amsfonts/cm/cmti12.pfb>
-Output written on Report.pdf (3 pages, 104521 bytes).
+ 27i,5n,19p,278b,250s stack positions out of 5000i,500n,10000p,200000b,50000s
+<C:/Program Files (x8
+6)/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Program Files (x86)
+/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmcsc10.pfb><C:/Program Files (x86)/
+MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Program Files (x86)/MiK
+TeX 2.9/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Program Files (x86)/MiKTe
+X 2.9/fonts/type1/public/amsfonts/cm/cmti12.pfb>
+Output written on Report.pdf (4 pages, 119298 bytes).
 PDF statistics:
- 31 PDF objects out of 1000 (max. 8388607)
+ 38 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  6 words of extra memory for PDF output out of 10000 (max. 10000000)
 

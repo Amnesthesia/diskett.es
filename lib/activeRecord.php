@@ -4,9 +4,7 @@ require_once("table.php");
 /**
 ** @todo Move definitions of constants to config
 */
-define("ASC",0);
-define("DESC",1);
-define("DEFAULT_LIST_SIZE", 25);
+
 
 
 class ActiveRecord

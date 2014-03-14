@@ -1,5 +1,8 @@
 <?php
 define("PATH", substr(__DIR__, 0, -3)); // Absolute path
+define("ASC",0); // Constant for sorting -- 0 = ASCENDING
+define("DESC",1); // 1 = DESCENDING
+define("DEFAULT_LIST_SIZE", 25); // Default size of lists
 
 require_once(PATH . '/interfaces/configInterface.php');
 

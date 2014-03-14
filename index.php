@@ -1,4 +1,7 @@
 <!doctype html>
+<!-- This whole file is a dummy to give an example of the front-end and allow for testing. -->
+<!-- During the front-end project, the front-end will reach it's final form -->
+
 <?php require_once("lib/configurationClass.php");?>
 <?php session_start(); ob_start(); ?>
 <html class="no-js" lang="en">

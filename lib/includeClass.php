@@ -7,7 +7,7 @@ class IncludePage
 	{
 		if (empty($getParam))
 	    {
-	        require('./inc/defaultpage.php'); // Default page.
+	        require('./partials/browse.php'); // Default page.
 	    }
 	    else
 	    {

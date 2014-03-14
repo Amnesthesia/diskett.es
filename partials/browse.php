@@ -11,7 +11,6 @@
 
 	// Add one empty row because I'm too lazy to add padding to the CSS, deal with it
 ?>
-	<div class="row">&nbsp;</div>
 	<div class="row">
 
 <?php
@@ -35,7 +34,7 @@
 			<img src="media/posters/<?php echo strstr($item->getAttribute("poster"),".jpg") ? $item->getAttribute("poster") : 'assets/img/placeholder.jpg'; ?>" />
 		</a>
 		<a href="#" title="<?php echo $item->getAttribute("name"); ?>">
-			<h4><?php echo $item->getAttribute("name"); ?></h4>
+			<h5><?php echo $item->getAttribute("name"); ?></h5>
 		</a>
 	</div>
 

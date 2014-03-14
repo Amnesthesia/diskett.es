@@ -59,8 +59,7 @@
     </div>
   </nav>
   <div id="content">
-    <!--<?php IncludePage::view(@$_GET['page']); ?>-->
-    <?php require('partials/browse.php'); ?>
+    <?php IncludePage::view(@$_GET['page']); ?>
   </div>
   </nav>
     <script src="/bugfree-shame/assets/js/vendor/jquery.js"></script>

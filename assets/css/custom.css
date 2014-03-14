@@ -22,9 +22,9 @@ h1, h2, h3, h4, h5, h6
 }
 
 
-.browse-list h4
+.browse-list h5
 {
-    background: #333;
+    background: #000;
     opacity: 0.5;
     width: 100%;
     height: 2em;
@@ -39,29 +39,5 @@ h1, h2, h3, h4, h5, h6
 
 #content
 {
-    padding: 15px;
-}
-
-#lean_overlay {
-    position: fixed;
-    z-index:100;
-    top: 0px;
-    left: 0px;
-    height:100%;
-    width:100%;
-    background: #000;
-    display: none;
-}
-  #signup {
-
-     width: 404px;
-     padding-bottom: 2px;
-
-    display:none;
-
-
-    background: #FFF;
-        border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px;
-        box-shadow: 0px 0px 4px rgba(0,0,0,0.7); -webkit-box-shadow: 0 0 4px rgba(0,0,0,0.7); -moz-box-shadow: 0 0px 4px rgba(0,0,0,0.7);
-       
+    padding: 25px;
 }

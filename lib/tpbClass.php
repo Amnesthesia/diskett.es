@@ -48,5 +48,4 @@ class TPB
 	{
 		$this->domDocument = new DomDocument;
 	}
-
 }

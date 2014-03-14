@@ -269,22 +269,3 @@ class User implements iUser
 		return bin2hex(mcrypt_create_iv(30, MCRYPT_DEV_URANDOM));
 	}
 }
-
-#$mail = $_GET['mail'];
-#$user = DatabaseHandler::getInstance()->readToClass('SELECT * FROM `user` WHERE email=?', $mail, 'user');
-#$user[0]->forgotPassword();
-
-#var_dump($user);
-#$user = DatabaseHandler::getInstance()->readToClass('SELECT * FROM user WHERE email=?', 'tommy.ingdal@gmail.com', 'User');
-
-#$user[0]->login('1234');
-
-#$user = new User('test@test.com', '1234', 0, 10);
-#$user->register();
-#
-#$user[0]->logout();
-
-#if (User::isLoggedIn())
-#	echo "User is logged in.";
-#else
-#	echo "User is not logged in.";

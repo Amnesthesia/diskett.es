@@ -270,6 +270,11 @@ class User implements iUser
 	}
 }
 
+#$mail = $_GET['mail'];
+#$user = DatabaseHandler::getInstance()->readToClass('SELECT * FROM `user` WHERE email=?', $mail, 'user');
+#$user[0]->forgotPassword();
+
+#var_dump($user);
 #$user = DatabaseHandler::getInstance()->readToClass('SELECT * FROM user WHERE email=?', 'tommy.ingdal@gmail.com', 'User');
 
 #$user[0]->login('1234');

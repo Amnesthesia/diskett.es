@@ -20,7 +20,6 @@ h1, h2, h3, h4, h5, h6
 	margin-bottom: 0px;
 	font-size: 0.75rem;
 }
-
 .browse-list h5
 {
     background: #000;
@@ -35,6 +34,7 @@ h1, h2, h3, h4, h5, h6
     white-space: nowrap;
     overflow: hidden;
 }
+
 .row
 {
     max-width: 62.5rem;
@@ -479,3 +479,4 @@ span.loginreg
 {
   margin-top: 1px;
 }
+>>>>>>> 62b1a7e5695682a3ec8a6d3b3ed22e47f71b81cd

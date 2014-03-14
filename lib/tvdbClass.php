@@ -1,4 +1,5 @@
 <?php
+//require_once "../lib/configurationClass.php";
 require_once PATH . './lib/activeRecord.php';
 require_once PATH . './lib/showClass.php';
 require_once PATH . './lib/fileHandlerClass.php';
@@ -42,9 +43,12 @@ class TvDB
             }
             else                                        //if not exists, get all show info
             {
-                $this->getShowZip($id);
-                $fileHandler->unzip($id);
-                $fileHandler->loadDataFromFile($id);
+                if($id != 0)
+                {
+                    $this->getShowZip($id);
+                    $fileHandler->unzip($id);
+                    $fileHandler->loadDataFromFile($id);
+                }
             }
             $fileHandler->deleteTempFiles();
         }
@@ -177,15 +181,22 @@ class TvDB
         $xmlData = file_get_contents($url);
 
         $xml = new SimpleXMLElement($xmlData);
-        $xpath = $xml->xpath("//Series[SeriesName[contains(translate(.,'ABCDEFGHJIKLMNOPQRSTUVWXYZ','abcdefghjiklmnopqrstuvwxyz'), translate('" . $showName . "','ABCDEFGHJIKLMNOPQRSTUVWXYZ','abcdefghjiklmnopqrstuvwxyz'))]]/seriesid"); //case-insensitive input for xpath
+        $xpath = $xml->xpath("//Series[SeriesName[contains(translate(.,'ABCDEFGHJIKLMNOPQRSTUVWXYZ','abcdefghjiklmnopqrstuvwxyz'), translate('" . urlencode($showName) . "','ABCDEFGHJIKLMNOPQRSTUVWXYZ','abcdefghjiklmnopqrstuvwxyz'))]]/seriesid"); //case-insensitive input for xpath
 
-        return $xpath[0];                       //element with the ID
+        if(isset($xpath[0]))
+        {
+            return $xpath[0];                       //element with the ID
+        }
+        else
+        {
+            echo "Could not find Tv-show";
+        }
 
     }
 }
 
 //$test = new TvDB();
-//$test->getShow("Vikings");
+//$test->getShow("That '70s Show");
 //$test->getShow("Lone Target");
 //$test->getShowId("true detective");
 //var_dump(strtotime($test->getPreviousServerTime(70327)));

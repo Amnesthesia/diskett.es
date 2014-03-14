@@ -1,5 +1,5 @@
 <?php
-	require_once("lib/showClass.php");
+	require_once("/lib/showClass.php");
 
 	// ?p is pagination-multiplier. 1 means second page, i.e 1*DEFAULT_LIST_SIZE, etc
 	if(isset($_GET["p"]))
@@ -32,7 +32,7 @@
 
 	<div class="small-3 columns browse-list">
 		<a href="#" title="<?php echo $item->getAttribute("name"); ?>">
-			<img src="<?php echo strstr($item->getAttribute("banner_url"),".png") ? $item->getAttribute("banner_url") : 'assets/img/placeholder.png'; ?>" />
+			<img src="media/posters/<?php echo strstr($item->getAttribute("poster"),".jpg") ? $item->getAttribute("poster") : 'assets/img/placeholder.jpg'; ?>" />
 		</a>
 		<a href="#" title="<?php echo $item->getAttribute("name"); ?>">
 			<h4><?php echo $item->getAttribute("name"); ?></h4>

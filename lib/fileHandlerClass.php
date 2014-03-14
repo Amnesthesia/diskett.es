@@ -65,18 +65,18 @@ class FileHandler
 
     public function loadShowFromFile($xml)
     {
-        $id = $xml->Series->id;
-        $imdb_id = $xml->Series->IMDB_ID;
-        $zap2_id = $xml->Series->zap2it_id;
-        $channelId = $xml->Series->Network;
-        $poster = $this->loadImage($xml->Series->poster);
-        $pilot_date = $xml->Series->FirstAired;
-        $name = $xml->Series->SeriesName;
-        $summary = $xml->Series->Overview;
+        $id = trim($xml->Series->id);
+        $imdb_id = trim($xml->Series->IMDB_ID);
+        $zap2_id = trim($xml->Series->zap2it_id);
+        $channelId = trim($xml->Series->Network);
+        $poster = trim($this->loadImage($xml->Series->poster));
+        $pilot_date = trim($xml->Series->FirstAired);
+        $name = trim($xml->Series->SeriesName);
+        $summary = trim($xml->Series->Overview);
         //$summary = "random text";
-        $lang = $xml->Series->Language;
-        $rating = $xml->Series->Rating;
-        $lst_update = date("Y-m-d", (string)$xml->Series->lastupdated);
+        $lang = trim($xml->Series->Language);
+        $rating = trim($xml->Series->Rating);
+        $lst_update = trim(date("Y-m-d", (string)$xml->Series->lastupdated));
         //var_dump($lst_update);
 
         $attributes = array("id" => $id, "imdb_id" => $imdb_id, "zap2_id" => $zap2_id, "channel_id" => $channelId, "poster" => $poster, "pilot_date" => $pilot_date, "name" => $name, "summary" => $summary, "lang" => $lang, "rating" => $rating, "lst_update" => $lst_update);

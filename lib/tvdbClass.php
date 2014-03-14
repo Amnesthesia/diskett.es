@@ -138,8 +138,8 @@ class TvDB
 }
 
 
-//$test = new TvDB();
-//$test->getShow('The Walking Dead');
+$test = new TvDB();
+$test->getShow("That '70s Show");
 //$test->getShowId("True Detective");
 //var_dump(strtotime($test->getPreviousServerTime(70327)));
 //echo date("Y-m-d", $test->getServerTime());

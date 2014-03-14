@@ -184,4 +184,22 @@ class TvDB
 
     }
 }
+<<<<<<< HEAD
+
+//$test = new TvDB();
+//$test->getShow(73787);
+//$test->getShow("Lone Target");
+//$test->getShowId("true detective");
+//var_dump(strtotime($test->getPreviousServerTime(70327)));
+//echo date("Y-m-d", $test->getServerTime());
+//$test->getMirror();
+//$test->getServerTime();
+//$test->getServerTime();
+//$test->getUpdate(70327);
+//var_dump($test->getShowId('The Big Bang Theory'));
+//echo $test->getPreviousServerTime(70327);
+//$test->getSeriesZip(80379);
+//$test->getSeriesZip($test->getShowId("The Walking Dead"));
+=======
+>>>>>>> 8b1faba87b83c5cd178c4f3e5dc9720c6c85e7b8
 ?>

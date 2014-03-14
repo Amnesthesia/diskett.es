@@ -87,18 +87,18 @@ class FileHandler
 
     public function loadShowFromFile($xml)
     {
-        $id = $xml->Series->id;
-        $imdb_id = $xml->Series->IMDB_ID;
-        $zap2_id = $xml->Series->zap2it_id;
-        $channelId = $xml->Series->Network;
-        $poster = $this->loadImage($xml->Series->poster);
-        $pilot_date = $xml->Series->FirstAired;
-        $name = $xml->Series->SeriesName;
-        $summary = $xml->Series->Overview;
+        $id = trim($xml->Series->id);
+        $imdb_id = trim($xml->Series->IMDB_ID);
+        $zap2_id = trim($xml->Series->zap2it_id);
+        $channelId = trim($xml->Series->Network);
+        $poster = trim($this->loadImage($xml->Series->poster));
+        $pilot_date = trim($xml->Series->FirstAired);
+        $name = trim($xml->Series->SeriesName);
+        $summary = trim($xml->Series->Overview);
         //$summary = "random text";
-        $lang = $xml->Series->Language;
-        $rating = $xml->Series->Rating;
-        $lst_update = date("Y-m-d", (string)$xml->Series->lastupdated);
+        $lang = trim($xml->Series->Language);
+        $rating = trim($xml->Series->Rating);
+        $lst_update = trim(date("Y-m-d", (string)$xml->Series->lastupdated));
         //var_dump($lst_update);
 
         $attributes = array("id" => $id, "imdb_id" => $imdb_id, "zap2_id" => $zap2_id, "channel_id" => $channelId, "poster" => $poster, "pilot_date" => $pilot_date, "name" => $name, "summary" => $summary, "lang" => $lang, "rating" => $rating, "lst_update" => $lst_update);
@@ -141,29 +141,25 @@ class FileHandler
         }
     }
 
-    public function loadImage($filename)
+    private function loadImage($filename)
     {
-        // Download poster
-        file_put_contents('../media/' . $filename, file_get_contents('http://www.thetvdb.com/banners/' . $filename));
-        
         // Hash filename
-        $hashName = md5_file('../media/' . $filename);
-        
-        // Move to posters folder
-        rename('../media/' . $filename, '../media/posters/' . $hashName . '.jpg');
+        $hashName = md5($filename);
+
+        // Check if file already exists. Don't want to create a new object here, so I can't use ActiveRecord...?
+        $imageHash = DatabaseHandler::getInstance()->read('select count(*) as exist from `show` where poster=?', md5($filename) . '.jpg');
+
+        if (@$imageHash[0]['exist'] == 0)
+        {
+            // Download poster
+            file_put_contents('../media/' . $filename, file_get_contents('http://www.thetvdb.com/banners/' . $filename));
+                
+            // Move to posters folder
+            rename('../media/' . $filename, '../media/posters/' . $hashName . '.jpg');
+        }
 
         // Return new filename
-        return $hashName . '.jpg';
+        return $hashName . '.jpg';   
     }
 }
-
-//$test = new FileHandler();
-//$test->unzip('80379');
-//$test->loadDataFromFile(153021);
-//$test->deleteTempFiles();
-//$array = array("id"=>)
-//$show = new Show(70327);
-//$show->setAttribute("imdb_id", 1565);
-//var_dump($show);
-
 ?>

@@ -1,5 +1,5 @@
 <?php
-	require_once("lib/showClass.php");
+	require_once("/lib/showClass.php");
 
 	// ?p is pagination-multiplier. 1 means second page, i.e 1*DEFAULT_LIST_SIZE, etc
 	if(isset($_GET["p"]))
@@ -8,10 +8,7 @@
 		$pagination = 0;
 
 	$showList = Show::getList($pagination);
-
-	// Add one empty row because I'm too lazy to add padding to the CSS, deal with it
 ?>
-	<div class="row">&nbsp;</div>
 	<div class="row">
 
 <?php
@@ -31,11 +28,11 @@
 	?>
 
 	<div class="small-3 columns browse-list">
-		<a href="#" title="<?php echo $item->getAttribute("name"); ?>">
-			<img src="<?php echo strstr($item->getAttribute("banner_url"),".png") ? $item->getAttribute("banner_url") : 'assets/img/placeholder.png'; ?>" />
+		<a href="?page=details&amp;id=<?php echo $item->getAttribute("id");?>" title="<?php echo $item->getAttribute("name"); ?>">
+			<img src="media/posters/<?php echo strstr($item->getAttribute("poster"),".jpg") ? $item->getAttribute("poster") : 'assets/img/placeholder.jpg'; ?>" />
 		</a>
 		<a href="#" title="<?php echo $item->getAttribute("name"); ?>">
-			<h4><?php echo $item->getAttribute("name"); ?></h4>
+			<h5><?php echo $item->getAttribute("name"); ?></h5>
 		</a>
 	</div>
 

@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="/bugfree-shame/assets/css/foundation.css" />
     <link rel="stylesheet" href="/bugfree-shame/assets/css/custom.css" />
     <script src="/bugfree-shame/assets/js/vendor/modernizr.js"></script>
+    <script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+    <script src="/bugfree-shame/assets/js/jquery.leanModal.min.js"></script>
     <?php require_once('lib/includeClass.php');?>
   </head>
   <body>
@@ -50,7 +52,7 @@
       </li>
     <li class="divider"></li>
     <li class="has-form">
-      <a class="small button" href="#">Create Account</a>
+      <a href="#signup" id="register" rel="leanModal" class="small button">Create Account</a>
     </li>
   </ul>
   </section>
@@ -60,9 +62,6 @@
     <?php IncludePage::view(@$_GET['page']); ?>
   </div>
   </nav>
-    <section id="features-hero">
-    <?php include("partials/details.php"); ?>
-    </section>
     <script src="/bugfree-shame/assets/js/vendor/jquery.js"></script>
     <script src="/bugfree-shame/assets/js/foundation.min.js"></script>
     <script>

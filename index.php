@@ -82,16 +82,16 @@
   <nav class="top-bar show-for-small-only" data-topbar=""> 
     <ul class="title-area" style="width: 100%"> 
       <li class="name"> 
-        <h1 ><a href="?">EpisodeGuide</a></h1>
+        <h1 ><a href="?">[Logo]</a></h1>
       </li>
       <li class="has-form"> 
         <div class="row collapse"> 
-          <div class="small-5 columns">
+          <div class="small-3 columns">
             <form method="get" action="">
               <input type="hidden" name="page" value="search" /> 
               <input type="text" name="searchquery" placeholder="Search shows"> 
           </div> 
-          <div class="small-3 columns">
+          <div class="small-2 columns">
             <input type="submit" value="Search" class="alert button expand">
             </form>
           </div>

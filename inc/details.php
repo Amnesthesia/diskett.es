@@ -72,7 +72,7 @@
 				<?php foreach($episodes as $episode): ?>
 				<?php 	$object = new Episode($episode); ?>
 				<tr>
-					<td class="text-center"><?php echo $object->getAttribute("date"); ?></td>
+					<td class="text-center"><?php echo ($object->getAttribute("date") == '0000-00-00') ? 'TBA' : $object->getAttribute("date"); ?></td>
 					<td class="text-center"><?php echo $object->getAttribute("season"); ?></td>
 					<td class="text-center"><?php echo $object->getAttribute("episode"); ?></td>
 					<td><?php echo $object->getAttribute("name"); ?></td>

@@ -1,3 +1,10 @@
+<<<<<<< HEAD
+AuthType Basic
+AuthName "restricted area"
+AuthUserFile /home/s1gh/.htpasswd
+require valid-user
+=======
 #RewriteEngine On
 
 #RewriteRule ^([a-z]+)/?$ index.php?page=$1 [NC,L]
+>>>>>>> 62b1a7e5695682a3ec8a6d3b3ed22e47f71b81cd

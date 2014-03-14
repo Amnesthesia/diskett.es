@@ -61,19 +61,19 @@ class FileHandler
 	{
 		$files = glob('../temp/*');
         $dirs = scandir('../temp/');
-		foreach($files as $file)
+		foreach($files as $file)        //runs through all files and deletes them
 		{ 
 			if(is_file($file)) unlink($file);
 		}
         //var_dump($dirs);
-        foreach($dirs as $dir)
+        foreach($dirs as $dir)          //runs through all directories in directory
         {
             if ($dir !="." AND $dir !="..") // directories '.' and '..'
             {
                 if(is_dir("../temp/" . $dir))
                 {
                     $dirFile = glob("../temp/" . $dir . "/*");
-                    foreach($dirFile as $file)
+                    foreach($dirFile as $file)  //deletes all files in directory
                     {
                         if(is_file($file)) unlink($file);
                     }
@@ -117,12 +117,12 @@ class FileHandler
         //$summary = "random text";
         $lang = trim($xml->Series->Language);
         $rating = trim($xml->Series->Rating);
-        $lst_update = trim(date("Y-m-d", (string)$xml->Series->lastupdated));
+        $lst_update = trim(date("Y-m-d", (string)$xml->Series->lastupdated)); //reads and convert value to right format
         //var_dump($lst_update);
 
         $attributes = array("id" => $id, "imdb_id" => $imdb_id, "zap2_id" => $zap2_id, "channel_id" => $channelId, "poster" => $poster, "pilot_date" => $pilot_date, "name" => $name, "summary" => $summary, "lang" => $lang, "rating" => $rating, "lst_update" => $lst_update);
 
-        $show = new Show($attributes);
+        $show = new Show($attributes);  //creates show object filled with all info and saves to database
         $show->save();
 
         /*$show->setAttribute("id", $id);
@@ -152,7 +152,7 @@ class FileHandler
             $season = $episode->SeasonNumber;
             $date = $episode->FirstAired;
 
-            if(!Episode::exists(array($seriesId, $season, $episodeNr)))
+            if(!Episode::exists(array($seriesId, $season, $episodeNr))) //skips loading episode if already in database | saves resources
             {
                 $episodeId = $episode->id;
                 $name = $episode->EpisodeName;
@@ -160,13 +160,18 @@ class FileHandler
 
                 $attributes = array("show_id" => $seriesId, "episode_id" => $episodeId, "season" => $season, "episode" => $episodeNr, "name" => $name, "summary" => $summary, "date" => $date);
 
-                $episodeObj = new Episode($attributes);
+                $episodeObj = new Episode($attributes); //creates episode object with all info and saves to database
                 $episodeObj->save();
             }
 
         }
     }
 
+    /**
+     * Loads image and md5 the name to be added in database
+     *
+     * @param integer $filename     filename of the image to load
+     */
     private function loadImage($filename)
     {
         // Hash filename

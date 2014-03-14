@@ -52,10 +52,11 @@
 	</div>
 	<div class="row">&nbsp;</div>
 	<div class="row">&nbsp;</div>
-	<div class="row">
+	<div class="episodeRow">
 		<div class="large-12 columns">
 			<table class="episode-table">
 				<tr>
+					<th>Date</th>
 					<th>Season</th>
 					<th>Episode</th>
 					<th width="250">Title</th>
@@ -71,6 +72,7 @@
 				<?php foreach($episodes as $episode): ?>
 				<?php 	$object = new Episode($episode); ?>
 				<tr>
+					<td class="text-center"><?php echo $object->getAttribute("date"); ?></td>
 					<td class="text-center"><?php echo $object->getAttribute("season"); ?></td>
 					<td class="text-center"><?php echo $object->getAttribute("episode"); ?></td>
 					<td><?php echo $object->getAttribute("name"); ?></td>

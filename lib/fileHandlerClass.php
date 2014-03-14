@@ -104,13 +104,15 @@ class FileHandler
             $seriesId = $episode->seriesid;
             $episodeNr = $episode->EpisodeNumber;
             $season = $episode->SeasonNumber;
+            $date = $episode->FirstAired;
 
             if(!Episode::exists(array($seriesId, $season, $episodeNr)))
             {
                 $episodeId = $episode->id;
                 $name = $episode->EpisodeName;
                 $summary = $episode->Overview;
-                $attributes = array("show_id" => $seriesId, "episode_id" => $episodeId, "season" => $season, "episode" => $episodeNr, "name" => $name, "summary" => $summary);
+
+                $attributes = array("show_id" => $seriesId, "episode_id" => $episodeId, "season" => $season, "episode" => $episodeNr, "name" => $name, "summary" => $summary, "date" => $date);
 
                 $episodeObj = new Episode($attributes);
                 $episodeObj->save();

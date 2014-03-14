@@ -22,14 +22,12 @@
 	<?php endif; ?>
 
 	<?php
-		/**
-		 * @todo Change check for banner_url image to check for its EXISTENCE and not whether it contains .png -- this check is slow.
-		**/
+	$imageFile = (file_exists('media/posters/' . $item->getAttribute("poster")) ? 'media/posters/' . $item->getAttribute("poster") : 'assets/img/placeholder.png');	
 	?>
 
 	<div class="small-3 columns browse-list">
 		<a href="?page=details&amp;id=<?php echo $item->getAttribute("id");?>" title="<?php echo $item->getAttribute("name"); ?>">
-			<img src="media/posters/<?php echo strstr($item->getAttribute("poster"),".jpg") ? $item->getAttribute("poster") : 'assets/img/placeholder.jpg'; ?>" />
+			<img src="<?php echo $imageFile ?>" />
 		</a>
 		<a href="#" title="<?php echo $item->getAttribute("name"); ?>">
 			<h5><?php echo $item->getAttribute("name"); ?></h5>

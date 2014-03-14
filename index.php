@@ -16,7 +16,7 @@
   <nav class="top-bar hide-for-small" data-topbar=""> 
     <ul class="title-area"> 
       <li class="name"> 
-        <h1><a href="#">EpisodeGuide</a></h1>
+        <h1><a href="?">EpisodeGuide</a></h1>
       </li>
       <li class="toggle-topbar menu-icon"><a href="#">Menu</a></li> 
     </ul>

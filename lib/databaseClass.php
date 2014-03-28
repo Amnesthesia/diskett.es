@@ -142,6 +142,7 @@ class DatabaseHandler implements iDatabase
 	 * @param  string $table
 	 * @param  int    $id
 	 * @return int    Number of affected rows
+	 * @todo Rewrite this function!!!!
 	 */
 	public function delete($table, $id)
 	{

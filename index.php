@@ -15,12 +15,15 @@
     <link rel="stylesheet" type="text/css" href="assets/css/animate-custom.css" />
     <script src="assets/js/vendor/modernizr.js"></script>
     <script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+    <script src="assets/js/notify.min.js"></script>
     <?php require_once(PATH.'lib/includeClass.php');?>
     <?php require_once(PATH.'lib/userClass.php'); ?>
   </head>
   <body>
+
 <div class="overlay"></div>
-  <nav class="top-bar hide-for-small" data-topbar=""> 
+<div class="sticky" data-options="">
+  <nav class="top-bar" data-topbar=""> 
     <ul class="title-area"> 
       <li class="name"> 
         <h1><a href="?">EpisodeGuide</a></h1>
@@ -72,11 +75,15 @@
       </li>
     <li class="divider"></li>
     <li class="has-form">
-      <?php echo (User::isLoggedIn() == true) ? '<a href="#" id="reg" class="small button">Account</a>' : '<a href="#" id="reg" class="small button">Login</a>'; ?>
+      <?php echo (User::isLoggedIn() == true) ? 
+      '<a href="?page=account" class="small button">Account</a>' 
+      : 
+      '<a href="#" id="reg" class="small button">Login</a>'; ?>
     </li>
   </ul>
   </section>
   </nav>
+  </div>
   <div id="content">
     <?php IncludePage::view(@$_GET['page']); ?>
     <div id="container">
@@ -135,6 +142,7 @@
     </div>
     <script src="assets/js/vendor/jquery.js"></script>
     <script src="assets/js/foundation.min.js"></script>
+     <script src="assets/js/foundation/foundation.topbar.js"></script>
     <script>
       $(document).foundation();
     </script>

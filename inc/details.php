@@ -1,6 +1,7 @@
 <?php
 	require_once(PATH."/lib/showClass.php");
 	require_once(PATH."/lib/episodeClass.php");
+	require_once(PATH."/lib/logClass.php");
 
 	// ?p is pagination-multiplier. 1 means second page, i.e 1*DEFAULT_LIST_SIZE, etc
 	if(isset($_GET["p"]))
@@ -39,6 +40,7 @@
 					<p><?php echo $show->getAttribute("summary"); ?></p>
 				</div>
 			</div>
+			<a href="?page=details&id=<?php echo $show->getAttribute("id");?>&watch=1" class="tiny button radius">Add to watchlist</a>
 		</div>
 	</div>
 	<div class="row">
@@ -90,3 +92,28 @@
 			</table>
 		</div>
 	</div>
+
+<?php
+
+/**
+ * @todo Use active record...
+ */
+if (isset($_GET['watch']))
+{
+	// function insert($table, array $fields, array $values)
+	$db = DatabaseHandler::getinstance();
+
+	if ($_GET['watch'] == 1)
+	{
+		try
+		{
+			$db->insert('user_show', array('user_id', 'show_id', 'is_favorite'), array($_SESSION['uid'], $show->getAttribute("id"), 0));
+		}
+		catch (Exception $e)
+		{
+			Log::logError($e->getMessage());
+		}
+	}
+}
+
+?>

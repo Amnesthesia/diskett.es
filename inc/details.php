@@ -41,7 +41,9 @@
 					<p><?php echo $show->getAttribute("summary"); ?></p>
 				</div>
 			</div>
-			<a href="?page=details&id=<?php echo $show->getAttribute("id");?>&watch=1" class="tiny button radius">Add to watchlist</a>
+			<?php if (User::isLoggedIn()): ?>
+				<a href="?page=details&id=<?php echo $show->getAttribute("id");?>&watch=1" class="tiny button radius">Add to watchlist</a>
+			<?php endif; ?>
 		</div>
 	</div>
 	<div class="row">

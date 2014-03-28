@@ -2,6 +2,7 @@
 	require_once(PATH."/lib/showClass.php");
 	require_once(PATH."/lib/episodeClass.php");
 	require_once(PATH."/lib/logClass.php");
+	require_once(PATH."/lib/userClass.php");
 
 	// ?p is pagination-multiplier. 1 means second page, i.e 1*DEFAULT_LIST_SIZE, etc
 	if(isset($_GET["p"]))
@@ -61,13 +62,9 @@
 					<th>Episode</th>
 					<th width="250">Title</th>
 					<th width="450">Summary</th>
-					<?php
-						/**
-						 * @todo This column should only be for logged in users
-						**/
-					
-					?>
-					<th>Watched</th>
+					<?php if (User::isLoggedIn()): ?>
+							<th>Watched</th>
+					<?php endif; ?>
 				</tr>
 				<?php foreach($episodes as $episode): ?>
 				<?php 	$object = new Episode($episode); ?>
@@ -78,15 +75,11 @@
 					<td><?php echo $object->getAttribute("name"); ?></td>
 					<td><?php echo $object->getAttribute("summary"); ?></td>
 
-					<?php
-						/**
-						 * @todo This column should only be for logged in users
-						**/
-
-					?>
-					<td class="text-center">
-						<input type="checkbox" class="watched" id="<?php echo $show->getAttribute("id")."-".$object->getAttribute("season")."-".$object->getAttribute("episode");?>" />
-					</td>
+					<?php if (User::isLoggedIn()): ?>
+						<td class="text-center">
+							<input type="checkbox" class="watched" id="<?php echo $show->getAttribute("id")."-".$object->getAttribute("season")."-".$object->getAttribute("episode");?>" />
+						</td>
+					<?php endif; ?>
 				</tr>
 				<?php endforeach; ?>
 			</table>

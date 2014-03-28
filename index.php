@@ -22,12 +22,8 @@
   <body>
 
 <div class="overlay"></div>
-<<<<<<< HEAD
 <div class="sticky" data-options="">
   <nav class="top-bar" data-topbar=""> 
-=======
-  <nav class="top-bar hide-for-small" data-topbar> 
->>>>>>> 78a5b361fc9aaf5fbffeebd7e21586382b7e6d64
     <ul class="title-area"> 
       <li class="name"> 
         <h1><a href="?">EpisodeGuide</a></h1>
@@ -79,52 +75,13 @@
       </li>
     <li class="divider"></li>
     <li class="has-form">
-<<<<<<< HEAD
-      <?php echo (User::isLoggedIn() == true) ? 
-      '<a href="?page=account" class="small button">Account</a>' 
-      : 
-      '<a href="#" id="reg" class="small button">Login</a>'; ?>
-=======
+
       <?php echo (User::isLoggedIn() == true) ? '<a href="?page=account" class="small button">Account</a>' : '<a href="#" id="reg" class="small button">Login</a>'; ?>
->>>>>>> 78a5b361fc9aaf5fbffeebd7e21586382b7e6d64
     </li>
   </ul>
   </section>
   </nav>
-<<<<<<< HEAD
-  </div>
-=======
-
-  <!-- For small screens -->
-  <nav class="top-bar show-for-small-only" data-topbar=""> 
-    <ul class="title-area" style="width: 100%"> 
-      <li class="name"> 
-        <h1 ><a href="?">EpisodeGuide</a></h1>
-      </li>
-      <li class="has-form"> 
-        <div class="row collapse"> 
-          <div class="small-5 columns">
-            <form method="get" action="">
-              <input type="hidden" name="page" value="search" /> 
-              <input type="text" name="searchquery" placeholder="Search shows"> 
-          </div> 
-          <div class="small-3 columns">
-            <input type="submit" value="Search" class="alert button expand">
-            </form>
-          </div>
-        </div>
-      </li>
-    
-      <li class="has-form">
-        <?php 
-        if (!User::isLoggedIn())
-           echo 'href="#" id="reg" class="small button">Lo</a>'; 
-        ?>
-      </li> 
-    </ul>
-
-  </nav>
->>>>>>> 78a5b361fc9aaf5fbffeebd7e21586382b7e6d64
+  </div>  
   <div id="content">
     <?php IncludePage::view(@$_GET['page']); ?>
     <div id="container">

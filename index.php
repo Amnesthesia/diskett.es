@@ -8,7 +8,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Foundation | Welcome</title>
+    <title>EpisodeGuide</title>
     <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,700" />
     <link rel="stylesheet" href="assets/css/foundation.css" />
     <link rel="stylesheet" href="assets/css/custom.css" />
@@ -20,7 +20,7 @@
   </head>
   <body>
 <div class="overlay"></div>
-  <nav class="top-bar hide-for-small" data-topbar=""> 
+  <nav class="top-bar hide-for-small" data-topbar> 
     <ul class="title-area"> 
       <li class="name"> 
         <h1><a href="?">EpisodeGuide</a></h1>
@@ -72,7 +72,7 @@
       </li>
     <li class="divider"></li>
     <li class="has-form">
-      <?php echo (User::isLoggedIn() == true) ? '<a href="#" id="reg" class="small button">Account</a>' : '<a href="#" id="reg" class="small button">Login</a>'; ?>
+      <?php echo (User::isLoggedIn() == true) ? '<a href="?page=account" class="small button">Account</a>' : '<a href="#" id="reg" class="small button">Login</a>'; ?>
     </li>
   </ul>
   </section>
@@ -99,7 +99,10 @@
       </li>
     
       <li class="has-form">
-        <?php echo (User::isLoggedIn() == true) ? '<a href="#" id="reg" class="small button">Account</a>' : '<a href="#" id="reg" class="small button">Login</a>'; ?>
+        <?php 
+        if (!User::isLoggedIn())
+           echo 'href="#" id="reg" class="small button">Lo</a>'; 
+        ?>
       </li> 
     </ul>
 
@@ -162,6 +165,7 @@
     </div>
     <script src="assets/js/vendor/jquery.js"></script>
     <script src="assets/js/foundation.min.js"></script>
+     <script src="assets/js/foundation/foundation.topbar.js"></script>
     <script>
       $(document).foundation();
     </script>

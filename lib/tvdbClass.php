@@ -164,14 +164,20 @@ class TvDB
     public function getShowId($showName) //Must be spelled correctly with capital letters
     {
         $url = 'http://thetvdb.com/api/GetSeries.php?seriesname=' . urlencode($showName);
+
         $xmlData = file_get_contents($url);
 
         $xml = new SimpleXMLElement($xmlData);
-        $xpath = $xml->xpath("//Series[SeriesName[contains(translate(.,'ABCDEFGHJIKLMNOPQRSTUVWXYZ','abcdefghjiklmnopqrstuvwxyz'), translate('" . $showName . "','ABCDEFGHJIKLMNOPQRSTUVWXYZ','abcdefghjiklmnopqrstuvwxyz'))]]/seriesid"); //case-insensitive input for xpath
 
-        if(isset($xpath[0]))
-            return $xpath[0];                       //element with the ID
+	@$seriesId = ($xml[0]->Series->seriesid);
+
+       //$xpath = $xml->xpath("//Series[SeriesName[contains(translate(.,'ABCDEFGHJIKLMNOPQRSTUVWXYZ','abcdefghjiklmnopqrstuvwxyz'), translate('" . $showName . "','ABCDEFGHJIKLMNOPQRSTUVWXYZ','abcdefghjiklmnopqrstuvwxyz'))]]/seriesid"); //case-insensitive input for xpath
+	
+	//$xpath = $xml->xpath("//Series[SeriesName[contains(lower-case(" . $showName . "))]]");
+
+	if (@$seriesId != NULL)
+	    return $seriesId;
         else
-            echo "Could not find Tv-show";
+            return false;
     }
 }

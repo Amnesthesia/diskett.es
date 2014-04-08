@@ -1,6 +1,8 @@
 <?php
 	require_once(PATH."/lib/showClass.php");
 	require_once(PATH."/lib/episodeClass.php");
+	require_once(PATH."/lib/logClass.php");
+	require_once(PATH."/lib/userClass.php");
 
 	// ?p is pagination-multiplier. 1 means second page, i.e 1*DEFAULT_LIST_SIZE, etc
 	if(isset($_GET["p"]))
@@ -39,6 +41,9 @@
 					<p><?php echo $show->getAttribute("summary"); ?></p>
 				</div>
 			</div>
+			<?php if (User::isLoggedIn()): ?>
+				<a href="?page=details&id=<?php echo $show->getAttribute("id");?>&watch=1" class="tiny button radius">Add to watchlist</a>
+			<?php endif; ?>
 		</div>
 	</div>
 	<div class="row">
@@ -59,13 +64,9 @@
 					<th>Episode</th>
 					<th width="250">Title</th>
 					<th width="450">Summary</th>
-					<?php
-						/**
-						 * @todo This column should only be for logged in users
-						**/
-					
-					?>
-					<th>Watched</th>
+					<?php if (User::isLoggedIn()): ?>
+							<th>Watched</th>
+					<?php endif; ?>
 				</tr>
 				<?php foreach($episodes as $episode): ?>
 				<?php 	$object = new Episode($episode); ?>
@@ -76,17 +77,38 @@
 					<td><?php echo $object->getAttribute("name"); ?></td>
 					<td><?php echo $object->getAttribute("summary"); ?></td>
 
-					<?php
-						/**
-						 * @todo This column should only be for logged in users
-						**/
-
-					?>
-					<td class="text-center">
-						<input type="checkbox" class="watched" id="<?php echo $show->getAttribute("id")."-".$object->getAttribute("season")."-".$object->getAttribute("episode");?>" />
-					</td>
+					<?php if (User::isLoggedIn()): ?>
+						<td class="text-center">
+							<input type="checkbox" class="watched" id="<?php echo $show->getAttribute("id")."-".$object->getAttribute("season")."-".$object->getAttribute("episode");?>" />
+						</td>
+					<?php endif; ?>
 				</tr>
 				<?php endforeach; ?>
 			</table>
 		</div>
 	</div>
+
+<?php
+
+/**
+ * @todo Use active record...
+ */
+if (isset($_GET['watch']))
+{
+	// function insert($table, array $fields, array $values)
+	$db = DatabaseHandler::getinstance();
+
+	if ($_GET['watch'] == 1)
+	{
+		try
+		{
+			$db->insert('user_show', array('user_id', 'show_id', 'is_favorite'), array($_SESSION['uid'], $show->getAttribute("id"), 0));
+		}
+		catch (Exception $e)
+		{
+			Log::logError($e->getMessage());
+		}
+	}
+}
+
+?>

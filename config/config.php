@@ -1,5 +1,5 @@
 [Database]
-Host = 198.211.121.199
+Host = flawedlogic.pw
 User = epguideuser
 Password = '(DJSIODH/NC&T#/)NC#'
 DbName = epguide

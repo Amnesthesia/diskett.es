@@ -109,7 +109,31 @@
 
   </nav></form></div>
   <div id="content">
-    <?php IncludePage::view(@$_GET['page']); ?>
+    <script type="text/x-handlebars" data-template-name="shows" />
+    {{outlet}}
+    <div class="row">
+     {{#each controller itemController="show"}} 
+      <div class="small-3 columns browse-list browse-item overlay-trigger" id="{{unbound id}}">
+      <a href="?page=details&amp;id={{unbound id}}" title="{{unbound name}}">
+        <img src="media/posters/{{unbound poster}}" alt="media/posters/{{unbound poster}}" />
+      </a>
+      <a href="#" title="{{unbound name}}">
+        <h5>{{name}}</h5>
+      </a>
+      <div class="grid-list-overlay">
+        <fieldset class="list-item-summary">
+          <label class="title">{{name}}></label>
+          <div class="star" style="width: {{unbound ratingLength}}px;">&nbsp;</div>
+          <label>{{summary}}</label>
+          
+
+        </fieldset>
+      </div>
+    </div>
+    {{/each}}
+    </div>  
+    </script>
+
     <div id="container">
     <!-- hidden anchor to stop jump  -->
       <a class="hiddenanchor" id="toregister"></a>

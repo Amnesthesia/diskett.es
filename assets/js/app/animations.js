@@ -1,12 +1,12 @@
-define(["jquery"], function(jq) {
+define(["jquery","domready"], function(jq,domReady) {
 		
 
-
-	jq(".overlay-trigger").mouseenter(function(){
-			jq(this).children("div.grid-list-overlay").show({duration: 800, easing: 'linear'});
+	domReady(function() { 
+	jq(".overlay-trigger").mouseenter(function(e){
+			jq(e).children("div.grid-list-overlay").slideDown("fast");
 		});
-	jq(".overlay-trigger").mouseleave(function(){
-			jq(this).children("div.grid-list-overlay").slideUp("fast");
+	jq(".overlay-trigger").mouseleave(function(e){
+			jq(e).children("div.grid-list-overlay").slideUp("fast");
 	});
 
 
@@ -21,4 +21,5 @@ define(["jquery"], function(jq) {
             jq('.overlay').hide();
             jq('#wrapper').hide();
       } });
+	});
 });

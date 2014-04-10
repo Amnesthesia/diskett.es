@@ -29,6 +29,7 @@ requirejs.config({
 		"handlebars": 'handlebars/handlebars',
 		"ember": 'ember/ember',
 		"ember-data": 'ember-data/ember-data',
+		"domready": 'domready/ready',
 		// "app" means we should go up one level
 		// to /assets/js/app instead. 
 		// That's where we keep our custom filez, OK? :D
@@ -61,6 +62,7 @@ requirejs(["app/animations"]);
 
 // Load the Ember router
 requirejs(["app/router"]);
+requirejs(["app/controllers/show"]);
 
 // The main application.js file
 requirejs(["app/application"]);

@@ -59,6 +59,9 @@ abstract class API
 	 	{
 	 		case 'POST':
 	 			$this->verb = 'create';
+	 			$this->request = $this->sanitize($_POST);
+	 			break;
+	 			
 	 		case 'DELETE':
 	 			$this->request = $this->sanitize($_POST);
 	 			$this->verb = 'delete';
@@ -106,10 +109,8 @@ abstract class API
 
 	 	// If this is an array, loop through it then recurse for each item
 	 	if(is_array($data))
-	 	{
 	 		foreach($data as $key => $value)
 	 			$sanitized[$key] = $this->sanitize($value);
-	 	}
 	 	else
 	 		$sanitized = trim(strip_tags($data));
 

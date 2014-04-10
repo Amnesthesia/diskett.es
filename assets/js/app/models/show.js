@@ -1,7 +1,6 @@
-define(['jquery', 'ember','ember-data','handlebars'], function ($,Ember){
+define(['jquery', 'ember','ember-data','handlebars','app/application'], function ($,Ember){
 	
 	EpGuide.Show = DS.Model.extend({
-		id: 		DS.attr("number"),
 		imdb_id: 	DS.attr("number"),
 		zap2_id: 	DS.attr("number"),
 		channel_id: DS.attr("number"),
@@ -11,6 +10,8 @@ define(['jquery', 'ember','ember-data','handlebars'], function ($,Ember){
 		summary: 	DS.attr("string"),
 		lang: 		DS.attr("string"),
 		rating: 	DS.attr("number"),
+		episodecount: DS.attr("number"),
+		lst_update: DS.attr("string"),
 		watched: 	DS.attr("boolean")
 	});
 });

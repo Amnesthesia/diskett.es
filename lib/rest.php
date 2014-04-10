@@ -18,6 +18,20 @@
 			
 		}
 
+		// Shortcut for fetching all (by plural)
+		public function shows()
+		{
+
+			$data = array("shows" => array());
+			$showlist = Show::getList();
+
+			foreach($showlist as $s)
+				$data["shows"][] = $s->getAttributes();				
+
+			return $data;
+
+		}
+
 		public function show()
 		{
 			$args = func_get_args();
@@ -28,16 +42,16 @@
 				case 'read':
 					if(empty($args) || !$args[0])
 					{	
-						$data = array();
+						$data = array("shows" => array());
 						$showlist = Show::getList();
 
 						foreach($showlist as $s)
-							$data[] = $s->getAttributes();				
+							$data["shows"][] = $s->getAttributes();				
 					}
 					else
 					{
 						$show = new Show($args[0]);
-						$data = $show->getAttributes();
+						$data["shows"][] = $show->getAttributes();
 					}
 					return $data;
 					break;

@@ -13,9 +13,9 @@
     <link rel="stylesheet" href="assets/css/foundation.css" />
     <link rel="stylesheet" href="assets/css/custom.css" />
     <link rel="stylesheet" type="text/css" href="assets/css/animate-custom.css" />
-    <script src="assets/js/vendor/modernizr.js"></script>
-    <script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
-    <script src="assets/js/notify.min.js"></script>
+    
+    <script data-main="assets/js/config" src="assets/js/lib/requirejs/require.js"></script>
+
     <?php require_once(PATH.'lib/includeClass.php');?>
     <?php require_once(PATH.'lib/userClass.php'); ?>
   </head>
@@ -81,7 +81,6 @@
   </ul>
   </section>
   </nav>
-<<<<<<< HEAD
 
   <!-- For small screens -->
   <nav class="top-bar show-for-small-only" data-topbar=""> 
@@ -108,10 +107,7 @@
       </li> 
     </ul>
 
-  </nav>
-=======
-  </div>  
->>>>>>> 9059fb09e2780bb764dfc8423b40a6d495f922f0
+  </nav></form></div>
   <div id="content">
     <?php IncludePage::view(@$_GET['page']); ?>
     <div id="container">
@@ -168,27 +164,7 @@
     </div>
     </div>
     </div>
-    <script src="assets/js/vendor/jquery.js"></script>
-    <script src="assets/js/foundation.min.js"></script>
-     <script src="assets/js/foundation/foundation.topbar.js"></script>
-    <script>
-      $(document).foundation();
-    </script>
-    <script>
-      $(document).ready(function(){
-        $('#reg').click(function(e) {
-        $('.overlay').show();
-        $('#wrapper').show();
-        $('html, body').animate({ scrollTop: $('#wrapper').offset().top }, 'slow');
-      }); });
-    </script>
-    <script>
-      $(document).on('keydown', function (e) {
-          if (e.keyCode == 27) { // ESC
-            $('.overlay').hide();
-            $('#wrapper').hide();
-      } });
-    </script>
+
   </body>
 </html>
 

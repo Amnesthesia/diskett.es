@@ -1,0 +1,31 @@
+{
+  "name": "bugfree-shame",
+  "version": "0.1",
+  "homepage": "https://github.com/s1gh/bugfree-shame",
+  "authors": [
+    "Amnesthesia",
+    "Halvtho",
+    "Tingdal"
+  ],
+  "description": "EpisodeGuide is a website for keeping track of TV shows",
+  "main": "app.js",
+  "moduleType": [
+    "amd"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "assets/js/lib",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "latest",
+    "ember": "~1.5.0",
+    "foundation": "~5.2.2",
+    "requirejs": "~2.1.11",
+    "ember-data": "~0.0.14"
+  }
+}

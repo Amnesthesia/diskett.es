@@ -493,3 +493,70 @@ nav.top-bar
 {
   margin-top: 1px;
 }
+
+/** 
+ ** Grid overlay
+ **
+ */
+ div.grid-list-overlay
+ {
+    height: 275px;
+    width: 87.5%;
+    background: black;
+    opacity: 0.7;
+    margin-top: -315px;
+    display: none;
+    position: absolute;
+ }
+
+ fieldset.list-item-summary label.title
+ {
+    margin-top: -30px;
+    color: white;
+    font-weight: bold;
+    font-size: 2em;
+ }
+
+ fieldset.list-item-summary
+ {
+    font-size: 12pt;
+    color: lightGray;
+    border:none;
+ }
+
+ fieldset.list-item-summary  label
+ {
+    color: white;
+    font-size: 10pt;
+ }
+
+ /**
+  ** Icons for rating
+  **/
+  div.star
+  {
+    width: 16px;
+    height: 16px;
+    background-size: 16px;
+    background:url(/assets/img/icons/star_icon.png) repeat-x;
+  }
+
+  label.title
+  {
+    color: white;
+    font-weight: bold;
+    font-size: 1.5em;
+  }
+
+  img.grayscale
+  {
+    filter: url(../img/bw_filter.svg#grayscale); /* Firefox 3.5+ */
+    filter: gray; /* IE6-9 */
+    -webkit-filter: grayscale(1); /* Google Chrome, Safari 6+ & Opera 15+ */
+  }
+
+  img.grayscale:hover
+  {
+    filter: none;
+    -webkit-filter: grayscale(0);
+  }

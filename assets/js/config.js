@@ -34,7 +34,7 @@ requirejs.config({
 		// to /assets/js/app instead. 
 		// That's where we keep our custom filez, OK? :D
 		"app": "../app",
-		"template": "../../html"
+		"template": "../../../partials"
 	}/*,
 
 	// Because of reasons, like using other frameworks
@@ -56,13 +56,17 @@ requirejs.config({
 
 });
 
-	
+// Load partials
+requirejs(["app/partials"]);
+
 // Load our animations module :-)
 requirejs(["app/animations"]);
 
-// Load the Ember router
+// Load the Ember router and controllers
 requirejs(["app/router"]);
+requirejs(["app/controllers/episode"]);
 requirejs(["app/controllers/show"]);
+
 
 // The main application.js file
 requirejs(["app/application"]);

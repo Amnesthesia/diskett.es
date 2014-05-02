@@ -1,4 +1,4 @@
-define(['jquery', 'ember','ember-data','handlebars'], function ($,Ember) {
+define(['jquery', 'ember','ember-data','handlebars'], function ($,Ember,null,handlebars) {
 
 	window.EpGuide = Ember.Application.create({
 		LOG_TRANSITIONS: true,
@@ -16,5 +16,7 @@ define(['jquery', 'ember','ember-data','handlebars'], function ($,Ember) {
 	DS.RESTAdapter.reopen({
 		namespace: 'api'
 	});
+
+	
 
 });

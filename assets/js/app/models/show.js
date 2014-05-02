@@ -1,5 +1,6 @@
-define(['jquery', 'ember','ember-data','handlebars','app/application'], function ($,Ember){
+define(['ember','ember-data','app/models/episode','app/models/channel'], function ($,Ember){
 	
+
 	EpGuide.Show = DS.Model.extend({
 		imdb_id: 	DS.attr("number"),
 		zap2_id: 	DS.attr("number"),
@@ -12,6 +13,7 @@ define(['jquery', 'ember','ember-data','handlebars','app/application'], function
 		rating: 	DS.attr("number"),
 		episodecount: DS.attr("number"),
 		lst_update: DS.attr("string"),
-		watched: 	DS.attr("boolean")
+		watched: 	DS.attr("boolean"),
+		episode: DS.hasMany("EpGuide.Episode",{async: true})
 	});
 });

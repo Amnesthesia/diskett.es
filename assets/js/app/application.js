@@ -1,4 +1,4 @@
-define(['jquery', 'ember','ember-data','handlebars'], function ($,Ember,null,handlebars) {
+define(['jquery', 'ember','handlebars','ember-data'], function ($,Ember) {
 
 	window.EpGuide = Ember.Application.create({
 		LOG_TRANSITIONS: true,

@@ -131,3 +131,13 @@ Controllers manage user I/O and reacts on it.
 Supposedly, because of the power of Handlebars' templates, we may not need to create that many views. We'll see about that though. Views are located in
 
 `assets/js/app/controllers/`
+
+## Custom
+
+### animations.js
+
+Animations is a module where I've put most of the site's UI animations, to keep these separate from the rest of the javascript files. 
+
+If you want to add or modify animations, these are found in 
+
+`assets/js/app/animations.js` 

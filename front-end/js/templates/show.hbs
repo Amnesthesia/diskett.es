@@ -1,0 +1,53 @@
+<h2>Show</h2>
+
+<p>
+  <b>Imdb id:</b> {{ imdb_id }}
+</p>
+
+<p>
+  <b>Zap2 id:</b> {{ zap2_id }}
+</p>
+
+<p>
+  <b>Channel id:</b> {{ channel_id }}
+</p>
+
+<p>
+  <b>Poster:</b> {{ poster }}
+</p>
+
+<p>
+  <b>Pilot date:</b> {{ pilot_date }}
+</p>
+
+<p>
+  <b>Name:</b> {{ name }}
+</p>
+
+<p>
+  <b>Summary:</b> {{ summary }}
+</p>
+
+<p>
+  <b>Lang:</b> {{ lang }}
+</p>
+
+<p>
+  <b>Rating:</b> {{ rating }}
+</p>
+
+<p>
+  <b>Episodecount:</b> {{ episodecount }}
+</p>
+
+<p>
+  <b>Lst update:</b> {{ lst_update }}
+</p>
+
+<p>
+  <b>Watched:</b> {{ watched }}
+</p>
+
+{{#linkTo "shows"}}←All Shows{{/linkTo}}
+{{#linkTo "edit_show" model}}Edit{{/linkTo}}
+<a href="#" {{action "destroy"}}>Destroy</a>

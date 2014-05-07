@@ -13,7 +13,7 @@
 
 <?php
 	$count = 0;
-	var_dump($showList[0]);
+	
 	foreach($showList as $item):
 		$count++;
 ?>

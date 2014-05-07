@@ -1,0 +1,37 @@
+<h2>Episode</h2>
+
+<p>
+  <b>Show id:</b> {{ show_id }}
+</p>
+
+<p>
+  <b>Episode id:</b> {{ episode_id }}
+</p>
+
+<p>
+  <b>Season:</b> {{ season }}
+</p>
+
+<p>
+  <b>Poster:</b> {{ poster }}
+</p>
+
+<p>
+  <b>Date:</b> {{ date }}
+</p>
+
+<p>
+  <b>Name:</b> {{ name }}
+</p>
+
+<p>
+  <b>Summary:</b> {{ summary }}
+</p>
+
+<p>
+  <b>Watched:</b> {{ watched }}
+</p>
+
+{{#linkTo "episodes"}}←All Episodes{{/linkTo}}
+{{#linkTo "edit_episode" model}}Edit{{/linkTo}}
+<a href="#" {{action "destroy"}}>Destroy</a>

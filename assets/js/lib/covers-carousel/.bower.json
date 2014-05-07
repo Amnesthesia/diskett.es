@@ -1,0 +1,29 @@
+{
+  "name": "covers-carousel",
+  "version": "0.1.7",
+  "homepage": "https://github.com/nicmart/CoversCarousel",
+  "authors": [
+    "Nicolò Martini <nicmartnic@gmail.com>"
+  ],
+  "description": "A death simple, mobile friendly, covers carousel plugin for jQuery",
+  "main": "./src/jquery.covers-carousel.js",
+  "keywords": [
+    "carousel",
+    "covers-carousel",
+    "slideshow"
+  ],
+  "dependencies": {
+    "jquery": ">=1.7.0"
+  },
+  "license": "MIT",
+  "_release": "0.1.7",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.1.7",
+    "commit": "5bc4a30281079f4e1918246785a166bcd084b589"
+  },
+  "_source": "git://github.com/nicmart/CoversCarousel.git",
+  "_target": "~0.1.7",
+  "_originalSource": "covers-carousel",
+  "_direct": true
+}

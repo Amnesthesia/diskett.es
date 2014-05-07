@@ -1,0 +1,13 @@
+<h2>Channel</h2>
+
+<p>
+  <b>Country id:</b> {{ country_id }}
+</p>
+
+<p>
+  <b>Name:</b> {{ name }}
+</p>
+
+{{#linkTo "channels"}}←All Channels{{/linkTo}}
+{{#linkTo "edit_channel" model}}Edit{{/linkTo}}
+<a href="#" {{action "destroy"}}>Destroy</a>

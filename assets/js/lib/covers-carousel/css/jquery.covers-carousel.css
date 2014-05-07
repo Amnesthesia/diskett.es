@@ -1,0 +1,14 @@
+.carousel-wrapper {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+.carousel-items {
+    width: 2000em;
+    position: relative;
+    left: 0px;
+}
+.item {
+    display: inline-block;
+    position: relative;
+}

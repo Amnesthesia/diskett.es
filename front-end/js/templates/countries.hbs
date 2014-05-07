@@ -1,0 +1,21 @@
+<h2>Countries</h2>
+
+{{#linkTo "new_country"}}New Country{{/linkTo}}
+
+<table>
+  <thead>
+    <th>language</th>
+    <th>name</th>
+  </thead>
+  <tbody>
+    {{#each country in controller}}
+    <tr>
+      <td>{{ country.language }}</td>
+      <td>{{ country.name }}</td>
+      <td>{{#linkTo "country" country }}view{{/linkTo}}</td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+

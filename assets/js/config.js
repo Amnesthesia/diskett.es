@@ -19,6 +19,9 @@ requirejs.config({
 		},
 		"ember-data": {
 			deps: ["ember"]
+		},
+		"covers-carousel": {
+			deps: ["jquery"]
 		}
 	},
 	paths: {
@@ -30,6 +33,7 @@ requirejs.config({
 		"ember": 'ember/ember',
 		"ember-data": 'ember-data/ember-data',
 		"domready": 'domready/ready',
+		"covers-carousel": 'covers-carousel/src/jquery.covers-carousel',
 		// "app" means we should go up one level
 		// to /assets/js/app instead. 
 		// That's where we keep our custom filez, OK? :D
@@ -56,16 +60,7 @@ requirejs.config({
 
 });
 
-// Load partials
-requirejs(["app/partials"]);
 
-// Load our animations module :-)
-requirejs(["app/animations"]);
-
-// Load the Ember router and controllers
-requirejs(["app/router"]);
-requirejs(["app/controllers/episode"]);
-requirejs(["app/controllers/show"]);
 
 
 // The main application.js file

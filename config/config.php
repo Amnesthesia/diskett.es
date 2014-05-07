@@ -1,7 +1,7 @@
 [Database]
-Host = flawedlogic.pw
-User = epguideuser
-Password = '(DJSIODH/NC&T#/)NC#'
+Host = localhost
+User = root
+Password = 'pr3ssur3'
 DbName = epguide
 Charset = utf8
 

@@ -1,0 +1,25 @@
+{
+  "name": "front-end",
+  "version": "0.0.1",
+  "homepage": "https://github.com/s1gh/bugfree-shame",
+  "authors": [
+    "Amnesthesia",
+    "Halvtho",
+    "Tingdal"
+  ],
+  "description": "Front-End for EpisodeGuide",
+  "main": "js/application.js",
+  "moduleType": [
+    "node"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "assets/js/lib",
+    "test",
+    "tests"
+  ]
+}

@@ -17,6 +17,20 @@ define(['jquery', 'ember','handlebars','ember-data'], function ($,Ember) {
 		namespace: 'api'
 	});
 
+
+	// Load partials
+	requirejs(["app/partials"]);
+
+	// Load our animations module :-)
+	requirejs(["app/animations"]);
+
+	// Load the Ember router and controllers
+	requirejs(["app/router"]);
+	requirejs(["app/controllers/episode"]);
+	requirejs(["app/controllers/show"]);
+
+	// Load the views!
+	requirejs(["app/views/grid"]);
 	
 
 });

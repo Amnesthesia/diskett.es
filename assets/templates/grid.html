@@ -1,0 +1,27 @@
+<script id="grid-template" type="text/x-handlebars-template" data-template-name="shows">
+<div class="row">
+       {{#each controller itemController="show"}} 
+        <div class="small-3 columns browse-list browse-item overlay-trigger" id="{{unbound id}}">
+          <div class="progress browse-item-rating-progress">
+            <div class="browse-item-rating">{{ratingText}}</div>
+            <span class="meter" style="margin-left: -1px;width: {{unbound ratingLength}}%"></span>
+          </div>
+          <div class="browse-item-splitter">
+            <a href="?page=details&amp;id={{unbound id}}" title="{{unbound name}}">
+              <img src="media/posters/{{unbound poster}}" alt="media/posters/{{unbound poster}}" />
+            </a>
+            <a href="#" title="{{unbound name}}">
+              <h5>{{name}}</h5>
+            </a>
+          </div>
+          <div class="browse-item-actions">
+             
+                <div class="button small primary follow-button"> +Follow</div>
+              
+              <div class="button small read-more-button"> More</div>
+              <div class="clear">&nbsp;</div>
+          </div>
+        </div>
+      {{/each}}
+    </div> 
+</script>

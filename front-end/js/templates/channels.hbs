@@ -1,0 +1,21 @@
+<h2>Channels</h2>
+
+{{#linkTo "new_channel"}}New Channel{{/linkTo}}
+
+<table>
+  <thead>
+    <th>country_id</th>
+    <th>name</th>
+  </thead>
+  <tbody>
+    {{#each channel in controller}}
+    <tr>
+      <td>{{ channel.country_id }}</td>
+      <td>{{ channel.name }}</td>
+      <td>{{#linkTo "channel" channel }}view{{/linkTo}}</td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+

@@ -1,0 +1,13 @@
+<h2>Country</h2>
+
+<p>
+  <b>Language:</b> {{ language }}
+</p>
+
+<p>
+  <b>Name:</b> {{ name }}
+</p>
+
+{{#linkTo "countries"}}←All Countries{{/linkTo}}
+{{#linkTo "edit_country" model}}Edit{{/linkTo}}
+<a href="#" {{action "destroy"}}>Destroy</a>

@@ -1,0 +1,20 @@
+<h2>Country</h2>
+
+<form {{action save on="submit"}}>
+  
+  <p>
+    <label for="language">Language</label><br>
+    {{view Ember.TextField valueBinding="language" id="language"}}
+  </p>
+  
+  <p>
+    <label for="name">Name</label><br>
+    {{view Ember.TextField valueBinding="name" id="name"}}
+  </p>
+  
+  <p>
+    <button type="submit">Save</button>
+  </p>
+
+</form>
+

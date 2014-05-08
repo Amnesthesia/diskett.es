@@ -1,8 +1,8 @@
+
 {{#linkTo "new_show"}}New Show{{/linkTo}}
 
-<div class="carousel-wrapper">
-  <div class="carousel-items">
-
+<div class="row">
+  
     {{#each show in controller}}
     <div class="item small-3 columns browse-list browse-item overlay-trigger" id="{{unbound show.id}}">
           <div class="progress browse-item-rating-progress">
@@ -28,6 +28,5 @@
           </div>
         </div>
     {{/each}}
-  </div>     
 </div>
 

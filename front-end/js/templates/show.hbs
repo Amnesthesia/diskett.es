@@ -48,6 +48,14 @@
   <b>Watched:</b> {{ watched }}
 </p>
 
+<p>
+  <b>RatingText:</b> {{ ratingText }}
+</p>
+
+<p>
+  <b>RatingLength:</b> {{ ratingLength }}
+</p>
+
 {{#linkTo "shows"}}←All Shows{{/linkTo}}
 {{#linkTo "edit_show" model}}Edit{{/linkTo}}
 <a href="#" {{action "destroy"}}>Destroy</a>

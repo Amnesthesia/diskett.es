@@ -634,18 +634,19 @@ div.browse-item-splitter
     font-size: 1.6em;
    }
 
+   /* This is for the regular login button, i.e without login form visible */
    .top-bar ul.right
    {
     width: 14.15%;
     margin-left: 0px;
    }
-   .top-bar #login-button
+   .top-bar .nav-login-btn
    {
     top: 0px;
     width: 100%;
    }
 
-   .top-bar #login-button h2 a
+   .top-bar .nav-login-btn h2 a
    {
     color: white;
     font-size: 0.85em;
@@ -653,9 +654,44 @@ div.browse-item-splitter
     line-height: 0.5;
    }
 
-   .top-bar #login-button h2
+   .top-bar .nav-login-btn h2
    {
     margin-top: -14px;
     padding-top: 0px;
    }
 
+   /* Visible login form */
+   .top-bar #login-button-invis h2 a
+   {
+    display: none;
+   }
+
+   .top-bar #login-button-invis
+   {
+    background: #444;
+   }
+
+   div#login-overlay
+   {
+    background-color: #DDD;
+    width: 17em;
+    padding: 1em;
+    border: 1px solid #ccc;
+    position: fixed;
+    right: 0px;
+    display: none;
+    padding-bottom: 0px;
+    box-shadow: 1px 1px 15px 5px;
+    z-index: 9999;
+   }
+
+   div#login-overlay #login-overlay-button
+   {
+    width: 9em;
+    margin-left: -0.5em;
+    margin-bottom: 0px;
+    font-size: 2em;
+    font-family: Helvetica;
+    height: 50px;
+    line-height: 0.5;
+   } 

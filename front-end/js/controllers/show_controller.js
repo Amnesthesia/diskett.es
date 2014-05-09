@@ -1,4 +1,6 @@
 var ShowController = Ember.ObjectController.extend({
+	needs: "login",
+	loginController: Ember.computed.alias("controllers.login"),
   	// Returns rating as length for the rating progress bar
   	ratingLength: function(){ 
     	return (this.get('rating').toFixed(1)*10);
@@ -15,7 +17,9 @@ var ShowController = Ember.ObjectController.extend({
     	this.get('target.router').transitionTo('shows');
   		},
   		follow: function(){
-  			if(!confirm("You must be logged in")) return;
+  			if(!this.get('session').isAuthenticated)
+  				this.get('loginController').toggleLogin();
+
   		}
   	}
 

@@ -35,6 +35,10 @@ App.Router.map(function() {
 
 
 });
+
+// Route for login!
+App.ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin);
+
 App.IndexRoute = Ember.Route.extend({
   redirect: function(){
     // Redirect index to shows

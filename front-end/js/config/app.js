@@ -6,7 +6,7 @@ require('../vendor/handlebars');
 require('../vendor/ember');
 require('../vendor/ember-data'); // delete if you don't want ember-data
 require('../vendor/ember-simple-auth/ember-simple-auth');
-require('../vendor/jquery.pulsate/jquery.pulsate')
+require('../vendor/jquery.twinkle/jquery.twinkle-0.5.0.min');
 
 var App = Ember.Application.create();
 

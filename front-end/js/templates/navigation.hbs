@@ -1,0 +1,27 @@
+<div class="sticky" data-options="">
+  <nav class="top-bar" data-topbar=""> 
+    <ul class="title-area"> 
+      <li class="name"> 
+        <h1>{{#linkTo "index" }}EpisodeGuide {{/linkTo}}</h1>
+      </li>
+      <li class="toggle-topbar menu-icon">Menu</li> 
+    </ul>
+    
+    <section class="top-bar-section" id="search-area"> 
+    <!-- Right Nav Section --> 
+      <form method="get" action="">
+        {{view Ember.TextField valueBinding="search" action="doSearch" value="Search shows"}}
+      </form>
+    </section>
+
+    <ul class="right"> 
+      <li class="name nav-login-btn button" id="login-button"> 
+        {{#if session.isAuthenticated}}
+        <h2><a {{ action 'invalidateSession' }}>Log out</a></h2>
+        {{else}}
+        <h2><a {{ action 'loginForm' }}>Log in</a></h2>
+        {{/if}}
+      </li>
+    </ul>
+  </nav>
+  </div>

@@ -1,13 +1,24 @@
 
+<div class="col-lg-12" id="search-area"> 
+      <!-- Right Nav Section --> 
+        <form method="get" action="">
+          {{view Ember.TextField valueBinding="search" action="doSearch" placeholder="Search shows"}}
+        </form>
+</div>
+
 {{#linkTo "new_show"}}New Show{{/linkTo}}
 
+<div class="container">
 <div class="row">
   
     {{#each show in controller}}
-    <div class="item small-3 columns browse-list browse-item overlay-trigger" id="{{unbound show.id}}">
+    <div class="item col-md-3 browse-list browse-item overlay-trigger" id="{{unbound show.id}}">
           <div class="progress browse-item-rating-progress">
-            <div class="browse-item-rating">{{show.ratingText}}</div>
-            <span class="meter" style="margin-left: -1px;width: {{unbound this.ratingLength}}%"></span>
+            
+            <div class="progress-bar {{unbound show.progressType}}" style="width: {{unbound this.ratingLength}}%">
+              <div class="browse-item-rating">{{show.ratingText}}</div>
+            </div>
+        
           </div>
           <div class="browse-item-splitter">
             {{#linkTo "show" show.id}}
@@ -19,10 +30,10 @@
           </div>
           <div class="browse-item-actions">
              
-              <div class="button small primary follow-button" {{action follow}}> +Follow</div>
+              <button class="btn btn-small btn-primary follow-button" {{action follow}}> +Follow</button>
               
               
-              {{#linkTo "show" show.id}}<div class="button small read-more-button"> More </div>{{/linkTo}}
+              {{#link-to-animated "show" show animations="main:flip"}}<button class="btn btn-small btn-info read-more-button"> More </button>{{/link-to-animated}}
               
               <div class="clear">&nbsp;</div>
           </div>
@@ -30,3 +41,4 @@
     {{/each}}
 </div>
 
+</div>

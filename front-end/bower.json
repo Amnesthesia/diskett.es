@@ -21,5 +21,12 @@
     "assets/js/lib",
     "test",
     "tests"
-  ]
+  ],
+  "resolutions": {
+    "ember": ">=1.2",
+    "jquery": ">=1.10.2"
+  },
+  "dependencies": {
+    "ember-addons.bs_for_ember": "~0.6.1"
+  }
 }

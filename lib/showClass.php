@@ -13,11 +13,21 @@
  									array("relation" => "belongs_to",
  										  "subject" => "channel")
 									);
+    	private $episodes = array();
 		
 		function __construct($id = 0)
 		{
 			if($id != 0)
 				parent::__construct($id,$this->relationships);
+
+			$e = $this->getChildren("Episode");
+
+			if(count($e)>0)
+				foreach($e as $ep)
+				{
+					$this->episodes[] = serialize($ep);
+				}
+
 		}
 		
 		/**
@@ -145,10 +155,12 @@
 			/**
 			 *	@todo THIS FUNCTION MAKES UNNECESSARILY MANY TRANSACTIONS. CUSTOMIZE QUERY FOR THIS, DON'T USE FIND().
 			 */
-			$q = "SELECT *,(SELECT count(*) FROM episode WHERE show_id=id) as episodecount FROM `show` ORDER BY `$column` ".($descending ? "DESC" : "ASC")." LIMIT ".$index.",".DEFAULT_LIST_SIZE;
+			$q = "SELECT id,(SELECT count(*) FROM episode WHERE show_id=id) as episodecount FROM `show` ORDER BY `$column` ".($descending ? "DESC" : "ASC")." LIMIT ".$index.",".DEFAULT_LIST_SIZE;
 			$rows = DatabaseHandler::getInstance()->read($q);
 			foreach($rows as $row)
-				$obj[] = new Show($row);
+				$obj[] = new Show($row["id"]);
+			
+
 			return $obj;
 		}
 		
@@ -299,6 +311,15 @@
 			{
 				if($id != NULL)
 					$this->setAttribute("id", $id);
+			}
+
+
+			/**
+			 * Returns episodes for REST API
+			 */
+			public function getEpisodes()
+			{
+				return $this->episodes;
 			}
     }
 ?>

@@ -1,6 +1,6 @@
 var Show = require('../models/show');
 
-var ShowRoute = Ember.Route.extend({
+var ShowsRoute = Ember.Route.extend({
 
   model: function() {
     return Show.find();
@@ -17,5 +17,5 @@ var ShowRoute = Ember.Route.extend({
 
 });
 
-module.exports = ShowRoute;
+module.exports = ShowsRoute;
 

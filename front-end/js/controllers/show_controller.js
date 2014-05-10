@@ -9,6 +9,21 @@ var ShowController = Ember.ObjectController.extend({
   	ratingText: function(){
   		return (this.get('rating').toFixed(1));
   	}.property('rating'),
+
+  	// Returns the type of bootstrap progressbar to display for rating
+  	progressType: function(){
+  		var rate = this.get('rating').toFixed(1);
+  		if(rate < 2.5)
+  			return "progress-bar-danger";
+  		else if(rate < 5)
+  			return "progress-bar-warning";
+  		else if(rate < 7.5)
+  			return "progress-bar-info";
+  		else return "progress-bar-success";
+  	}.property('rating'),
+  	episodeList: function(){
+  		return this.get('episodes');
+  	}.property('episodes'),
   	actions: {
   		destroy: function() {
     	if (!confirm('Are you sure?')) return;

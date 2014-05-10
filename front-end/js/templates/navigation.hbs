@@ -1,27 +1,20 @@
-<div class="sticky" data-options="">
-  <nav class="top-bar" data-topbar=""> 
-    <ul class="title-area"> 
-      <li class="name"> 
-        <h1>{{#linkTo "index" }}EpisodeGuide {{/linkTo}}</h1>
-      </li>
-      <li class="toggle-topbar menu-icon">Menu</li> 
-    </ul>
-    
-    <section class="top-bar-section" id="search-area"> 
-    <!-- Right Nav Section --> 
-      <form method="get" action="">
-        {{view Ember.TextField valueBinding="search" action="doSearch" value="Search shows"}}
-      </form>
-    </section>
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
 
-    <ul class="right"> 
-      <li class="name nav-login-btn button" id="login-button"> 
-        {{#if session.isAuthenticated}}
-        <h2><a {{ action 'invalidateSession' }}>Log out</a></h2>
-        {{else}}
-        <h2><a {{ action 'loginForm' }}>Log in</a></h2>
-        {{/if}}
-      </li>
-    </ul>
+	    <div> 
+	        {{#if session.isAuthenticated}}
+	        <button class="btn navbar-btn btn-danger btn-lg login-btn"{{ action 'invalidateSession' }}>Log out</button>
+	        {{else}}
+	        {{#link-to-animated "login" animations='main:slideRight'}}<button class="btn navbar-btn btn-primary btn-lg login-btn">Log in</button>{{/link-to-animated}}
+	        {{/if}}
+	    </div>
+	    <div class="navbar-header col-lg-2 navbar-btn">
+		    <ul id="sidebar-icons">
+				<li>{{#linkTo 'index'}}<div data-icon="&#xe078;" class="icon"></div>{{/linkTo}}</li>
+				<li><div data-icon="&#xe021;" class="icon"></div></li>
+				<li><div data-icon="&#xe067;" class="icon"></div></li>
+				<li><div data-icon="&#xe072;" class="icon"></div></li>
+			</ul>
+			{{#linkTo "index" class="navbar-brand" id="navbar-brand"}} {{App.name}} {{/linkTo}}
+		</div>
+
   </nav>
-  </div>

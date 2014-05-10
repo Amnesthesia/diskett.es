@@ -1,61 +1,48 @@
-<h2>Show</h2>
 
-<p>
-  <b>Imdb id:</b> {{ imdb_id }}
-</p>
+<div class="progress progress-striped browse-item-rating-progress" id="browse-show-rating-progress">
+  
+  <div class="progress-bar {{unbound progressType}}" style="width: {{unbound ratingLength}}%">
+    <div id="browse-show-rating">{{ratingText}}</div>
+  </div>
 
-<p>
-  <b>Zap2 id:</b> {{ zap2_id }}
-</p>
+</div>
 
-<p>
-  <b>Channel id:</b> {{ channel_id }}
-</p>
+<div class="container">
 
-<p>
-  <b>Poster:</b> {{ poster }}
-</p>
+<div class="row">
+    <div class="col-lg-4">
+      <img src="../media/posters/{{unbound poster}}" class="detailsimg"/>
+    </div>
+    <div class="col-lg-8 columns">
+      <div class="row">
+        <div class="col-lg-8 columns">
+          <h1>{{ name }}</h1>
+        </div>
+      </div>
+      <div class="row">
+        
+      </div>
+      <div class="row">
+        <div class="col-lg-8 columns">
+          <p>{{summary}}</p>
+        </div>
+      </div>
+        <a class="tiny button radius" {{action follow}}>Add to watchlist</a>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-4 columns">
+      <ul class="inline-list">
+      
+      </ul>
+    </div>
+  </div>
+  <div class="row">&nbsp;</div>
+  <div class="row">&nbsp;</div>
+  {{ render "episodes" episodeList }}
 
-<p>
-  <b>Pilot date:</b> {{ pilot_date }}
-</p>
 
-<p>
-  <b>Name:</b> {{ name }}
-</p>
-
-<p>
-  <b>Summary:</b> {{ summary }}
-</p>
-
-<p>
-  <b>Lang:</b> {{ lang }}
-</p>
-
-<p>
-  <b>Rating:</b> {{ rating }}
-</p>
-
-<p>
-  <b>Episodecount:</b> {{ episodecount }}
-</p>
-
-<p>
-  <b>Lst update:</b> {{ lst_update }}
-</p>
-
-<p>
-  <b>Watched:</b> {{ watched }}
-</p>
-
-<p>
-  <b>RatingText:</b> {{ ratingText }}
-</p>
-
-<p>
-  <b>RatingLength:</b> {{ ratingLength }}
-</p>
-
-{{#linkTo "shows"}}←All Shows{{/linkTo}}
+{{#link-to-animated "shows" animations="main:slideOverLeft"}}←All Shows{{/link-to-animated}}
 {{#linkTo "edit_show" model}}Edit{{/linkTo}}
 <a href="#" {{action "destroy"}}>Destroy</a>
+</div>

@@ -17,7 +17,7 @@ var LoginController = Ember.Controller.extend({
   			this.set('loginVisible',false);
   		}
 		
-	},
+	}.on('didInsertElement'),
 	actions:{
 		loginForm: function(){
 			this.get('controller').send('toggleLogin');

@@ -14,7 +14,9 @@ var Episode = DS.Model.extend({
 
   summary: DS.attr('string'),
 
-  watched: DS.attr('boolean')
+  watched: DS.attr('boolean'),
+
+  show: DS.belongsTo('App.Show')
 
 });
 

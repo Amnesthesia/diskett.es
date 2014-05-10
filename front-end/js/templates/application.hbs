@@ -1,6 +1,13 @@
+<div id="wrapper">
 {{ outlet 'navigation' }}
-{{ view 'login' }}
-
-{{outlet}}
+{{ outlet modal }}
+<div id="page-content">
+{{ animated-outlet name="main"}}
+</div>
 
 {{ partial 'footer' }}
+
+</div>
+
+ {{debugger}}
+ {{log record}}

@@ -1,10 +1,19 @@
-<div id="login-overlay">
-  	<div class="login-form">
-  		<form class="form-inline">
-  			{{input value=username type="text" placeholder="Username"}}
-  			{{input value=password type="password" placeholder="Password"}}
-  			{{input class="button" type="submit" id="login-overlay-button" value="Log in"}}
-  		</form>
-  	</div>
+<div class="progress progress-striped browse-item-rating-progress" id="browse-show-rating-progress">
+  
+  <div class="progress-bar progress-bar-info" style="width: 100%">
+    
   </div>
 
+</div>
+
+<div class="container">
+	<div class="row">
+		<div class="col-lg-6" class="loginpage-loginform-div">
+				{{partial 'loginForm'}}
+		</div>
+		<div class="col-lg-6" class="loginpage-signupform-div">
+				{{partial 'signupForm'}}
+		</div>
+	</div>
+
+</div>

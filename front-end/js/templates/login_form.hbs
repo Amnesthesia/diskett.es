@@ -5,18 +5,18 @@
 </div>
 <div class="row">
 	<form class="form-inline" {{action 'authenticate' on='submit'}}>
-  	<div class="col-lg-5">
-  		{{input value=username type="text" placeholder="Username"}}
+  	<div class="col-lg-5 loginusername-area">
+  		{{input value=username type="text" placeholder="E-mail" value=loginEmail}}
+  	</div>
+</div>
+<div class="row">
+  	<div class="col-lg-5 loginpw-area">
+  		{{input value=password type="password" placeholder="Password" value=loginPassword}}
   	</div>
 </div>
 <div class="row">
   	<div class="col-lg-5">
-  		{{input value=password type="password" placeholder="Password"}}
-  	</div>
-</div>
-<div class="row">
-  	<div class="col-lg-5">
-  		{{input class="btn btn-info" type="submit" id="login-overlay-button" value="Log in"}}
+  		<button class="btn btn-info" {{action "verifyLoginForm"}}>Log in</button>
   	</div>
 </form>
 </div>

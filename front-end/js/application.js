@@ -267,6 +267,11 @@ module.exports = EpisodesController;
 },{}],12:[function(require,module,exports){
 var LoginController = Ember.Controller.extend({
 	loginVisible: false,
+	loginEmail: "",
+	loginPassword: "",
+	signupEmail: "",
+	signupPassword: "",
+	signupValidate: "",
 	
 	toggleLogin: function(){
 		if(!this.get('session').isAuthenticated && !this.get('loginVisible'))
@@ -288,6 +293,11 @@ var LoginController = Ember.Controller.extend({
 	actions:{
 		loginForm: function(){
 			this.get('controller').send('toggleLogin');
+		},
+		verifyLoginForm: function(){
+			if(this.get('loginEmail') != "lol")
+				Ember.$(".loginusername-area").append('<div class="alert alert-danger alert-dismissable"> <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button><b>Oh come on.. :( Your email sucks, man</div>');
+
 		}
 	}
 });
@@ -1416,35 +1426,31 @@ helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
   data.buffer.push(escapeExpression(helpers.action.call(depth0, "authenticate", {hash:{
     'on': ("submit")
   },contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push(">\n  	<div class=\"col-lg-5\">\n  		");
-  hashContexts = {'value': depth0,'type': depth0,'placeholder': depth0};
-  hashTypes = {'value': "ID",'type': "STRING",'placeholder': "STRING"};
+  data.buffer.push(">\n  	<div class=\"col-lg-5 loginusername-area\">\n  		");
+  hashContexts = {'value': depth0,'type': depth0,'placeholder': depth0,'value': depth0};
+  hashTypes = {'value': "ID",'type': "STRING",'placeholder': "STRING",'value': "ID"};
   options = {hash:{
     'value': ("username"),
     'type': ("text"),
-    'placeholder': ("Username")
+    'placeholder': ("E-mail"),
+    'value': ("loginEmail")
   },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   data.buffer.push(escapeExpression(((stack1 = helpers.input || depth0.input),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "input", options))));
-  data.buffer.push("\n  	</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5\">\n  		");
-  hashContexts = {'value': depth0,'type': depth0,'placeholder': depth0};
-  hashTypes = {'value': "ID",'type': "STRING",'placeholder': "STRING"};
+  data.buffer.push("\n  	</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5 loginpw-area\">\n  		");
+  hashContexts = {'value': depth0,'type': depth0,'placeholder': depth0,'value': depth0};
+  hashTypes = {'value': "ID",'type': "STRING",'placeholder': "STRING",'value': "ID"};
   options = {hash:{
     'value': ("password"),
     'type': ("password"),
-    'placeholder': ("Password")
+    'placeholder': ("Password"),
+    'value': ("loginPassword")
   },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   data.buffer.push(escapeExpression(((stack1 = helpers.input || depth0.input),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "input", options))));
-  data.buffer.push("\n  	</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5\">\n  		");
-  hashContexts = {'class': depth0,'type': depth0,'id': depth0,'value': depth0};
-  hashTypes = {'class': "STRING",'type': "STRING",'id': "STRING",'value': "STRING"};
-  options = {hash:{
-    'class': ("btn btn-info"),
-    'type': ("submit"),
-    'id': ("login-overlay-button"),
-    'value': ("Log in")
-  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
-  data.buffer.push(escapeExpression(((stack1 = helpers.input || depth0.input),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "input", options))));
-  data.buffer.push("\n  	</div>\n</form>\n</div>");
+  data.buffer.push("\n  	</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5\">\n  		<button class=\"btn btn-info\" ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "verifyLoginForm", {hash:{},contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(">Log in</button>\n  	</div>\n</form>\n</div>");
   return buffer;
   
 });
@@ -1723,29 +1729,32 @@ helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
     'on': ("submit")
   },contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
   data.buffer.push(">\n  	<div class=\"col-lg-5\">\n  		");
-  hashContexts = {'value': depth0,'type': depth0,'placeholder': depth0};
-  hashTypes = {'value': "ID",'type': "STRING",'placeholder': "STRING"};
+  hashContexts = {'value': depth0,'type': depth0,'value': depth0,'placeholder': depth0};
+  hashTypes = {'value': "ID",'type': "STRING",'value': "ID",'placeholder': "STRING"};
   options = {hash:{
     'value': ("username"),
     'type': ("text"),
+    'value': ("signupEmail"),
     'placeholder': ("E-mail")
   },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   data.buffer.push(escapeExpression(((stack1 = helpers.input || depth0.input),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "input", options))));
   data.buffer.push("\n  	</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5\">\n  		");
-  hashContexts = {'value': depth0,'type': depth0,'placeholder': depth0};
-  hashTypes = {'value': "ID",'type': "STRING",'placeholder': "STRING"};
+  hashContexts = {'value': depth0,'type': depth0,'value': depth0,'placeholder': depth0};
+  hashTypes = {'value': "ID",'type': "STRING",'value': "ID",'placeholder': "STRING"};
   options = {hash:{
     'value': ("password"),
     'type': ("password"),
+    'value': ("signupPassword"),
     'placeholder': ("Password")
   },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   data.buffer.push(escapeExpression(((stack1 = helpers.input || depth0.input),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "input", options))));
   data.buffer.push("\n  	</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5\">\n  		");
-  hashContexts = {'value': depth0,'type': depth0,'placeholder': depth0};
-  hashTypes = {'value': "ID",'type': "STRING",'placeholder': "STRING"};
+  hashContexts = {'value': depth0,'type': depth0,'value': depth0,'placeholder': depth0};
+  hashTypes = {'value': "ID",'type': "STRING",'value': "ID",'placeholder': "STRING"};
   options = {hash:{
     'value': ("password"),
     'type': ("password"),
+    'value': ("signupVerify"),
     'placeholder': ("Verify plz")
   },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   data.buffer.push(escapeExpression(((stack1 = helpers.input || depth0.input),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "input", options))));

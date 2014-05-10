@@ -1,5 +1,10 @@
 var LoginController = Ember.Controller.extend({
 	loginVisible: false,
+	loginEmail: "",
+	loginPassword: "",
+	signupEmail: "",
+	signupPassword: "",
+	signupValidate: "",
 	
 	toggleLogin: function(){
 		if(!this.get('session').isAuthenticated && !this.get('loginVisible'))
@@ -21,6 +26,11 @@ var LoginController = Ember.Controller.extend({
 	actions:{
 		loginForm: function(){
 			this.get('controller').send('toggleLogin');
+		},
+		verifyLoginForm: function(){
+			if(this.get('loginEmail') != "lol")
+				Ember.$(".loginusername-area").append('<div class="alert alert-danger alert-dismissable"> <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button><b>Oh come on.. :( Your email sucks, man</div>');
+
 		}
 	}
 });

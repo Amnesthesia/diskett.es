@@ -43,6 +43,7 @@ h1, h2, h3, h4, h5, h6
 @media (max-width: 960px) { 
     .browse-item { width:100%; }
     .browse-item a img {width: 100%;}
+    
 }
 
 
@@ -496,7 +497,10 @@ div.browse-item-splitter
   /**
    ** For updated search field & navbar 
    **/
-
+   div.navbar-header
+   {
+    float:left;
+   }
    nav.navbar
    {
     z-index: 10000;
@@ -533,6 +537,30 @@ div.browse-item-splitter
     margin: auto auto;
     padding-left: 5px;
    }
+
+   @media (max-width: 960px) { 
+
+    nav.navbar .navbar-header ul#sidebar-icons
+    {
+      padding-left: 0px;
+    }
+    nav.navbar .navbar-header ul#sidebar-icons
+    {
+      font-size: 2em;
+    }
+    nav.navbar a#navbar-brand
+    {
+      font-size: 1em;
+      padding-left: 5px;
+    }
+
+    nav.navbar .login-btn
+    {
+      padding-left: 3px;
+      font-size: 1.2em;
+    }
+
+}
 
 
    nav.navbar .navbar-header ul#sidebar-icons li

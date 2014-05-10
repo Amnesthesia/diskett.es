@@ -62,7 +62,7 @@ App.ApplicationRoute = Ember.Route.extend({
 App.IndexRoute = Ember.Route.extend({
   redirect: function(){
     // Redirect index to shows
-    this.transitionToAnimated('shows',{main: 'fade'});
+    this.transitionToAnimated('shows',{main: 'slideOverLeft'});
   }
 });
 

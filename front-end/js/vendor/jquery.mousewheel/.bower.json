@@ -1,0 +1,26 @@
+{
+  "name": "jquery.mousewheel",
+  "main": "./jquery.mousewheel.js",
+  "ignore": [
+    "*.json",
+    "*.markdown",
+    "*.txt",
+    ".*",
+    "Gruntfile.js",
+    "test"
+  ],
+  "dependencies": {
+    "jquery": ">=1.10.2"
+  },
+  "homepage": "https://github.com/chrislearn/jquery.mousewheel",
+  "_release": "0fdfeea41b",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "0fdfeea41be30ecf2a1312b654d237744b8feb3f"
+  },
+  "_source": "git://github.com/chrislearn/jquery.mousewheel.git",
+  "_target": "*",
+  "_originalSource": "jquery.mousewheel",
+  "_direct": true
+}

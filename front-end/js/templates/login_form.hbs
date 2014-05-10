@@ -1,0 +1,22 @@
+<div class="row">
+	<div class="col-lg-12">
+		<h2>Do you have an account...</h2>
+	</div>
+</div>
+<div class="row">
+	<form class="form-inline" {{action 'authenticate' on='submit'}}>
+  	<div class="col-lg-5">
+  		{{input value=username type="text" placeholder="Username"}}
+  	</div>
+</div>
+<div class="row">
+  	<div class="col-lg-5">
+  		{{input value=password type="password" placeholder="Password"}}
+  	</div>
+</div>
+<div class="row">
+  	<div class="col-lg-5">
+  		{{input class="btn btn-info" type="submit" id="login-overlay-button" value="Log in"}}
+  	</div>
+</form>
+</div>

@@ -1,0 +1,27 @@
+<div class="row">
+	<div class="col-lg-12">
+		<h2>.. or are you not registered yet? :(</h2>
+	</div>
+</div>
+<div class="row">
+	<form class="form-inline" {{action 'register' on='submit'}}>
+  	<div class="col-lg-5">
+  		{{input value=username type="text" placeholder="E-mail"}}
+  	</div>
+</div>
+<div class="row">
+  	<div class="col-lg-5">
+  		{{input value=password type="password" placeholder="Password"}}
+  	</div>
+</div>
+<div class="row">
+  	<div class="col-lg-5">
+  		{{input value=password type="password" placeholder="Verify plz"}}
+  	</div>
+</div>
+<div class="row">
+  	<div class="col-lg-5">
+  		{{input class="btn btn-success" type="submit" value="Sign up"}}
+  	</div>
+</form>
+</div>

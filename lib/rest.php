@@ -50,7 +50,7 @@
 				// Save it ... and return it
 				$this->db->insert("user_session",array("session_data","session_ip"),array($hash,$_SERVER["REMOTE_ADDR"]));
 
-				return array("session" => array("token" => $hash));
+				return array("session" => array("token" => $hash, "user_id" => $res[0]["id"]));
 			}
 			else
 				return array("session" => array("token" => NULL));	

@@ -62,7 +62,13 @@ App.ProtectedRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin
 });
 
 // Apply mixins for authentication :)
-App.ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin);
+App.ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin,{
+    actions: {
+      logSession: function(){
+        console.log(session);
+      }
+    }
+});
 
 App.IndexRoute = Ember.Route.extend({
   redirect: function(){

@@ -48,6 +48,24 @@ Ember.Application.initializer({
   initialize: function(container, application) {
   	container.register('authenticator:custom', App.CustomAuthenticator);
     container.register('authorizer:custom', App.CustomAuthorizer);
+
+  	  // Let's set up the user session so that it contains the logged in user!
+    Ember.SimpleAuth.Session.reopen({
+    	account: function(serverSession){
+    		// We're overriding the setup method, so better
+    		// make sure the parent method runs first!
+    		var user_id = this.get('user_id');
+    		if(!Ember.isEmpty(user_id)){
+    			return container.lookup('store:main').find('user',user_id);
+    		}
+    		console.log(user_id);
+    	}.property('user_id')
+    });
+
+
+    // We have to set up some basic stuff, like what route to
+    // redirect to after authentication, and what authorizerfactory
+    // we use to verify the session
     Ember.SimpleAuth.setup(container, application,function(){
     	routeAfterAuthentication: 'shows'
     	authorizerFactory: 'authorizer:custom'
@@ -102,9 +120,10 @@ App.CustomAuthenticator = Ember.SimpleAuth.Authenticators.Base.extend({
 				// During the next runloop, try to resolve the token
 				// we got back from the response
 				Ember.run(function(){
-					// Show the response in console
+					// Show the response in console, and most importantly,
+					// save the damn token! ;) Oh, and the user ID...
 					console.log(response);
-					resolve({ token: response.session.token});
+					resolve({ token: response.session.token, user_id: response.session.user_id});
 				});
 			}, function(xhr, status, error){
 				var response = JSON.parse(xhr.responseText);
@@ -210,7 +229,13 @@ App.ProtectedRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin
 });
 
 // Apply mixins for authentication :)
-App.ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin);
+App.ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin,{
+    actions: {
+      logSession: function(){
+        console.log(session);
+      }
+    }
+});
 
 App.IndexRoute = Ember.Route.extend({
   redirect: function(){
@@ -1531,10 +1556,35 @@ helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
 Ember.TEMPLATES['login'] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
 this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-  var buffer = '', stack1, hashTypes, hashContexts, options, helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression;
+  var buffer = '', stack1, hashTypes, hashContexts, options, escapeExpression=this.escapeExpression, self=this, helperMissing=helpers.helperMissing;
 
+function program1(depth0,data) {
+  
+  var buffer = '', hashTypes, hashContexts;
+  data.buffer.push("\n			");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "session.account.email", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("\n		");
+  return buffer;
+  }
 
-  data.buffer.push("<div class=\"progress progress-striped browse-item-rating-progress\" id=\"browse-show-rating-progress\">\n  \n  <div class=\"progress-bar progress-bar-info\" style=\"width: 100%\">\n    \n  </div>\n\n</div>\n\n<div class=\"container\">\n	<div class=\"row\">\n		<div class=\"col-lg-6\" class=\"loginpage-loginform-div\">\n				");
+function program3(depth0,data) {
+  
+  
+  data.buffer.push("\n			nope\n		");
+  }
+
+  data.buffer.push("<div class=\"progress progress-striped browse-item-rating-progress\" id=\"browse-show-rating-progress\">\n  \n  <div class=\"progress-bar progress-bar-info\" style=\"width: 100%\">\n    \n  </div>\n\n</div>\n\n<div class=\"container\">\n	<div class=\"row\">\n		");
+  hashTypes = {};
+  hashContexts = {};
+  stack1 = helpers['if'].call(depth0, "session.isAuthenticated", {hash:{},inverse:self.program(3, program3, data),fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n		<a ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "logSession", {hash:{},contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(">Log session</a>\n		<div class=\"col-lg-6\" class=\"loginpage-loginform-div\">\n				");
   hashTypes = {};
   hashContexts = {};
   options = {hash:{},contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
@@ -1609,7 +1659,11 @@ function program1(depth0,data) {
   hashTypes = {};
   hashContexts = {};
   data.buffer.push(escapeExpression(helpers.action.call(depth0, "invalidateSession", {hash:{},contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push(">Log out</button>\n	        ");
+  data.buffer.push(">");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "session.account.email", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("</button>\n	        ");
   return buffer;
   }
 

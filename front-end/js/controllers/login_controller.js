@@ -1,19 +1,97 @@
 var LoginController = Ember.Controller.extend(Ember.SimpleAuth.LoginControllerMixin,{
 	authenticatorFactory: 'authenticator:custom',
 	loginFailed: false, //error message	
-	signupEmail: "",
+	signupEmail: "",	// Form fields
 	signupPassword: "",
-	signupValidate: "",
-	signupPwValid: false,
+	signupVerify: "", // End formfields
+	signupPwValid: false, // Validation variables for form fields
 	signupVerifyValid: false,
 	signupEmailValid: false,
-	signupValid: true,
-	loginValid: false,
-	
+
+	// Return true if login email is a valid email
+	loginEmailIsValid: function(){
+		var emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,6}$/i;
+
+		if(!emailRegex.test(this.get('identification')))
+			return false;
+		else
+			return true;
+	}.property('identification'),
+
+	// Return true if signup email is a valid email
+	signupEmailIsValid: function(){
+		var emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,6}$/i;
+
+		if(!emailRegex.test(this.get('signupEmail')))
+		{
+			if(this.get('signupEmailValid'))
+				this.set('signupEmailValid',false);
+			return false;
+		}	
+		else
+		{
+			if(!this.get('signupEmailValid'))
+				this.set('signupEmailValid',true);
+			return true;
+		}
+	}.property('signupEmail'),
+
+	// Return true if password is a decent password
+	passwordNotShit: function(){
+		var pwRegex1 =  /[A-Z]/i;
+		var pwRegex2 =  /[a-z]/i;
+		var pwRegex3 =  /\d/i;
+		var pwRegex4 =  /[@]/i;
+
+		var strength = 0;
+
+		strength += pwRegex1.test(this.get('signupPassword')) ? 1:0;
+		strength += pwRegex2.test(this.get('signupPassword')) ? 1:0;
+		strength += pwRegex3.test(this.get('signupPassword')) ? 1:0;
+		strength += pwRegex4.test(this.get('signupPassword')) ? 1:0;
+
+		if(this.get('signupPassword').length > 7 && strength > 2)
+		{
+			if(!this.get('signupPwValid'))
+				this.set('signupPwValid',true);
+			return true;
+		}
+		else
+		{
+			if(this.get('signupPwValid'))
+				this.set('signupPwValid',false);
+			return false;
+		}
+	}.property('signupPassword'),
+
+	// Return true if passwords match
+	passwordMatch: function(){
+		if(this.get('signupPassword') == this.get('signupVerify'))
+		{
+			console.log("Passwords match")
+			return true;
+		}	
+		else
+		{
+			return false;
+		}
+	}.property('signupPassword','signupVerify'),
+
+	signupFormIsValid: function(){
+		if(this.get('signupVerifyValid') && this.get('signupPwValid') && this.get('signupEmailValid'))
+			return true;
+		return false;
+	}.property('signupVerifyValid','signupPwValid','signupEmailValid'),
+
 	actions:{
+
+		// If the user is authenticated, log session data and transition to Shows
 		sessionAuthenticationSucceeded: function(){
+			console.log(session.account);
 			this.transitionTo("shows");
 		},
+
+		// Perform signup
 		signUp: function(){
 
 			var user = this.store.createRecord('user', {
@@ -24,10 +102,10 @@ var LoginController = Ember.Controller.extend(Ember.SimpleAuth.LoginControllerMi
 			user.save();
 			console.log(user);
 		},
-		validateLoginEmail: function(){
-			var emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,6}$/i;
 
-			if(!emailRegex.test(this.get('identification')))
+		// Check if loginEmailIsValid, and display warning or green the field
+		validateLoginEmail: function(){
+			if(!this.get('loginEmailIsValid'))
 			{
 				Ember.$(".loginusername-area input").css("borderColor","red");
 				Ember.$(".loginusername-area input").css("backgroundColor","lightyellow");
@@ -39,66 +117,54 @@ var LoginController = Ember.Controller.extend(Ember.SimpleAuth.LoginControllerMi
 				Ember.$(".loginusername-area input").css("backgroundColor","lightgreen");
 			}
 		},
-		validateSignupEmail: function(){
-			var emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,6}$/i;
 
-			if(!emailRegex.test(this.get('signupEmail')))
+		// Check if signupEmailIsValid and display warning or green the field
+		validateSignupEmail: function(){
+
+
+			if(!this.get('signupEmailIsValid'))
 			{
 				Ember.$(".signupemail-area input").css("borderColor","red");
 				Ember.$(".signupemail-area input").css("backgroundColor","lightyellow");
 				Ember.$("#signupemailwarning").fadeToggle().delay(5000).fadeToggle();
-				if(this.get('signupEmailValid'))
-					this.set('signupEmailValid',false);
 			}
 			else
 			{
 				Ember.$(".signupemail-area input").css("borderColor","green");
 				Ember.$(".signupemail-area input").css("backgroundColor","lightgreen");
-				if(!this.get('signupEmailValid'))
-					this.set('signupEmailValid',true);
 			}
-			if(this.get('signupVerifyValid') && this.get('signupPwValid') && this.get('signupEmailValid'))
-				this.set('signupValid');
 		},
-		validateSignupPw: function(){
-			var pwRegex1 =  /[A-Z]/;
-			var pwRegex2 =  /[a-z]/;
-			var pwRegex3 =  /\d/;
-			var pwRegex4 =  /[@]/;
 
-			if(pwRegex1.test(this.get('signupPassword')) && pwRegex2.test(this.get('signupPassword')) && pwRegex3.test(this.get('signupPassword')) && pwRegex4.test(this.get('signupPassword')))
+		// Make sure password isn't rubbish, and display warning or green the field
+		validateSignupPw: function(){
+			
+			if(!this.get('passwordNotShit'))
 			{
 				Ember.$(".signuppw-area input").css("borderColor","red");
 				Ember.$(".signuppw-area input").css("backgroundColor","lightyellow");
 				Ember.$("#passwordwarning").fadeToggle().delay(5000).fadeToggle();
-				if(this.get('signupPwValid'))
-					this.set('signupPwValid',false);	
+					
 			}
 			else
 			{
 				Ember.$(".signuppw-area input").css("borderColor","green");
 				Ember.$(".signuppw-area input").css("backgroundColor","lightgreen");
-				if(!this.get('signupPwValid'))
-					this.set('signupPwValid',true);
 			}
-			if(this.get('signupVerifyValid') && this.get('signupPwValid') && this.get('signupEmailValid'))
-				this.set('signupValid');
 		},
+
+		// Make sure passwords match
 		validateSignupVerification: function(){
-			/*if(Ember.computed.equal(this.get('signupPassword'),this.get('signupVerify')))
+			if(!this.get('passwordMatch'))
 			{
 				Ember.$(".signupverify-area input").css("borderColor","red");
 				Ember.$(".signupverify-area input").css("backgroundColor","lightyellow");
 				Ember.$("#verifywarning").fadeToggle().delay(5000).fadeToggle();
-				if(this.get('signupVerifyValid'))
-					this.set('signupVerifyValud',false);
 			}
 			else
-				if(!this.get('signupVerifyValid'))
-					this.set('signupVerifyValid',true);
-
-			if(this.get('signupPwValid') && this.get('signupEmailValid'))
-				this.set('signupValid');*/
+			{
+				Ember.$(".signupverify-area input").css("borderColor","green");
+				Ember.$(".signupverify-area input").css("backgroundColor","lightgreen");
+			}
 		}
 	}
 });

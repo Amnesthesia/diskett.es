@@ -53,7 +53,7 @@
 				return array("session" => array("token" => $hash, "user_id" => $res[0]["id"]));
 			}
 			else
-				return array("session" => array("token" => NULL));	
+				return array("session" => array("error" => 404));	
 		}
 
 

@@ -7,8 +7,7 @@ require('../vendor/jquery.mousewheel/jquery.mousewheel');
 require('../vendor/handlebars');
 require('../vendor/handlebars/handlebars.min');
 require('../vendor/ember');
-require('../vendor/ember-data'); // delete if you don't want ember-data
-
+require('../vendor/ember-data.min'); // delete if you don't want ember-data
 // Then we'll include some custom stuff!
 
 
@@ -41,6 +40,14 @@ require('../vendor/jquery.twinkle/jquery.twinkle-0.5.0.min');
 
 var App = Ember.Application.create();
 App.name = "Episode Guide"
+
+// Set up our REST API
+App.ApplicationAdapter = DS.RESTAdapter;
+DS.RESTAdapter.reopen({
+	namespace: 'api'
+	// host: 'we-could-change-backend-location.com'
+});
+
 // We need this to do login! :)
 Ember.Application.initializer({
   name: 'authentication',

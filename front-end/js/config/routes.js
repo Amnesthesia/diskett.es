@@ -42,8 +42,12 @@ App.Router.map(function() {
 
 });
 
-// Apply mixins for authentication :)
-App.ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin);
+// Set the base URL
+App.Router.reopen({
+  rootURL: '/front-end/'
+});
+
+
 
 // All "protected" routes should require authorization (verify session token)
 App.ProtectedRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin, {
@@ -57,24 +61,8 @@ App.ProtectedRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin
   }
 });
 
-// Route action for displaying modal popup boxes, 
-// can be easily called with {{action 'modal' 'template'}}
-App.ApplicationRoute = Ember.Route.extend({
-    actions: {
-      showModal: function(template){
-        return this.render(template, {
-          into: 'application',
-          outlet: 'modal'
-        })
-      },
-      closeModal: function(template){
-        return this.disconnectOutlet({
-          outlet: 'modal',
-          parentView: 'application'
-        });
-      }
-    }
-});
+// Apply mixins for authentication :)
+App.ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin);
 
 App.IndexRoute = Ember.Route.extend({
   redirect: function(){

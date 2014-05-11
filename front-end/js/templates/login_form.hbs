@@ -4,14 +4,16 @@
 	</div>
 </div>
 <div class="row">
-	<form class="form-inline" {{action 'authenticate' on='submit'}}>
+	<form class="form-inline" {{action authenticate on='submit'}}>
   	<div class="col-lg-5 loginusername-area">
-  		{{input value=username type="text" placeholder="E-mail" value=identification}}
+  		{{input id='identification' placeholder='Enter Login' class='form-control' value=identification}}
+
   	</div>
 </div>
 <div class="row">
   	<div class="col-lg-5 loginpw-area">
-  		{{input value=password type="password" placeholder="Password" value=password}}
+  		{{input id='password' placeholder='Enter Password' class='form-control' type='password' value=password}}
+
   	</div>
 </div>
 <div class="row">
@@ -21,7 +23,7 @@
   			<p>Login failed :( Try again?</p>
   		</div>
   		{{/if}}
-  		<button class="btn btn-info" {{action "authenticate"}}>Log in</button>
+  		<button class="btn btn-info" >Log in</button>
   	</div>
 </form>
 </div>

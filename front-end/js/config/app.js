@@ -48,6 +48,7 @@ Ember.Application.initializer({
   	container.register('authenticator:custom', App.CustomAuthenticator);
     container.register('authorizer:custom', App.CustomAuthorizer);
     Ember.SimpleAuth.setup(container, application,function(){
+    	routeAfterAuthentication: 'shows'
     	authorizerFactory: 'authorizer:custom'
     });
   }
@@ -94,12 +95,14 @@ App.CustomAuthenticator = Ember.SimpleAuth.Authenticators.Base.extend({
 			Ember.$.ajax({
 				url: 	_this.tokenEndpoint,
 				type: 	'POST',
-				data: 	JSON.stringify({session: {identification: credentials.identification, password: credentials.password}}),
-				contentType: 	'application/json'
+				data: 	Ember.$.param({session: {identification: credentials.identification, password: credentials.password}})//,
+				//contentType: 	'application/json'
 			}).then(function(response){ 
-				// During the next runloop, try to verify the token
+				// During the next runloop, try to resolve the token
 				// we got back from the response
 				Ember.run(function(){
+					// Show the response in console
+					console.log(response);
 					resolve({ token: response.session.token});
 				});
 			}, function(xhr, status, error){

@@ -30,6 +30,9 @@ var LoginController = Ember.Controller.extend(Ember.SimpleAuth.LoginControllerMi
 			if(this.get('loginEmail') != "lol")
 				Ember.$(".loginusername-area").append('<div class="alert alert-danger alert-dismissable"> <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button><b>Oh come on.. :( Your email sucks, man</div>');
 
+		},
+		sessionAuthenticationSucceeded: function(){
+			this.transitionTo("shows");
 		}
 	}
 });

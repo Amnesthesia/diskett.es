@@ -5,6 +5,9 @@ var NavigationController = Ember.Controller.extend({
 	actions:{
 		loginForm: function(){
 			this.get('loginController').toggleLogin();
+		},
+		invalidate: function(){
+			this.get('loginController').send('invalidate');
 		}
 	}
 });

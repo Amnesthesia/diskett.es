@@ -168,6 +168,8 @@ class User implements iUser
 						 VALUES (" . $this->getId() . ",'" . $uniqueSessionToken . "', '" . $_SERVER['REMOTE_ADDR'] . "')
 			             ON DUPLICATE KEY
 			                UPDATE session_data=?, session_ip=?", $uniqueSessionToken, $_SERVER['REMOTE_ADDR']);
+			
+			return $uniqueSessionToken;
 		}
 		else
 		{

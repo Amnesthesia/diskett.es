@@ -49,6 +49,7 @@ Ember.Application.initializer({
   	container.register('authenticator:custom', App.CustomAuthenticator);
     container.register('authorizer:custom', App.CustomAuthorizer);
     Ember.SimpleAuth.setup(container, application,function(){
+    	routeAfterAuthentication: 'shows'
     	authorizerFactory: 'authorizer:custom'
     });
   }
@@ -95,12 +96,14 @@ App.CustomAuthenticator = Ember.SimpleAuth.Authenticators.Base.extend({
 			Ember.$.ajax({
 				url: 	_this.tokenEndpoint,
 				type: 	'POST',
-				data: 	JSON.stringify({session: {identification: credentials.identification, password: credentials.password}}),
-				contentType: 	'application/json'
+				data: 	Ember.$.param({session: {identification: credentials.identification, password: credentials.password}})//,
+				//contentType: 	'application/json'
 			}).then(function(response){ 
-				// During the next runloop, try to verify the token
+				// During the next runloop, try to resolve the token
 				// we got back from the response
 				Ember.run(function(){
+					// Show the response in console
+					console.log(response);
 					resolve({ token: response.session.token});
 				});
 			}, function(xhr, status, error){
@@ -187,8 +190,12 @@ App.Router.map(function() {
 
 });
 
-// Apply mixins for authentication :)
-App.ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin);
+// Set the base URL
+App.Router.reopen({
+  rootURL: '/front-end/'
+});
+
+
 
 // All "protected" routes should require authorization (verify session token)
 App.ProtectedRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin, {
@@ -202,24 +209,8 @@ App.ProtectedRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin
   }
 });
 
-// Route action for displaying modal popup boxes, 
-// can be easily called with {{action 'modal' 'template'}}
-App.ApplicationRoute = Ember.Route.extend({
-    actions: {
-      showModal: function(template){
-        return this.render(template, {
-          into: 'application',
-          outlet: 'modal'
-        })
-      },
-      closeModal: function(template){
-        return this.disconnectOutlet({
-          outlet: 'modal',
-          parentView: 'application'
-        });
-      }
-    }
-});
+// Apply mixins for authentication :)
+App.ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin);
 
 App.IndexRoute = Ember.Route.extend({
   redirect: function(){
@@ -403,6 +394,9 @@ var LoginController = Ember.Controller.extend(Ember.SimpleAuth.LoginControllerMi
 			if(this.get('loginEmail') != "lol")
 				Ember.$(".loginusername-area").append('<div class="alert alert-danger alert-dismissable"> <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button><b>Oh come on.. :( Your email sucks, man</div>');
 
+		},
+		sessionAuthenticationSucceeded: function(){
+			this.transitionTo("shows");
 		}
 	}
 });
@@ -418,6 +412,9 @@ var NavigationController = Ember.Controller.extend({
 	actions:{
 		loginForm: function(){
 			this.get('loginController').toggleLogin();
+		},
+		invalidate: function(){
+			this.get('loginController').send('invalidate');
 		}
 	}
 });
@@ -1568,37 +1565,34 @@ function program1(depth0,data) {
   hashTypes = {'on': "STRING"};
   data.buffer.push(escapeExpression(helpers.action.call(depth0, "authenticate", {hash:{
     'on': ("submit")
-  },contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  },contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
   data.buffer.push(">\n  	<div class=\"col-lg-5 loginusername-area\">\n  		");
-  hashContexts = {'value': depth0,'type': depth0,'placeholder': depth0,'value': depth0};
-  hashTypes = {'value': "ID",'type': "STRING",'placeholder': "STRING",'value': "ID"};
+  hashContexts = {'id': depth0,'placeholder': depth0,'class': depth0,'value': depth0};
+  hashTypes = {'id': "STRING",'placeholder': "STRING",'class': "STRING",'value': "ID"};
   options = {hash:{
-    'value': ("username"),
-    'type': ("text"),
-    'placeholder': ("E-mail"),
+    'id': ("identification"),
+    'placeholder': ("Enter Login"),
+    'class': ("form-control"),
     'value': ("identification")
   },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   data.buffer.push(escapeExpression(((stack1 = helpers.input || depth0.input),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "input", options))));
-  data.buffer.push("\n  	</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5 loginpw-area\">\n  		");
-  hashContexts = {'value': depth0,'type': depth0,'placeholder': depth0,'value': depth0};
-  hashTypes = {'value': "ID",'type': "STRING",'placeholder': "STRING",'value': "ID"};
+  data.buffer.push("\n\n  	</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5 loginpw-area\">\n  		");
+  hashContexts = {'id': depth0,'placeholder': depth0,'class': depth0,'type': depth0,'value': depth0};
+  hashTypes = {'id': "STRING",'placeholder': "STRING",'class': "STRING",'type': "STRING",'value': "ID"};
   options = {hash:{
-    'value': ("password"),
+    'id': ("password"),
+    'placeholder': ("Enter Password"),
+    'class': ("form-control"),
     'type': ("password"),
-    'placeholder': ("Password"),
     'value': ("password")
   },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   data.buffer.push(escapeExpression(((stack1 = helpers.input || depth0.input),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "input", options))));
-  data.buffer.push("\n  	</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5\">\n  		");
+  data.buffer.push("\n\n  	</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5\">\n  		");
   hashTypes = {};
   hashContexts = {};
   stack2 = helpers['if'].call(depth0, "loginFailed", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
-  data.buffer.push("\n  		<button class=\"btn btn-info\" ");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "authenticate", {hash:{},contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push(">Log in</button>\n  	</div>\n</form>\n</div>");
+  data.buffer.push("\n  		<button class=\"btn btn-info\" >Log in</button>\n  	</div>\n</form>\n</div>");
   return buffer;
   
 });

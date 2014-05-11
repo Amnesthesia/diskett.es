@@ -24,7 +24,52 @@
 		public function session()
 		{
 			$args = func_get_args();
-			file_put_contents("login.json", print_r($args,true));
+			switch($this->verb)
+			{
+				case 'create':
+					return $this->verifyLogin($_POST["session"]);
+				case 'read':
+					return $this->authorizeSession($args[0]);
+			}
+			
+		}
+
+		private function verifyLogin($session)
+		{
+
+			$email = $session["identification"];
+			$password = $session["password"];
+
+			$res = $this->db->read("SELECT id,salt FROM user WHERE email = ?",$email);
+
+			if(!empty($res) && count($res[0])>0 /*&& password_verify($password.$res[0]["salt"],$res[0]["password"])*/)
+			{
+				// Hash to use for this session
+				$hash = hash("sha256",$res[0]["id"].$res[0]["salt"].time());
+				
+				// Save it ... and return it
+				$this->db->insert("user_session",array("session_data","session_ip"),array($hash,$_SERVER["REMOTE_ADDR"]));
+
+				return array("session" => array("token" => $hash));
+			}
+			else
+				return array("session" => array("token" => NULL));	
+		}
+
+
+		private function authorizeSession($session)
+		{
+
+
+
+			$res = $this->db->read("SELECT id FROM user_session WHERE session_data = ?",$session["session"]["token"]);
+
+			if(!empty($res) && count($res[0])>0)
+			{
+				return array("session" => array("token" => $session));
+			}
+			else
+				return array("session" => array("token" => NULL));
 		}
 
 		// Fetch shows

@@ -373,9 +373,7 @@ module.exports = EpisodesController;
 },{}],12:[function(require,module,exports){
 var LoginController = Ember.Controller.extend(Ember.SimpleAuth.LoginControllerMixin,{
 	authenticatorFactory: 'authenticator:custom',
-	loginFailed: false, //error message
-	loginEmail: "",		// Form fields
-	loginPassword: "",	
+	loginFailed: false, //error message	
 	signupEmail: "",
 	signupPassword: "",
 	signupValidate: "",

@@ -88,7 +88,6 @@ var LoginController = Ember.Controller.extend(Ember.SimpleAuth.LoginControllerMi
 		// If the user is authenticated, log session data and transition to Shows
 		sessionAuthenticationSucceeded: function(){
 			console.log(session.account);
-			this.transitionTo("shows");
 		},
 
 		// Perform signup

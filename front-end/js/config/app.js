@@ -57,8 +57,7 @@ Ember.Application.initializer({
   	  // Let's set up the user session so that it contains the logged in user!
     Ember.SimpleAuth.Session.reopen({
     	account: function(serverSession){
-    		// We're overriding the setup method, so better
-    		// make sure the parent method runs first!
+
     		var user_id = this.get('user_id');
     		if(!Ember.isEmpty(user_id)){
     			return container.lookup('store:main').find('user',user_id);
@@ -75,6 +74,8 @@ Ember.Application.initializer({
     	routeAfterAuthentication: 'shows'
     	authorizerFactory: 'authorizer:custom'
     });
+
+   
   }
 });
 
@@ -139,11 +140,14 @@ App.CustomAuthenticator = Ember.SimpleAuth.Authenticators.Base.extend({
 		});
 	},
 	// This is essentially the log out method
-	invalidate: function(){
+	invalidate: function(sess){
 		var _this = this;
+		console.log(sess);
+		
 		return new Ember.RSVP.Promise(function(resolve){
+
 			Ember.$.ajax({
-				url: _this.tokenEndpoint,
+				url: _this.tokenEndpoint+"/"+sess.token,
 				type: 'DELETE'
 			}).always(function(){
 				resolve();
@@ -164,8 +168,7 @@ App.CustomAuthorizer = Ember.SimpleAuth.Authorizers.Base.reopen({
 	}
 });
 
-// We should inject our session object into all controllers so we can access it there.
-//App.inject('controller','session','ember-simple-auth:session:current');
+
 
 App.Store = require('./store'); // delete if you don't want ember-data
 

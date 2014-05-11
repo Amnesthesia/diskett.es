@@ -3,6 +3,11 @@
 	require_once("showClass.php");
 	require_once("databaseClass.php");
 
+	/**
+	** JSON Objects retrieved look like:
+	** {users: {["id" : 1, "email" : "emailaddr",..], ["id" : 2,... ]}}
+	** {user: {["id": 1], "email" : "emailaddr"} }
+	**/
 
 	// It's easy to add more models to this class!
 	// Just create a method named what the resource is called,
@@ -30,6 +35,9 @@
 					return $this->verifyLogin($_POST["session"]);
 				case 'read':
 					return $this->authorizeSession($args[0]);
+				case 'delete':
+					return $this->deauthorizeSession($args[0]);
+		
 			}
 			
 		}
@@ -70,6 +78,12 @@
 			}
 			else
 				return array("session" => array("token" => NULL));
+		}
+
+		private function deauthorizeSession($session)
+		{
+			$res = $this->db->read("DELETE FROM user_session WHERE session_data = ?",$session[0]);
+			return array("session" => array());
 		}
 
 		// Fetch shows
@@ -280,7 +294,7 @@
 			
 			$password = password_hash($data->user->password . $salt, PASSWORD_DEFAULT);
 			
-			$this->db->insert("user",array("email","password","salt","role_id","country_id"), array($data->user->email,$data->user->password,$salt,"5","1"));
+			$this->db->insert("user",array("email","password","salt","role_id","country_id"), array($data->user->email,$password,$salt,"5","1"));
 
 
 

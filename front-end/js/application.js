@@ -1578,7 +1578,7 @@ function program1(depth0,data) {
     'value': ("username"),
     'type': ("text"),
     'placeholder': ("E-mail"),
-    'value': ("loginEmail")
+    'value': ("identification")
   },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   data.buffer.push(escapeExpression(((stack1 = helpers.input || depth0.input),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "input", options))));
   data.buffer.push("\n  	</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5 loginpw-area\">\n  		");
@@ -1588,7 +1588,7 @@ function program1(depth0,data) {
     'value': ("password"),
     'type': ("password"),
     'placeholder': ("Password"),
-    'value': ("loginPassword")
+    'value': ("password")
   },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   data.buffer.push(escapeExpression(((stack1 = helpers.input || depth0.input),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "input", options))));
   data.buffer.push("\n  	</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5\">\n  		");

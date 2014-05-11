@@ -20,6 +20,13 @@
 			
 		}
 
+		// Method for logging in!
+		public function session()
+		{
+			$args = func_get_args();
+			file_put_contents("login.json", print_r($args,true));
+		}
+
 		// Fetch shows
 		public function shows()
 		{

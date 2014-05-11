@@ -40,7 +40,7 @@
 			$email = $session["identification"];
 			$password = $session["password"];
 
-			$res = $this->db->read("SELECT id,salt FROM user WHERE email = ?",$email);
+			$res = $this->db->read("SELECT id,salt,password FROM user WHERE email = ?",$email);
 
 			if(!empty($res) && count($res[0])>0 && password_verify($password.$res[0]["salt"],$res[0]["password"]))
 			{
@@ -307,7 +307,7 @@
 
 			$res = $this->db->read($query,$data->user->email);
 			$res = array_shift($res);
-			
+
 
 			$data = array($userkey => array(), "role" => array());
 			

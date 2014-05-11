@@ -5,23 +5,39 @@
 </div>
 <div class="row">
 	<form class="form-inline" {{action signUp on='submit'}}>
-  	<div class="col-lg-5">
-  		{{input value=username type="text" value=signupEmail placeholder="E-mail"}}
+  	<div class="col-lg-5 signupemail-area">
+  		{{input value=username type="text" value=signupEmail placeholder="E-mail" focus-out='validateSignupEmail'}}
+  		
+  	</div>
+  	<div class="alert alert-warning col-lg-4 alert-dismissable" style="display:none;margin:auto auto;" id="signupemailwarning"> 
+  			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+  			<b>Oh come on..</b> :( Your email sucks, man
+  		</div>
+</div>
+<div class="row">
+  	<div class="col-lg-5 signuppw-area">
+  		{{input value=password type="password" value=signupPassword placeholder="Password" focus-out='validateSignupPw'}}
+  	</div>
+  	<div class="alert alert-info col-lg-4 alert-dismissable" style="display:none;margin:auto auto;" id="passwordwarning"> 
+  			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+  			<b>Alright, so ...</b> 8 or more characters. At least a number, an uppercase letter and a lowercase letter. Deal?
   	</div>
 </div>
 <div class="row">
-  	<div class="col-lg-5">
-  		{{input value=password type="password" value=signupPassword placeholder="Password"}}
+  	<div class="col-lg-5 signupverify-area">
+  		{{input value=password type="password" value=signupVerify placeholder="Verify plz" focus-out='validateSignupVerification'}}
+  		
   	</div>
+  	<div class="alert alert-warning col-lg-4 alert-dismissable" style="display:none;margin:auto auto;" id="verifywarning"> 
+  			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+  			<b>Uhm..</b> Your passwords must, you know, match :/</b>
+  		</div>
 </div>
 <div class="row">
   	<div class="col-lg-5">
-  		{{input value=password type="password" value=signupVerify placeholder="Verify plz"}}
-  	</div>
-</div>
-<div class="row">
-  	<div class="col-lg-5">
+  	{{#if signupValid}}
   		{{input class="btn btn-success" type="submit" value="Sign up"}}
+  	{{/if}}
   	</div>
 </form>
 </div>

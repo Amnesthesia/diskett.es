@@ -4,11 +4,12 @@
 	</div>
 </div>
 <div class="row">
-	<form class="form-inline" {{action authenticate on='submit'}}>
+	<form class="form-inline" id="login-form" {{action authenticate on='submit'}}>
   	<div class="col-lg-5 loginusername-area">
-  		{{input id='identification' placeholder='Enter Login' class='form-control' value=identification}}
-
+  		{{input id='identification' placeholder='Enter Login' class='form-control' value=identification focus-out='validateLoginEmail' }}
+  		
   	</div>
+  	<div class="alert alert-warning col-lg-4 alert-dismissable" style="display:none;margin:auto auto;" id="emailwarning"> <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button><b>Oh come on.. :( Your email sucks, man</div>
 </div>
 <div class="row">
   	<div class="col-lg-5 loginpw-area">
@@ -23,7 +24,9 @@
   			<p>Login failed :( Try again?</p>
   		</div>
   		{{/if}}
+  		
   		<button class="btn btn-info" >Log in</button>
+
   	</div>
 </form>
 </div>

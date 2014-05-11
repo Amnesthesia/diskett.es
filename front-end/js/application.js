@@ -399,37 +399,18 @@ var LoginController = Ember.Controller.extend(Ember.SimpleAuth.LoginControllerMi
 	signupEmail: "",
 	signupPassword: "",
 	signupValidate: "",
+	signupPwValid: false,
+	signupVerifyValid: false,
+	signupEmailValid: false,
+	signupValid: false,
+	loginValid: false,
 	
-	toggleLogin: function(){
-		if(!this.get('session').isAuthenticated && !this.get('loginVisible'))
-		{
-			Ember.$("#login-button").attr('id','login-button-invis');
-  			Ember.$("#login-overlay").slideDown();
-  			this.set('loginVisible',true);
-  			Ember.$("#login-overlay-button").twinkle();
-
-		}
-  		else if(this.get('loginVisible'))
-  		{
-  			Ember.$("#login-button-invis").attr('id','login-button');
-  			Ember.$("#login-overlay").slideUp();
-  			this.set('loginVisible',false);
-  		}
-		
-	}.on('didInsertElement'),
 	actions:{
-		loginForm: function(){
-			this.get('controller').send('toggleLogin');
-		},
-		verifyLoginForm: function(){
-			if(this.get('loginEmail') != "lol")
-				Ember.$(".loginusername-area").append('<div class="alert alert-danger alert-dismissable"> <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button><b>Oh come on.. :( Your email sucks, man</div>');
-
-		},
 		sessionAuthenticationSucceeded: function(){
 			this.transitionTo("shows");
 		},
 		signUp: function(){
+
 			var user = this.store.createRecord('user', {
 				email: this.get('signupEmail'),
 				password: this.get('signupPassword')
@@ -437,6 +418,82 @@ var LoginController = Ember.Controller.extend(Ember.SimpleAuth.LoginControllerMi
 
 			user.save();
 			console.log(user);
+		},
+		validateLoginEmail: function(){
+			var emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,6}$/i;
+
+			if(!emailRegex.test(this.get('identification')))
+			{
+				Ember.$(".loginusername-area input").css("borderColor","red");
+				Ember.$(".loginusername-area input").css("backgroundColor","lightyellow");
+				Ember.$("#emailwarning").fadeToggle().delay(5000).fadeToggle();
+			}
+			else
+			{
+				Ember.$(".loginusername-area input").css("borderColor","green");
+				Ember.$(".loginusername-area input").css("backgroundColor","lightgreen");
+			}
+		},
+		validateSignupEmail: function(){
+			var emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,6}$/i;
+
+			if(!emailRegex.test(this.get('signupEmail')))
+			{
+				Ember.$(".signupemail-area input").css("borderColor","red");
+				Ember.$(".signupemail-area input").css("backgroundColor","lightyellow");
+				Ember.$("#signupemailwarning").fadeToggle().delay(5000).fadeToggle();
+				if(this.get('signupEmailValid'))
+					this.set('signupEmailValid',false);
+			}
+			else
+			{
+				Ember.$(".signupemail-area input").css("borderColor","green");
+				Ember.$(".signupemail-area input").css("backgroundColor","lightgreen");
+				if(!this.get('signupEmailValid'))
+					this.set('signupEmailValid',true);
+			}
+			if(this.get('signupVerifyValid') && this.get('signupPwValid') && this.get('signupEmailValid'))
+				this.set('signupValid');
+		},
+		validateSignupPw: function(){
+			var pwRegex1 =  /[A-Z]/;
+			var pwRegex2 =  /[a-z]/;
+			var pwRegex3 =  /\d/;
+			var pwRegex4 =  /[@]/;
+
+			if(pwRegex1.test(this.get('signupPassword')) && pwRegex2.test(this.get('signupPassword')) && pwRegex3.test(this.get('signupPassword')) && pwRegex4.test(this.get('signupPassword')))
+			{
+				Ember.$(".signuppw-area input").css("borderColor","red");
+				Ember.$(".signuppw-area input").css("backgroundColor","lightyellow");
+				Ember.$("#passwordwarning").fadeToggle().delay(5000).fadeToggle();
+				if(this.get('signupPwValid'))
+					this.set('signupPwValid',false);	
+			}
+			else
+			{
+				Ember.$(".signuppw-area input").css("borderColor","green");
+				Ember.$(".signuppw-area input").css("backgroundColor","lightgreen");
+				if(!this.get('signupPwValid'))
+					this.set('signupPwValid',true);
+			}
+			if(this.get('signupVerifyValid') && this.get('signupPwValid') && this.get('signupEmailValid'))
+				this.set('signupValid');
+		},
+		validateSignupVerification: function(){
+			if(Ember.computed.equal(this.get('signupPassword'),this.get('signupVerify')))
+			{
+				Ember.$(".signupverify-area input").css("borderColor","red");
+				Ember.$(".signupverify-area input").css("backgroundColor","lightyellow");
+				Ember.$("#verifywarning").fadeToggle().delay(5000).fadeToggle();
+				if(this.get('signupVerifyValid'))
+					this.set('signupVerifyValud',false);
+			}
+			else
+				if(!this.get('signupVerifyValid'))
+					this.set('signupVerifyValid',true);
+
+			if(this.get('signupPwValid') && this.get('signupEmailValid'))
+				this.set('signupValid');
 		}
 	}
 });
@@ -1571,35 +1628,10 @@ helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
 Ember.TEMPLATES['login'] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
 this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-  var buffer = '', stack1, hashTypes, hashContexts, options, escapeExpression=this.escapeExpression, self=this, helperMissing=helpers.helperMissing;
+  var buffer = '', stack1, hashTypes, hashContexts, options, helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression;
 
-function program1(depth0,data) {
-  
-  var buffer = '', hashTypes, hashContexts;
-  data.buffer.push("\n			");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "session.account.email", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("\n		");
-  return buffer;
-  }
 
-function program3(depth0,data) {
-  
-  
-  data.buffer.push("\n			nope\n		");
-  }
-
-  data.buffer.push("<div class=\"progress progress-striped browse-item-rating-progress\" id=\"browse-show-rating-progress\">\n  \n  <div class=\"progress-bar progress-bar-info\" style=\"width: 100%\">\n    \n  </div>\n\n</div>\n\n<div class=\"container\">\n	<div class=\"row\">\n		");
-  hashTypes = {};
-  hashContexts = {};
-  stack1 = helpers['if'].call(depth0, "session.isAuthenticated", {hash:{},inverse:self.program(3, program3, data),fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n		<a ");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "logSession", {hash:{},contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push(">Log session</a>\n		<div class=\"col-lg-6\" class=\"loginpage-loginform-div\">\n				");
+  data.buffer.push("<div class=\"progress progress-striped browse-item-rating-progress\" id=\"browse-show-rating-progress\">\n  \n  <div class=\"progress-bar progress-bar-info\" style=\"width: 100%\">\n    \n  </div>\n\n</div>\n\n<div class=\"container\">\n	<div class=\"row\">\n		<div class=\"col-lg-6\" class=\"loginpage-loginform-div\">\n				");
   hashTypes = {};
   hashContexts = {};
   options = {hash:{},contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
@@ -1625,23 +1657,24 @@ function program1(depth0,data) {
   data.buffer.push("\n  		<div class=\"alert alert-danger alert-dismissable\">\n  			<p>Login failed :( Try again?</p>\n  		</div>\n  		");
   }
 
-  data.buffer.push("<div class=\"row\">\n	<div class=\"col-lg-12\">\n		<h2>Do you have an account...</h2>\n	</div>\n</div>\n<div class=\"row\">\n	<form class=\"form-inline\" ");
+  data.buffer.push("<div class=\"row\">\n	<div class=\"col-lg-12\">\n		<h2>Do you have an account...</h2>\n	</div>\n</div>\n<div class=\"row\">\n	<form class=\"form-inline\" id=\"login-form\" ");
   hashContexts = {'on': depth0};
   hashTypes = {'on': "STRING"};
   data.buffer.push(escapeExpression(helpers.action.call(depth0, "authenticate", {hash:{
     'on': ("submit")
   },contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
   data.buffer.push(">\n  	<div class=\"col-lg-5 loginusername-area\">\n  		");
-  hashContexts = {'id': depth0,'placeholder': depth0,'class': depth0,'value': depth0};
-  hashTypes = {'id': "STRING",'placeholder': "STRING",'class': "STRING",'value': "ID"};
+  hashContexts = {'id': depth0,'placeholder': depth0,'class': depth0,'value': depth0,'focus-out': depth0};
+  hashTypes = {'id': "STRING",'placeholder': "STRING",'class': "STRING",'value': "ID",'focus-out': "STRING"};
   options = {hash:{
     'id': ("identification"),
     'placeholder': ("Enter Login"),
     'class': ("form-control"),
-    'value': ("identification")
+    'value': ("identification"),
+    'focus-out': ("validateLoginEmail")
   },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   data.buffer.push(escapeExpression(((stack1 = helpers.input || depth0.input),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "input", options))));
-  data.buffer.push("\n\n  	</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5 loginpw-area\">\n  		");
+  data.buffer.push("\n  		\n  	</div>\n  	<div class=\"alert alert-warning col-lg-4 alert-dismissable\" style=\"display:none;margin:auto auto;\" id=\"emailwarning\"> <button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-hidden=\"true\">&times;</button><b>Oh come on.. :( Your email sucks, man</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5 loginpw-area\">\n  		");
   hashContexts = {'id': depth0,'placeholder': depth0,'class': depth0,'type': depth0,'value': depth0};
   hashTypes = {'id': "STRING",'placeholder': "STRING",'class': "STRING",'type': "STRING",'value': "ID"};
   options = {hash:{
@@ -1657,7 +1690,7 @@ function program1(depth0,data) {
   hashContexts = {};
   stack2 = helpers['if'].call(depth0, "loginFailed", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
-  data.buffer.push("\n  		<button class=\"btn btn-info\" >Log in</button>\n  	</div>\n</form>\n</div>");
+  data.buffer.push("\n  		\n  		<button class=\"btn btn-info\" >Log in</button>\n\n  	</div>\n</form>\n</div>");
   return buffer;
   
 });
@@ -1990,46 +2023,12 @@ function program6(depth0,data) {
 Ember.TEMPLATES['signup_form'] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
 this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-  var buffer = '', stack1, hashContexts, hashTypes, options, escapeExpression=this.escapeExpression, helperMissing=helpers.helperMissing;
+  var buffer = '', stack1, stack2, hashContexts, hashTypes, options, helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression, self=this;
 
-
-  data.buffer.push("<div class=\"row\">\n	<div class=\"col-lg-12\">\n		<h2>.. or are you not registered yet? :(</h2>\n	</div>\n</div>\n<div class=\"row\">\n	<form class=\"form-inline\" ");
-  hashContexts = {'on': depth0};
-  hashTypes = {'on': "STRING"};
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "signUp", {hash:{
-    'on': ("submit")
-  },contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push(">\n  	<div class=\"col-lg-5\">\n  		");
-  hashContexts = {'value': depth0,'type': depth0,'value': depth0,'placeholder': depth0};
-  hashTypes = {'value': "ID",'type': "STRING",'value': "ID",'placeholder': "STRING"};
-  options = {hash:{
-    'value': ("username"),
-    'type': ("text"),
-    'value': ("signupEmail"),
-    'placeholder': ("E-mail")
-  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
-  data.buffer.push(escapeExpression(((stack1 = helpers.input || depth0.input),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "input", options))));
-  data.buffer.push("\n  	</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5\">\n  		");
-  hashContexts = {'value': depth0,'type': depth0,'value': depth0,'placeholder': depth0};
-  hashTypes = {'value': "ID",'type': "STRING",'value': "ID",'placeholder': "STRING"};
-  options = {hash:{
-    'value': ("password"),
-    'type': ("password"),
-    'value': ("signupPassword"),
-    'placeholder': ("Password")
-  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
-  data.buffer.push(escapeExpression(((stack1 = helpers.input || depth0.input),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "input", options))));
-  data.buffer.push("\n  	</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5\">\n  		");
-  hashContexts = {'value': depth0,'type': depth0,'value': depth0,'placeholder': depth0};
-  hashTypes = {'value': "ID",'type': "STRING",'value': "ID",'placeholder': "STRING"};
-  options = {hash:{
-    'value': ("password"),
-    'type': ("password"),
-    'value': ("signupVerify"),
-    'placeholder': ("Verify plz")
-  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
-  data.buffer.push(escapeExpression(((stack1 = helpers.input || depth0.input),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "input", options))));
-  data.buffer.push("\n  	</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5\">\n  		");
+function program1(depth0,data) {
+  
+  var buffer = '', stack1, hashContexts, hashTypes, options;
+  data.buffer.push("\n  		");
   hashContexts = {'class': depth0,'type': depth0,'value': depth0};
   hashTypes = {'class': "STRING",'type': "STRING",'value': "STRING"};
   options = {hash:{
@@ -2038,6 +2037,54 @@ helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
     'value': ("Sign up")
   },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   data.buffer.push(escapeExpression(((stack1 = helpers.input || depth0.input),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "input", options))));
+  data.buffer.push("\n  	");
+  return buffer;
+  }
+
+  data.buffer.push("<div class=\"row\">\n	<div class=\"col-lg-12\">\n		<h2>.. or are you not registered yet? :(</h2>\n	</div>\n</div>\n<div class=\"row\">\n	<form class=\"form-inline\" ");
+  hashContexts = {'on': depth0};
+  hashTypes = {'on': "STRING"};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "signUp", {hash:{
+    'on': ("submit")
+  },contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(">\n  	<div class=\"col-lg-5 signupemail-area\">\n  		");
+  hashContexts = {'value': depth0,'type': depth0,'value': depth0,'placeholder': depth0,'focus-out': depth0};
+  hashTypes = {'value': "ID",'type': "STRING",'value': "ID",'placeholder': "STRING",'focus-out': "STRING"};
+  options = {hash:{
+    'value': ("username"),
+    'type': ("text"),
+    'value': ("signupEmail"),
+    'placeholder': ("E-mail"),
+    'focus-out': ("validateSignupEmail")
+  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  data.buffer.push(escapeExpression(((stack1 = helpers.input || depth0.input),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "input", options))));
+  data.buffer.push("\n  		\n  	</div>\n  	<div class=\"alert alert-warning col-lg-4 alert-dismissable\" style=\"display:none;margin:auto auto;\" id=\"signupemailwarning\"> \n  			<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-hidden=\"true\">&times;</button>\n  			<b>Oh come on..</b> :( Your email sucks, man\n  		</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5 signuppw-area\">\n  		");
+  hashContexts = {'value': depth0,'type': depth0,'value': depth0,'placeholder': depth0,'focus-out': depth0};
+  hashTypes = {'value': "ID",'type': "STRING",'value': "ID",'placeholder': "STRING",'focus-out': "STRING"};
+  options = {hash:{
+    'value': ("password"),
+    'type': ("password"),
+    'value': ("signupPassword"),
+    'placeholder': ("Password"),
+    'focus-out': ("validateSignupPw")
+  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  data.buffer.push(escapeExpression(((stack1 = helpers.input || depth0.input),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "input", options))));
+  data.buffer.push("\n  	</div>\n  	<div class=\"alert alert-info col-lg-4 alert-dismissable\" style=\"display:none;margin:auto auto;\" id=\"passwordwarning\"> \n  			<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-hidden=\"true\">&times;</button>\n  			<b>Alright, so ...</b> 8 or more characters. At least a number, an uppercase letter and a lowercase letter. Deal?\n  	</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5 signupverify-area\">\n  		");
+  hashContexts = {'value': depth0,'type': depth0,'value': depth0,'placeholder': depth0,'focus-out': depth0};
+  hashTypes = {'value': "ID",'type': "STRING",'value': "ID",'placeholder': "STRING",'focus-out': "STRING"};
+  options = {hash:{
+    'value': ("password"),
+    'type': ("password"),
+    'value': ("signupVerify"),
+    'placeholder': ("Verify plz"),
+    'focus-out': ("validateSignupVerification")
+  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  data.buffer.push(escapeExpression(((stack1 = helpers.input || depth0.input),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "input", options))));
+  data.buffer.push("\n  		\n  	</div>\n  	<div class=\"alert alert-warning col-lg-4 alert-dismissable\" style=\"display:none;margin:auto auto;\" id=\"verifywarning\"> \n  			<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-hidden=\"true\">&times;</button>\n  			<b>Uhm..</b> Your passwords must, you know, match :/</b>\n  		</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5\">\n  	");
+  hashTypes = {};
+  hashContexts = {};
+  stack2 = helpers['if'].call(depth0, "signupValid", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
   data.buffer.push("\n  	</div>\n</form>\n</div>");
   return buffer;
   
@@ -73179,7 +73226,22 @@ module.exports = EpisodesView;
 
 },{}],54:[function(require,module,exports){
 var LoginView = Ember.View.extend({
-	templateName: 'login'
+	templateName: 'login',
+
+	actions: {
+		validateSignupForm: function(){
+			// Validate email against regex
+			
+			
+			var email = this.get('controller').get('signupEmail');
+			if(emailRegex.test(email))
+				console.log("VALID.");
+			else
+				console.log("INVALID");
+
+
+		}
+	}
 });
 
 module.exports = LoginView;

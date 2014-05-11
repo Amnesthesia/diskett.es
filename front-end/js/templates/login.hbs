@@ -8,12 +8,6 @@
 
 <div class="container">
 	<div class="row">
-		{{#if session.isAuthenticated }}
-			{{ session.account.email }}
-		{{else}}
-			nope
-		{{/if}}
-		<a {{action 'logSession'}}>Log session</a>
 		<div class="col-lg-6" class="loginpage-loginform-div">
 				{{partial 'loginForm'}}
 		</div>

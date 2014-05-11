@@ -42,7 +42,7 @@
 
 			$res = $this->db->read("SELECT id,salt FROM user WHERE email = ?",$email);
 
-			if(!empty($res) && count($res[0])>0 /*&& password_verify($password.$res[0]["salt"],$res[0]["password"])*/)
+			if(!empty($res) && count($res[0])>0 && password_verify($password.$res[0]["salt"],$res[0]["password"]))
 			{
 				// Hash to use for this session
 				$hash = hash("sha256",$res[0]["id"].$res[0]["salt"].time());
@@ -74,6 +74,89 @@
 
 		// Fetch shows
 		public function shows()
+		{
+			$args = func_get_args();
+
+			switch($this->verb)
+			{
+				case 'read':
+					return $this->getShows(array_shift($args));
+
+			}
+
+		}
+
+		public function users()
+		{
+			$args = func_get_args();
+			switch($this->verb)
+			{
+				case 'create':
+					return $this->createUser(array_shift($args));
+				case 'read':
+					return $this->getUsers(array_shift($args));
+
+			}
+		}
+
+		// Fetch all episodes by owner show
+		public function episodes()
+		{
+			$args = func_get_args();
+
+			switch($this->verb)
+			{
+
+				case 'read':
+					$episodes = array("episode" => array());
+					
+					
+					foreach($args[0] as $argument)
+					{
+						$episode = new Episode(array(104641,0,1));
+						$episode->setAttribute("show",$episode->getAttribute("show_id"));
+						
+						$episodes["episode"][] = array(1);
+					}	
+
+					return $episodes;
+					break;
+			}
+		}
+
+		public function episode()
+		{
+			$args = func_get_args();
+
+			switch($this->verb)
+			{
+
+				case 'read':
+					$episodes = array("episodes" => array());
+					
+					
+					foreach($args[0] as $argument)
+					{
+						$episode = new Episode(array(104641,0,1));
+						$episode->setAttribute("show",$episode->getAttribute("show_id"));
+						
+						$episodes["episode"][] = $episode->getAttributes();
+					}	
+
+					return $episodes;
+					break;
+			}
+		}
+
+		/**
+		 ** Just as with the other methods,
+		 ** this one returns all shows and its episodes if 
+		 ** no show_id is provided. If a show ID is provided,
+		 ** it ... as you may have guessed... returns that (or those)
+		 ** specific shows
+		 **
+		 **/
+		private function getShows()
 		{
 			$args = func_get_args();
 			$showkey = "shows";
@@ -131,8 +214,10 @@
 							 LEFT JOIN `episode` ON (`show`.id = `episode`.show_id) 
 							 WHERE `show`.id IN (".$qmarks.") ORDER BY srating ASC;";
 
+				
 				$showkey = "show";
 				$res = $this->db->read($query,$args[0]);
+				
 			}
 
 			$data = array($showkey => array(), "episodes" => array());
@@ -183,10 +268,77 @@
 			}
 
 			return $data;
-
 		}
 
-		public function users()
+		private function createUser()
+		{
+			$data = json_decode(file_get_contents("php://input")); // Work-around for JSON POST..?
+
+			if(empty($data))
+				$this->respond("Internal Server Error", 500);
+			$salt = rand()+time();
+			
+			$password = password_hash($data->user->password . $salt, PASSWORD_DEFAULT);
+			
+			$this->db->insert("user",array("email","password","salt","role_id","country_id"), array($data->user->email,$data->user->password,$salt,"5","1"));
+
+
+
+			$query = "SELECT user.id as uid,
+					  		 user.email as uemail,
+					  		 user.password as upassword,
+					  		 user.role_id as urole,
+					  		 user.country_id as ucountry,
+					  		 user.last_activity as ulastactive,
+					  		 roles.id as rid,
+					  		 roles.name as rname,
+					  		 roles.description as rdescription,
+					  		 roles.is_admin as risadmin,
+					  		 user_show.show_id as usid,
+					  		 user_show.user_id as usuid,
+					  		 user_show.is_favorite as usisfav 
+					  		 FROM user JOIN roles 
+					  		 ON(user.role_id=roles.id) 
+					  		 LEFT JOIN user_show 
+					  		 ON(user.id = user_show.user_id)
+					  		 WHERE user.email = ?";
+
+			$userkey = "user";
+
+			$res = $this->db->read($query,$data->user->email);
+			$res = array_shift($res);
+			
+
+			$data = array($userkey => array(), "role" => array());
+			
+
+			
+			$data[$userkey][] = array("id" => $res["uid"],
+									  "email" => $res["uemail"],
+									  "password" => $res["upassword"],
+									  "role_id" => $res["urole"],
+									  "country_id" => $res["ucountry"],
+									  "last_activity" => $res["ulastactive"],
+									  "shows" => array()
+											);
+					
+			$data["role"][] = array("id" => $res["rid"],
+									"name" => $res["rname"],
+									"description" => $res["rdescription"],
+									"is_admin" => $res["risadmin"]);
+				
+			return $data;
+		}
+
+		/**
+		 ** If no user ID(s) are provided, it returns 
+		 ** all users WITHOUT their associated shows.
+		 ** If a user ID is specified, it returns
+		 ** the user object, together with all shows
+		 ** watched by that user.
+		 **
+		 **/
+		private function getUsers()
 		{
 			$args = func_get_args();
 			$userkey = "users";
@@ -301,71 +453,6 @@
 				return array_merge($data,$this->shows($data[$userkey][0]["shows"]));
 
 			return $data;
-
 		}
-
-		// Fetch all episodes by owner show
-		public function episodes()
-		{
-			$args = func_get_args();
-
-			switch($this->verb)
-			{
-
-				case 'read':
-					$episodes = array("episode" => array());
-					
-					
-					foreach($args[0] as $argument)
-					{
-						$episode = new Episode(array(104641,0,1));
-						$episode->setAttribute("show",$episode->getAttribute("show_id"));
-						
-						$episodes["episode"][] = array(1);
-					}	
-
-					return $episodes;
-					break;
-			}
-		}
-
-		public function episode()
-		{
-			$args = func_get_args();
-
-			switch($this->verb)
-			{
-
-				case 'read':
-					$episodes = array("episodes" => array());
-					
-					
-					foreach($args[0] as $argument)
-					{
-						$episode = new Episode(array(104641,0,1));
-						$episode->setAttribute("show",$episode->getAttribute("show_id"));
-						
-						$episodes["episode"][] = $episode->getAttributes();
-					}	
-
-					return $episodes;
-					break;
-			}
-		}
-
-		/*public function episode()
-		{
-			$args = func_get_args();
-
-			switch($this->verb)
-			{
-
-				case 'read':
-					
-					$episode = new Episode($args[0]);
-					return $episode->getAttributes();
-					break;
-			}
-		}*/
 	}
 ?>

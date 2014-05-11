@@ -33,6 +33,15 @@ var LoginController = Ember.Controller.extend(Ember.SimpleAuth.LoginControllerMi
 		},
 		sessionAuthenticationSucceeded: function(){
 			this.transitionTo("shows");
+		},
+		signUp: function(){
+			var user = this.store.createRecord('user', {
+				email: this.get('signupEmail'),
+				password: this.get('signupPassword')
+			});
+
+			user.save();
+			console.log(user);
 		}
 	}
 });

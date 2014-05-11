@@ -42,7 +42,13 @@ require('../vendor/jquery.twinkle/jquery.twinkle-0.5.0.min');
 
 
 
-// We need this to do login! :)
+// We need this to do login!
+// With this code right here, we initialize the application,
+// and at the same time we add a computed property (that function right there, you see?)
+// to the Session which makes a second request with the user_id,
+// and loads the user model into the session. Sooooo:
+//
+// IMPORTANT: This makes the current user object accessible in session.account
 Ember.Application.initializer({
   name: 'authentication',
   initialize: function(container, application) {
@@ -422,6 +428,15 @@ var LoginController = Ember.Controller.extend(Ember.SimpleAuth.LoginControllerMi
 		},
 		sessionAuthenticationSucceeded: function(){
 			this.transitionTo("shows");
+		},
+		signUp: function(){
+			var user = this.store.createRecord('user', {
+				email: this.get('signupEmail'),
+				password: this.get('signupPassword')
+			});
+
+			user.save();
+			console.log(user);
 		}
 	}
 });
@@ -1659,11 +1674,7 @@ function program1(depth0,data) {
   hashTypes = {};
   hashContexts = {};
   data.buffer.push(escapeExpression(helpers.action.call(depth0, "invalidateSession", {hash:{},contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push(">");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "session.account.email", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("</button>\n	        ");
+  data.buffer.push(">Log out</button>\n	        ");
   return buffer;
   }
 
@@ -1985,9 +1996,9 @@ helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
   data.buffer.push("<div class=\"row\">\n	<div class=\"col-lg-12\">\n		<h2>.. or are you not registered yet? :(</h2>\n	</div>\n</div>\n<div class=\"row\">\n	<form class=\"form-inline\" ");
   hashContexts = {'on': depth0};
   hashTypes = {'on': "STRING"};
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "register", {hash:{
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "signUp", {hash:{
     'on': ("submit")
-  },contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  },contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
   data.buffer.push(">\n  	<div class=\"col-lg-5\">\n  		");
   hashContexts = {'value': depth0,'type': depth0,'value': depth0,'placeholder': depth0};
   hashTypes = {'value': "ID",'type': "STRING",'value': "ID",'placeholder': "STRING"};

@@ -34,6 +34,8 @@ App.Router.map(function() {
   this.route('new_episode', {path: '/episodes/new'});
   // end generated routes
 
+  this.resource('users');
+  this.resource('user', { path: '/user/:user_id'});
 
 });
 

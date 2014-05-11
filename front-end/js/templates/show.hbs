@@ -39,10 +39,42 @@
   </div>
   <div class="row">&nbsp;</div>
   <div class="row">&nbsp;</div>
-  {{ render "episodes" episodeList }}
+  <h2>Episodes</h2>
+
+{{#linkTo "new_episode"}}New Episode{{/linkTo}}
 
 
-{{#link-to-animated "shows" animations="main:slideOverLeft"}}←All Shows{{/link-to-animated}}
-{{#linkTo "edit_show" model}}Edit{{/linkTo}}
+<table>
+  <thead>
+    <th>show_id</th>
+    <th>episode_id</th>
+    <th>season</th>
+    <th>poster</th>
+    <th>date</th>
+    <th>name</th>
+    <th>summary</th>
+    <th>watched</th>
+  </thead>
+  <tbody>
+    {{#each episode in episodes}}
+    <tr>
+      <td>{{ episode.show_id }}</td>
+      <td>{{ episode.episode_id }}</td>
+      <td>{{ episode.season }}</td>
+      <td>{{ episode.poster }}</td>
+      <td>{{ episode.date }}</td>
+      <td>{{ episode.name }}</td>
+      <td>{{ episode.summary }}</td>
+      <td>{{ episode.watched }}</td>
+      <td>{{#linkTo "episode" episode }}view{{/linkTo}}</td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+
+
+{{#link-to-animated "index" animations="main:slideLeft"}}←All Shows{{/link-to-animated}}
+{{#link-to "edit_show" model}}Edit{{/link-to}}
 <a href="#" {{action "destroy"}}>Destroy</a>
 </div>

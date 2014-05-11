@@ -20,7 +20,7 @@
 			
 		}
 
-		// Shortcut for fetching all (by plural)
+		// Fetch shows
 		public function shows()
 		{
 			$args = func_get_args();
@@ -49,6 +49,8 @@
 							 LEFT JOIN `episode` ON (`show`.id = `episode`.show_id) 
 							 ORDER BY srating ASC;";
 							 $res = $this->db->read($query);
+
+
 			}
 			else
 			{
@@ -132,46 +134,122 @@
 
 		}
 
-		public function show()
+		public function users()
 		{
 			$args = func_get_args();
+			$userkey = "users";
 
-			switch($this->verb)
+			if(empty($args[0]) || $args[0] == NULL)
 			{
-
-				case 'read':
-					if(empty($args) || !$args[0])
-					{	
-						$data = array("shows" => array(), "episodes" => array());
-						$showlist = Show::getList();
-						$increment = 0;
-
-						foreach($showlist as $s)
-						{
-							// Take all regular attributes and put them in the array
-							// but also add episodes in a serialized manner under the
-							// "episodes" key
-							$data["shows"][$increment++] = array_merge($s->getAttributes(),array("episodes" => $s->getEpisodes()));
-							var_dump($data);
-							foreach($data["shows"][$increment]->getChildren("Episode") as $e)
-							{
-								$ep = new Episode($ep);
-								$ep->setAttribute("id",serialize(array($ep->getAttribute("show_id"),$ep->getAttribute("season"),$ep->getAttribute("episode_id"))));
-
-								$data["episodes"][] = $ep->getAttributes();
-							}
-							
-						}			
-					}
-					else
-					{
-						$show = new Show($args[0]);
-						$data["shows"][0] = array_merge($show->getAttributes(),array("episode" => array(1)));
-						
-					}
-					return $data;
-					break;
+				$query = "SELECT user.id as uid,
+						  		 user.email as uemail,
+						  		 user.password as upassword,
+						  		 user.role_id as urole,
+						  		 user.country_id as ucountry,
+						  		 user.last_activity as ulastactive,
+						  		 roles.id as rid,
+						  		 roles.name as rname,
+						  		 roles.description as rdescription,
+						  		 roles.is_admin as risadmin,
+						  		 user_show.show_id as usid,
+						  		 user_show.user_id as usuid,
+						  		 user_show.is_favorite as usisfav 
+						  		 FROM user JOIN roles 
+						  		 ON(user.role_id=roles.id) 
+						  		 LEFT JOIN user_show 
+						  		 ON(user.id = user_show.user_id);";
+							 $res = $this->db->read($query);
 			}
+			else
+			{
+				$qs = count($args[0]);
+				$qmarks = array_fill(0,$qs,"?");
+				$qmarks = implode($qmarks,",");
+
+				$query = "SELECT user.id as uid,
+						  		 user.email as uemail,
+						  		 user.password as upassword,
+						  		 user.role_id as urole,
+						  		 user.country_id as ucountry,
+						  		 user.last_activity as ulastactive,
+						  		 roles.id as rid,
+						  		 roles.name as rname,
+						  		 roles.description as rdescription,
+						  		 roles.is_admin as risadmin,
+						  		 user_show.show_id as usid,
+						  		 user_show.user_id as usuid,
+						  		 user_show.is_favorite as usisfav 
+						  		 FROM user JOIN roles 
+						  		 ON(user.role_id=roles.id) 
+						  		 LEFT JOIN user_show 
+						  		 ON(user.id = user_show.user_id)
+						  		 WHERE user.id IN (".$qmarks.")";
+
+				$userkey = "user";
+
+				$res = $this->db->read($query,$args[0]);
+			}
+			$data = array($userkey => array(), "role" => array());
+			
+
+			$unique = array();
+			$map = array();
+
+		
+			$i = 0;
+
+			foreach($res as $r)
+			{
+				// Each row contains the same show info for many show_ids;
+				// so make sure we keep the user data unique in the list and sort out 
+				// the episode data.
+				if(!in_array($r["uid"],$unique))
+				{
+					// Add the show ID to the unique-array
+					$unique[] = $r["uid"];
+
+					// Set up a map to map the shows ID to the key in the list
+					$map[$r["uid"]] = $i++;
+					if($r["usid"] != NULL && $r["usid"] != "NULL")
+						$data[$userkey][] = array("id" => $r["uid"],
+													 "email" => $r["uemail"],
+													 "password" => $r["upassword"],
+													 "role_id" => $r["urole"],
+													 "country_id" => $r["ucountry"],
+													 "last_activity" => $r["ulastactive"],
+													 "shows" => array($r["usid"])
+														);
+					else
+						$data[$userkey][] = array("id" => $r["uid"],
+													 "email" => $r["uemail"],
+													 "password" => $r["upassword"],
+													 "role_id" => $r["urole"],
+													 "country_id" => $r["ucountry"],
+													 "last_activity" => $r["ulastactive"],
+													 "shows" => array()
+														);
+					$data["role"][] = array("id" => $r["rid"],
+											 "name" => $r["rname"],
+											 "description" => $r["rdescription"],
+											 "is_admin" => $r["risadmin"]);
+				}
+				// Continue adding episode IDs onto the show - use the map!
+				else
+					$data[$userkey][$map[$r["uid"]]]["shows"][] = $r["eid"];
+
+				/*$data["episodes"][] = array("id" => $r["eid"],
+												"show_id" => $r["eshow"],
+												"season" => $r["eseason"],
+												"episode" => $r["eepisode"],
+												"summary" => $r["esummary"],
+												"date" => $r["edate"]);*/
+			}
+
+			if(!empty($args[0]) && $args[0] != NULL && count($data[$userkey][0]["shows"])>0)
+				return array_merge($data,$this->shows($data[$userkey][0]["shows"]));
+
+			return $data;
+
 		}
 
 		// Fetch all episodes by owner show

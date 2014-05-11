@@ -21,19 +21,19 @@
         
           </div>
           <div class="browse-item-splitter">
-            {{#linkTo "show" show.id}}
+            {{#link-to-animated "show" show animations="main:slideRight"}}
               <img src="../media/posters/{{unbound show.poster}}" alt="media/posters/{{unbound show.poster}}" />
             
             
               <h5>{{show.name}}</h5>
-            {{/linkTo}}
+            {{/link-to-animated}}
           </div>
           <div class="browse-item-actions">
              
               <button class="btn btn-small btn-primary follow-button" {{action follow}}> +Follow</button>
               
               
-              {{#link-to-animated "show" show animations="main:flip"}}<button class="btn btn-small btn-info read-more-button"> More </button>{{/link-to-animated}}
+              {{#link-to-animated "show" show animations="main:slideRight"}}<button class="btn btn-small btn-info read-more-button"> More </button>{{/link-to-animated}}
               
               <div class="clear">&nbsp;</div>
           </div>

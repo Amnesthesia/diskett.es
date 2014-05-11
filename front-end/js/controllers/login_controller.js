@@ -1,7 +1,8 @@
-var LoginController = Ember.Controller.extend({
-	loginVisible: false,
-	loginEmail: "",
-	loginPassword: "",
+var LoginController = Ember.Controller.extend(Ember.SimpleAuth.LoginControllerMixin,{
+	authenticatorFactory: 'authenticator:custom',
+	loginFailed: false, //error message
+	loginEmail: "",		// Form fields
+	loginPassword: "",	
 	signupEmail: "",
 	signupPassword: "",
 	signupValidate: "",

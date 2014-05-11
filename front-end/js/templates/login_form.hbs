@@ -16,7 +16,12 @@
 </div>
 <div class="row">
   	<div class="col-lg-5">
-  		<button class="btn btn-info" {{action "verifyLoginForm"}}>Log in</button>
+  		{{#if loginFailed }}
+  		<div class="alert alert-danger alert-dismissable">
+  			<p>Login failed :( Try again?</p>
+  		</div>
+  		{{/if}}
+  		<button class="btn btn-info" {{action "authenticate"}}>Log in</button>
   	</div>
 </form>
 </div>

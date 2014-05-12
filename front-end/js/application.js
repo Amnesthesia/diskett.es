@@ -756,7 +756,24 @@ var ShowController = Ember.ObjectController.extend({
   			return "progress-bar-warning";
   		else return "progress-bar-danger";
   	}.property('rating'),
-
+  	isNotWatched: function(){
+  		if(this.get('session').isAuthenticated)
+  		{
+  			if(this.get('session.account.shows').contains(this.get('model').get('id')))
+  			{
+  				console.log("User is not watching "+this.get('name')+": Adding to grid");
+  				return true;
+  			}
+  			else{
+  				console.log("User already watches "+this.get('name')+": Hiding from grid");
+  				return false;
+  			}
+  		}
+  		else{
+  			console.log("Could not get session - assuming logged out user and displaying full grid");
+  		}
+  		return false;
+  	},
   	seasonCount: function(){
   		var season = 0;
   		if(this.get('nSeasons')>0)
@@ -806,24 +823,13 @@ var ShowsController = Ember.ArrayController.extend({
 	searchQuery: '',
 
 	unwatchedShows: function(){
-		var show = this.get('model');
-		if(this.get('session').isAuthenticated)
-  		{
-  			if(this.get('session.account.shows').contains(this.get('model').get('id')))
-  			{
-  				console.log("User is not watching "+this.get('name')+": Adding to grid");
-  				return true;
-  			}
-  			else{
-  				console.log("User already watches "+this.get('name')+": Hiding from grid");
-  				return false;
-  			}
-  		}
-  		else{
-  			console.log("Could not get session - assuming logged out user and displaying full grid");
-  		}
-  		return false;
-	}.property('show.@each'),
+		return this.get("content").reduce(function(arr, object, index){
+			if(object.get("isNotWatched"))
+				arr.pushObject(object);
+			return arr;
+		}, Ember.A());
+
+	}.property('show.@each.isNotWatched'),
 
 	searchShows: function(){
 
@@ -2403,7 +2409,7 @@ function program4(depth0,data) {
   data.buffer.push("\n        </form>\n</div>\n\n<div class=\"container\">\n<div class=\"row\">\n  \n    ");
   hashTypes = {};
   hashContexts = {};
-  stack1 = helpers.each.call(depth0, "show", "in", "controller", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  stack1 = helpers.each.call(depth0, "show", "in", "unwatchedShows", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n</div>\n\n</div>");
   return buffer;

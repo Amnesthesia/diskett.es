@@ -79,9 +79,10 @@ App.ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin
       // to fill up the content "soon". We have to wait for this promise to finish,
       // _then_ return it, otherwise we get an object that isn't set up properly
       // and we can't work with that :(
-      return this.get('session.account').then(function(user){
-        return user; 
-      });
+      if(this.get('session').isAuthenticated)
+        return this.get('session.account').then(function(user){
+          return user; 
+        });
     },
     actions: {
       logSession: function(){

@@ -258,9 +258,10 @@ App.ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin
       // to fill up the content "soon". We have to wait for this promise to finish,
       // _then_ return it, otherwise we get an object that isn't set up properly
       // and we can't work with that :(
-      return this.get('session.account').then(function(user){
-        return user; 
-      });
+      if(this.get('session').isAuthenticated)
+        return this.get('session.account').then(function(user){
+          return user; 
+        });
     },
     actions: {
       logSession: function(){
@@ -1315,7 +1316,7 @@ module.exports = UserRoute;
 
 
 },{}],44:[function(require,module,exports){
-var WatchedRoute = Ember.Route.extend({
+var WatchedRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin,{
 	model: function(){
 
     	return this.get('session.account').then(function(shows){
@@ -2011,7 +2012,7 @@ helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
   var buffer = '', stack1, hashTypes, hashContexts, options, helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression;
 
 
-  data.buffer.push("<div class=\"progress progress-striped browse-item-rating-progress\" id=\"browse-show-rating-progress topbar\">\n  \n  <div class=\"progress-bar progress-bar-info\" style=\"width: 100%\">\n    \n  </div>\n\n</div>\n\n<div class=\"container\">\n	<div class=\"row\">\n		<div class=\"col-lg-6\" class=\"loginpage-loginform-div\">\n				");
+  data.buffer.push("<div class=\"progress progress-striped browse-item-rating-progress topbar\" id=\"browse-show-rating-progress\">\n  \n  <div class=\"progress-bar progress-bar-info\" style=\"width: 100%\">\n    \n  </div>\n\n</div>\n\n<div class=\"container\">\n	<div class=\"row\">\n		<div class=\"col-lg-6\" class=\"loginpage-loginform-div\">\n				");
   hashTypes = {};
   hashContexts = {};
   options = {hash:{},contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
@@ -2409,7 +2410,7 @@ function program4(depth0,data) {
   data.buffer.push("\n        </form>\n</div>\n\n<div class=\"container\">\n<div class=\"row\">\n  \n    ");
   hashTypes = {};
   hashContexts = {};
-  stack1 = helpers.each.call(depth0, "show", "in", "unwatchedShows", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  stack1 = helpers.each.call(depth0, "show", "in", "controller", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n</div>\n\n</div>");
   return buffer;

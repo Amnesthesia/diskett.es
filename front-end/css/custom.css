@@ -7,17 +7,13 @@ h1, h2, h3, h4, h5, h6
     font-family: "Open Sans","Helvetica Neue","Helvetica",Helvetica,Arial,sans-serif;
     font-weight: 300;
     font-style: normal;
-    color: #222;
+    color: #FCFCFC;
     text-rendering: optimizelegibility;
     line-height: 1.4;
 }
 
 
-@media (max-width: 960px) { 
-    .browse-item { width:100%; }
-    .browse-item a img {width: 100%;}
-    
-}
+
 
 
 
@@ -84,7 +80,7 @@ input {
 }
 
 /* Generic types & classes */
-input[type="text"]{
+input[type="text"],input[type="password"]{
   padding: 10px 5px 10px 32px;  
   border: 1px solid rgb(178, 178, 178);
   -webkit-appearance: textfield;
@@ -375,6 +371,10 @@ div.browse-item-splitter
     float: left;
    }
 
+   div.browse-item div.progress
+   {
+    border: none;
+   }
    div#browse-show-rating-progress
    {
     height: 71px;
@@ -444,4 +444,13 @@ div.browse-item-splitter
   -webkit-border-radius: 0 !important;
      -moz-border-radius: 0 !important;
           border-radius: 0 !important;
+}
+
+@media (max-width: 960px) { 
+    .browse-item { width:100%; }
+    .browse-item a img {width: 100%;}
+    .browse-item .browse-item-rating {font-size: 5em; margin-top:0.4em;}
+    .browse-item .browse-item-rating-progress{ height: 5em; }
+    #search-area input[type="text"]{height: 1.02em;}
+    
 }

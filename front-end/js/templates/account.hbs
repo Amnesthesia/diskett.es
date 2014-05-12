@@ -1,0 +1,44 @@
+<div class="progress progress-striped browse-item-rating-progress topbar" id="browse-show-rating-progress">
+  
+  <div class="progress-bar progress-bar-danger" style="width: 100%">
+    <div id="browse-show-rating">Account</div>
+  </div>
+
+</div>
+
+<div class="container">
+	<div class="col-lg-8">
+		<ul class="account-list">
+			<li>
+
+				{{input type="text" disabled="true" placeholder=session.account.email}}
+			</li>
+			<li>
+			{{#if isEditingPassword }}
+				{{input type="text" value=accountPassword placeholder="Password" key-up=validatePassword focus-out='editPassword'}}
+			{{else}}
+				<label {{action "editPassword" click=editPassword}}>
+					{{#if accountPassword}}
+						Click save to update account details
+					{{else}}
+						Click to edit password
+					{{/if}}
+				</label>
+			{{/if}}
+			</li>
+			<li>
+				{{#if accountPassword}}
+					{{#if isPasswordValid}}
+						<button class="btn btn-lg btn-primary center"{{action performUpdate}}>Save</button>
+					{{/if}}
+				{{/if}}
+			</li>
+			<li>
+				<div class="alert alert-info col-lg-8" style="display:none;margin:auto auto;" id="passwordwarning"> 
+  					<b>Alright, so ...</b> 8 or more characters. At least a number, an uppercase letter and a lowercase letter. Deal?
+  				</div>
+			</li>
+		</ul>
+	</div>
+</div>
+

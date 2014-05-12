@@ -1,0 +1,32 @@
+<div class="progress progress-striped browse-item-rating-progress" id="browse-show-rating-progress">
+  
+  <div class="progress-bar progress-bar-success" style="width: 100%">
+    <div id="browse-show-rating">Following</div>
+  </div>
+
+</div>
+<div class="container">
+<div class="row">
+  
+    {{#each show in controller}}
+    <div class="item col-md-3 browse-list browse-item overlay-trigger" id="{{unbound show.id}}">
+          <div class="progress browse-item-rating-progress">
+            
+            <div class="progress-bar {{unbound show.progressType}}" style="width: {{unbound this.ratingLength}}%">
+              <div class="browse-item-rating">{{show.ratingText}}</div>
+            </div>
+        
+          </div>
+          <div class="browse-item-splitter">
+            {{#link-to-animated "show" show animations="main:slideRight"}}
+              <img src="../media/posters/{{unbound show.poster}}" alt="media/posters/{{unbound show.poster}}" />
+            
+            
+              <h5>{{show.name}}</h5>
+            {{/link-to-animated}}
+          </div>
+        </div>
+    {{/each}}
+</div>
+
+</div>

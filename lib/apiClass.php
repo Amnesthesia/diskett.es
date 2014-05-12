@@ -74,8 +74,9 @@ abstract class API
 
 	 		case 'PUT':
 	 			$this->verb = 'update';
-	 			$this->request = $this->sanitize($_GET);
 	 			$this->file = file_get_contents("php://input");
+	 			$this->request = $this->sanitize(json_decode($this->file,true));
+	 			$this->args = array_merge($this->args,$this->request);
 	 			break;
 	 		default:
 	 			$this->respond("Invalid HTTP state", 0);

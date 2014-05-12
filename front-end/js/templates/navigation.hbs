@@ -9,11 +9,36 @@
 	    </div>
 	    <div class="navbar-header col-lg-2 navbar-btn">
 		    <ul id="sidebar-icons">
-				<li>{{#link-to 'index'}}<div data-icon="&#xe078;" class="icon"></div>{{/link-to}}</li>
-				<li><div data-icon="&#xe021;" class="icon"></div></li>
-				<li><div data-icon="&#xe067;" class="icon"></div></li>
-				<li>{{#link-to 'account'}}<div data-icon="&#xe027;" class="icon"></div>{{/link-to}}</li>
-				<li><div data-icon="&#xe072;" class="icon"></div></li>
+				<!-- Link to index -->
+				<li data-toggle="tooltip" data-placement="right" title="All shows" data-original-title="All shows">
+					{{#link-to 'index'}}
+						<div data-icon="&#xe078;" class="icon"></div>
+					{{/link-to}}
+				</li>
+				
+				<!-- Link to calendar view -->
+				<li data-toggle="tooltip" data-placement="right" title="New episodes" data-original-title="New episodes">
+					<div data-icon="&#xe021;" class="icon"></div>
+				</li>
+				
+				<!-- Link to watched shows -->
+				<li data-toggle="tooltip" data-placement="right" title="The shows you follow" data-original-title="The shows you follow">
+					{{#link-to-animated 'watched' animations='main:slideOverRight'}}
+						<div data-icon="&#xe067;" class="icon"></div>
+					{{/link-to-animated}}
+				</li>
+				
+				<!-- Link to Account settings -->
+				<li data-toggle="tooltip" data-placement="right" title="Your account settings" data-original-title="Your account settings">
+					{{#link-to-animated 'account' animations='main:slideOverRight'}}
+						<div data-icon="&#xe027;" class="icon"></div>
+					{{/link-to-animated}}
+				</li>
+				
+				<!-- Link to Help page -->
+				<li data-toggle="tooltip" data-placement="right" title="Help, if you need" data-original-title="Help, if you need">
+					<div data-icon="&#xe072;" class="icon"></div>
+				</li>
 			</ul>
 			{{#link-to "index" class="navbar-brand" id="navbar-brand"}} {{App.name}} {{/link-to}}
 		</div>

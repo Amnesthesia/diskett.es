@@ -1,17 +1,16 @@
 
-<div class="col-lg-12" id="search-area"> 
+<div class="col-lg-12" class="topbar" id="search-area"> 
       <!-- Right Nav Section --> 
         <form method="get" action="">
           {{view Ember.TextField valueBinding="search" action="doSearch" placeholder="Search shows"}}
         </form>
 </div>
 
-{{#linkTo "new_show"}}New Show{{/linkTo}}
-
 <div class="container">
 <div class="row">
   
     {{#each show in controller}}
+    
     <div class="item col-md-3 browse-list browse-item overlay-trigger" id="{{unbound show.id}}">
           <div class="progress browse-item-rating-progress">
             
@@ -30,7 +29,7 @@
           </div>
           <div class="browse-item-actions">
              
-              <button class="btn btn-small btn-primary follow-button" {{action follow}}> +Follow</button>
+              <button class="btn btn-small btn-primary follow-button" {{action follow show.id}}> +Follow</button>
               
               
               {{#link-to-animated "show" show animations="main:slideRight"}}<button class="btn btn-small btn-info read-more-button"> More </button>{{/link-to-animated}}
@@ -38,6 +37,7 @@
               <div class="clear">&nbsp;</div>
           </div>
         </div>
+
     {{/each}}
 </div>
 

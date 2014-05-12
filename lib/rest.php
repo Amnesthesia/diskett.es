@@ -109,8 +109,25 @@
 					return $this->createUser(array_shift($args));
 				case 'read':
 					return $this->getUsers(array_shift($args));
+				case 'update':
+					return $this->updateUsers(array_shift($args));
 
 			}
+		}
+
+		// Update one or several users
+		private function updateUsers($args)
+		{
+			$id = array_shift($args);
+			$user = array_shift($args);
+
+			$query = "UPDATE user SET password = ?, last_activity = NOW() WHERE id = ?;";
+			$this->db->update($query,$user["password"],$id);
+
+			foreach($user["shows"] as $show_id)
+				$this->db->insert("user_show",array("user_id","show_id"),array($id,$show_id));
+
+			return $this->users($id);
 		}
 
 		// Fetch all episodes by owner show
@@ -432,7 +449,7 @@
 						$data[$userkey][] = array("id" => $r["uid"],
 													 "email" => $r["uemail"],
 													 "password" => $r["upassword"],
-													 "role_id" => $r["urole"],
+													 "role_id" => (int)$r["urole"],
 													 "country_id" => $r["ucountry"],
 													 "last_activity" => $r["ulastactive"],
 													 "shows" => array($r["usid"])
@@ -441,7 +458,7 @@
 						$data[$userkey][] = array("id" => $r["uid"],
 													 "email" => $r["uemail"],
 													 "password" => $r["upassword"],
-													 "role_id" => $r["urole"],
+													 "role_id" => (int)$r["urole"],
 													 "country_id" => $r["ucountry"],
 													 "last_activity" => $r["ulastactive"],
 													 "shows" => array()
@@ -451,9 +468,9 @@
 											 "description" => $r["rdescription"],
 											 "is_admin" => $r["risadmin"]);
 				}
-				// Continue adding episode IDs onto the show - use the map!
+				// Continue adding show IDs onto the user - use the map!
 				else
-					$data[$userkey][$map[$r["uid"]]]["shows"][] = $r["eid"];
+					$data[$userkey][$map[$r["uid"]]]["shows"][] = $r["usid"];
 
 				/*$data["episodes"][] = array("id" => $r["eid"],
 												"show_id" => $r["eshow"],

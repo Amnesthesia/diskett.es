@@ -16,13 +16,14 @@ var ShowController = Ember.ObjectController.extend({
   	progressType: function(){
   		var rate = this.get('rating').toFixed(1);
   		if(rate < 2.5)
-  			return "progress-bar-danger";
-  		else if(rate < 5)
-  			return "progress-bar-warning";
-  		else if(rate < 7.5)
   			return "progress-bar-info";
-  		else return "progress-bar-success";
+  		else if(rate < 5)
+  			return "progress-bar-info";
+  		else if(rate < 7.5)
+  			return "progress-bar-warning";
+  		else return "progress-bar-danger";
   	}.property('rating'),
+
   	seasonCount: function(){
   		var season = 0;
   		if(this.get('nSeasons')>0)
@@ -58,11 +59,6 @@ var ShowController = Ember.ObjectController.extend({
     	this.get('model').deleteRecord();
     	this.get('store').commit();
     	this.get('target.router').transitionTo('shows');
-  		},
-  		follow: function(){
-  			if(!this.get('session').isAuthenticated)
-  				this.get('loginController').toggleLogin();
-
   		}
   	}
 

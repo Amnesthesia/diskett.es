@@ -1,4 +1,4 @@
-var WatchedRoute = Ember.Route.extend({
+var WatchedRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin,{
 	model: function(){
 
     	return this.get('session.account').then(function(shows){

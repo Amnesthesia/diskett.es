@@ -71,10 +71,13 @@ Like with most MVC frameworks, we have *Routes* that control what context the us
 Ember builds on jQuery, and as such, we can access jQuery from the (only) global object `Ember`, at `Ember.$`. Even though Ember is completely build on top of jQuery, it still make use of a few other javascript libraries, albeit not to the same extent. These other libraries are:
 
 * RequireJS 
+
 ... RequireJS is used for including the right files at the right time.
 * NodeJS 
+
 ... This is not required, but we use it to write classes as individual NodeJS modules. Classes could also be exported as RequireJS modules.
 * HandlebarsJS 
+
 ... Handlebars is a very powerful but minimal templating system built on MustacheJS (named so because of its use of 'mustaches', or {{ }} for variables) but adding extra functionality such as conditional statements. This is very vital to Ember and lays the foundation of Ember's powerful data templates.
 
 #### API & Server communication

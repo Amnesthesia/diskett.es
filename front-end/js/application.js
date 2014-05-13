@@ -2613,7 +2613,7 @@ function program2(depth0,data) {
   return buffer;
   }
 
-  data.buffer.push("<div class=\"progress progress-striped browse-item-rating-progress\" id=\"browse-show-rating-progress\">\n  \n  <div class=\"progress-bar progress-bar-success\" style=\"width: 100%\">\n    <div id=\"browse-show-rating\">Following</div>\n  </div>\n\n</div>\n<div class=\"container\">\n<div class=\"row\">\n  \n    ");
+  data.buffer.push("<div class=\"progress progress-striped browse-item-rating-progress\" id=\"browse-show-rating-progress\">\n  \n  <div class=\"progress-bar progress-bar-success\" style=\"width: 100%\">\n    <div id=\"browse-show-rating\">Following</div>\n  </div>\n\n</div>\n<div class=\"container\">\n<div class=\"row\" id=\"watched\">\n  \n    ");
   hashTypes = {};
   hashContexts = {};
   stack1 = helpers.each.call(depth0, "show", "in", "controller", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});

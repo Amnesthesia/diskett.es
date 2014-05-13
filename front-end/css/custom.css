@@ -148,6 +148,11 @@ input[type="password"].form-control
       margin: 5px;
   }
 
+  #watched .browse-item
+  {
+    box-shadow: 3px 4px 10px;
+  }
+
  div.browse-item img, img.detailsimg
  {
   width:100%;

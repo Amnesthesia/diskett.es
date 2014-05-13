@@ -18,23 +18,8 @@ require('../vendor/ember-animated-outlet/dist/ember-animated-outlet.min');
 require('../vendor/bootstrap-css/js/bootstrap.min');
 
 
-require.config({
-	paths: {
-		"moment":'../vendor/momentjs/moment'
-	}
-})
-
-define(["moment"],function(moment){
-	moment().format();
-});
-
-
 require('../vendor/ember-simple-auth/ember-simple-auth');
 require('../vendor/jquery.twinkle/jquery.twinkle-0.5.0.min');
-//require('../vendor/DataTables/media/js/jquery.dataTables');
-
-
-
 
 
 // We need this to do login!
@@ -179,7 +164,7 @@ App.Router.map(function() {
   // Route for the section with watched shows
   this.route('watched',{path: '/following'});
   this.route('show',{path: '/following/:show_id'});
-  
+
   this.resource('shows');
   this.resource('show', {path: '/shows/:show_id'});
   this.route('edit_show', {path: '/shows/:show_id/edit'});
@@ -280,6 +265,9 @@ App.ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin
       }
     }
 });
+
+// Show loading screen
+App.LoadingRoute = Ember.Route.extend({});
 
 App.IndexRoute = Ember.Route.extend({
   redirect: function(){
@@ -739,6 +727,13 @@ var ShowController = Ember.ObjectController.extend({
 	loginController: Ember.computed.alias("controllers.login"),
 	nSeasons: 0,
 	seasonSortedEpisodes: Ember.A(),
+  	
+  	// Returns true if the user is logged in
+  	isLoggedIn: function(){
+  		console.log("User is logged in?");
+  		return this.get('session').isAuthenticated;
+  	}.property('session'),
+
   	// Returns rating as length for the rating progress bar
   	ratingLength: function(){ 
     	return (this.get('rating').toFixed(1)*10);
@@ -825,6 +820,7 @@ var ShowsController = Ember.ArrayController.extend({
 	itemController: 'show',
 	searchQuery: '',
 	content: [],
+	needs: 'show',
 
 	searchShows: function(){
 
@@ -926,6 +922,7 @@ App.UserRoute = require('./routes/user_route');
 App.WatchedRoute = require('./routes/watched_route');
 App.AccountView = require('./views/account_view');
 App.EpisodesView = require('./views/episodes_view');
+App.LoadingView = require('./views/loading_view');
 App.LoginView = require('./views/login_view');
 App.NavigationView = require('./views/navigation_view');
 App.ShowItemView = require('./views/show_item_view');
@@ -940,7 +937,7 @@ require('./config/routes');
 module.exports = App;
 
 
-},{"./config/app":1,"./config/routes":2,"./controllers/account_controller":4,"./controllers/channel_controller":5,"./controllers/country_controller":6,"./controllers/edit_channel_controller":7,"./controllers/edit_country_controller":8,"./controllers/edit_episode_controller":9,"./controllers/edit_show_controller":10,"./controllers/episode_controller":11,"./controllers/episodes_controller":12,"./controllers/login_controller":13,"./controllers/navigation_controller":14,"./controllers/new_channel_controller":15,"./controllers/new_country_controller":16,"./controllers/new_episode_controller":17,"./controllers/new_show_controller":18,"./controllers/show_controller":19,"./controllers/shows_controller":20,"./controllers/user_controller":21,"./controllers/watched_controller":22,"./controllers/watched_show_controller":23,"./helpers/dateformat":24,"./helpers/modalbox":25,"./models/channel":27,"./models/country":28,"./models/episode":29,"./models/role":30,"./models/show":31,"./models/user":32,"./routes/account_route":33,"./routes/channels_route":34,"./routes/countries_route":35,"./routes/episodes_route":36,"./routes/login_route":37,"./routes/new_channel_route":38,"./routes/new_country_route":39,"./routes/new_episode_route":40,"./routes/new_show_route":41,"./routes/show_route":42,"./routes/shows_route":43,"./routes/user_route":44,"./routes/watched_route":45,"./templates":46,"./views/account_view":59,"./views/episodes_view":60,"./views/login_view":61,"./views/navigation_view":62,"./views/show_item_view":63,"./views/show_view":64,"./views/shows_view":65,"./views/user_view":66,"./views/watched_show_view":67,"./views/watched_view":68}],27:[function(require,module,exports){
+},{"./config/app":1,"./config/routes":2,"./controllers/account_controller":4,"./controllers/channel_controller":5,"./controllers/country_controller":6,"./controllers/edit_channel_controller":7,"./controllers/edit_country_controller":8,"./controllers/edit_episode_controller":9,"./controllers/edit_show_controller":10,"./controllers/episode_controller":11,"./controllers/episodes_controller":12,"./controllers/login_controller":13,"./controllers/navigation_controller":14,"./controllers/new_channel_controller":15,"./controllers/new_country_controller":16,"./controllers/new_episode_controller":17,"./controllers/new_show_controller":18,"./controllers/show_controller":19,"./controllers/shows_controller":20,"./controllers/user_controller":21,"./controllers/watched_controller":22,"./controllers/watched_show_controller":23,"./helpers/dateformat":24,"./helpers/modalbox":25,"./models/channel":27,"./models/country":28,"./models/episode":29,"./models/role":30,"./models/show":31,"./models/user":32,"./routes/account_route":33,"./routes/channels_route":34,"./routes/countries_route":35,"./routes/episodes_route":36,"./routes/login_route":37,"./routes/new_channel_route":38,"./routes/new_country_route":39,"./routes/new_episode_route":40,"./routes/new_show_route":41,"./routes/show_route":42,"./routes/shows_route":43,"./routes/user_route":44,"./routes/watched_route":45,"./templates":46,"./views/account_view":59,"./views/episodes_view":60,"./views/loading_view":61,"./views/login_view":62,"./views/navigation_view":63,"./views/show_item_view":64,"./views/show_view":65,"./views/shows_view":66,"./views/user_view":67,"./views/watched_show_view":68,"./views/watched_view":69}],27:[function(require,module,exports){
 var Channel = DS.Model.extend({
 
   country_id: DS.attr('number'),
@@ -2031,13 +2028,23 @@ helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
   
 });
 
+Ember.TEMPLATES['loading'] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+  
+
+
+  data.buffer.push("Loading ...");
+  
+});
+
 Ember.TEMPLATES['login'] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
 this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
   var buffer = '', stack1, hashTypes, hashContexts, options, helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression;
 
 
-  data.buffer.push("<div class=\"progress progress-striped browse-item-rating-progress topbar\" id=\"browse-show-rating-progress\">\n  \n  <div class=\"progress-bar progress-bar-info\" style=\"width: 100%\">\n    \n  </div>\n\n</div>\n\n<div class=\"container\">\n	<div class=\"row\">\n		<div class=\"col-lg-6\" class=\"loginpage-loginform-div\">\n				");
+  data.buffer.push("<div class=\"progress progress-striped browse-item-rating-progress topbar\" id=\"browse-show-rating-progress\">\n  \n  <div class=\"progress-bar progress-bar-info\" style=\"width: 100%\">\n    \n  </div>\n\n</div>\n\n<div class=\"container seethrough\">\n	<div class=\"row\">\n		<div class=\"col-lg-6\" class=\"loginpage-loginform-div\">\n				");
   hashTypes = {};
   hashContexts = {};
   options = {hash:{},contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
@@ -2354,19 +2361,12 @@ function program1(depth0,data) {
   },inverse:self.noop,fn:self.program(2, program2, data),contexts:[depth0,depth0],types:["STRING","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   stack2 = ((stack1 = helpers['link-to-animated'] || depth0['link-to-animated']),stack1 ? stack1.call(depth0, "show", "show", options) : helperMissing.call(depth0, "link-to-animated", "show", "show", options));
   if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
-  data.buffer.push("\n          </div>\n          <div class=\"browse-item-actions\">\n             \n              <button class=\"btn btn-small btn-primary follow-button\" ");
+  data.buffer.push("\n          </div>\n          ");
   hashTypes = {};
   hashContexts = {};
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "follow", "show.id", {hash:{},contexts:[depth0,depth0],types:["ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("> +Follow</button>\n              \n              \n              ");
-  hashContexts = {'animations': depth0};
-  hashTypes = {'animations': "STRING"};
-  options = {hash:{
-    'animations': ("main:slideRight")
-  },inverse:self.noop,fn:self.program(4, program4, data),contexts:[depth0,depth0],types:["STRING","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
-  stack2 = ((stack1 = helpers['link-to-animated'] || depth0['link-to-animated']),stack1 ? stack1.call(depth0, "show", "show", options) : helperMissing.call(depth0, "link-to-animated", "show", "show", options));
+  stack2 = helpers['if'].call(depth0, "show.isLoggedIn", {hash:{},inverse:self.noop,fn:self.program(4, program4, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
-  data.buffer.push("\n              \n              <div class=\"clear\">&nbsp;</div>\n          </div>\n        </div>\n\n    ");
+  data.buffer.push("\n        </div>\n\n    ");
   return buffer;
   }
 function program2(depth0,data) {
@@ -2389,6 +2389,24 @@ function program2(depth0,data) {
   }
 
 function program4(depth0,data) {
+  
+  var buffer = '', stack1, stack2, hashTypes, hashContexts, options;
+  data.buffer.push("\n          <div class=\"browse-item-actions\">\n             \n              <button class=\"btn btn-small btn-primary follow-button\" ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "follow", "show.id", {hash:{},contexts:[depth0,depth0],types:["ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("> +Follow</button>\n              \n              \n              ");
+  hashContexts = {'animations': depth0};
+  hashTypes = {'animations': "STRING"};
+  options = {hash:{
+    'animations': ("main:slideRight")
+  },inverse:self.noop,fn:self.program(5, program5, data),contexts:[depth0,depth0],types:["STRING","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  stack2 = ((stack1 = helpers['link-to-animated'] || depth0['link-to-animated']),stack1 ? stack1.call(depth0, "show", "show", options) : helperMissing.call(depth0, "link-to-animated", "show", "show", options));
+  if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
+  data.buffer.push("\n              \n              <div class=\"clear\">&nbsp;</div>\n          </div>\n          ");
+  return buffer;
+  }
+function program5(depth0,data) {
   
   
   data.buffer.push("<button class=\"btn btn-small btn-info read-more-button\"> More </button>");
@@ -73689,6 +73707,14 @@ module.exports = EpisodesView;
 
 
 },{}],61:[function(require,module,exports){
+var LoadingView = Ember.View.extend({
+
+});
+
+module.exports = LoadingView;
+
+
+},{}],62:[function(require,module,exports){
 var LoginView = Ember.View.extend({
 	templateName: 'login',
 
@@ -73711,7 +73737,7 @@ var LoginView = Ember.View.extend({
 module.exports = LoginView;
 
 
-},{}],62:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 var NavigationView = Ember.View.extend({
 	templateName: 'navigation'
 	
@@ -73720,7 +73746,7 @@ var NavigationView = Ember.View.extend({
 module.exports = NavigationView;
 
 
-},{}],63:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 var ShowItemView = Ember.View.extend({
 
 });
@@ -73728,20 +73754,17 @@ var ShowItemView = Ember.View.extend({
 module.exports = ShowItemView;
 
 
-},{}],64:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 var ShowView = Ember.View.extend({
 	model: function(){
 		return this.get('controller').get('model');
-	},
-	tableize: function(){
-		this.$(table).dataTable();
-	}.on('didInsertElement')
+	}
 });
 
 module.exports = ShowView;
 
 
-},{}],65:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 var ShowsView = Ember.View.extend({
 	afterRender: function(){
 		console.log("Done rendering all shows!");
@@ -73752,7 +73775,7 @@ var ShowsView = Ember.View.extend({
 module.exports = ShowsView;
 
 
-},{}],66:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 var UserView = Ember.View.extend({
 
 });
@@ -73760,7 +73783,7 @@ var UserView = Ember.View.extend({
 module.exports = UserView;
 
 
-},{}],67:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 var WatchedShowView = Ember.View.extend({
 
 });
@@ -73768,7 +73791,7 @@ var WatchedShowView = Ember.View.extend({
 module.exports = WatchedShowView;
 
 
-},{}],68:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 var WatchedView = Ember.View.extend({
 
 });

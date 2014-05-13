@@ -17,23 +17,8 @@ require('../vendor/ember-animated-outlet/dist/ember-animated-outlet.min');
 require('../vendor/bootstrap-css/js/bootstrap.min');
 
 
-require.config({
-	paths: {
-		"moment":'../vendor/momentjs/moment'
-	}
-})
-
-define(["moment"],function(moment){
-	moment().format();
-});
-
-
 require('../vendor/ember-simple-auth/ember-simple-auth');
 require('../vendor/jquery.twinkle/jquery.twinkle-0.5.0.min');
-//require('../vendor/DataTables/media/js/jquery.dataTables');
-
-
-
 
 
 // We need this to do login!

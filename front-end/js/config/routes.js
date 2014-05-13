@@ -5,7 +5,7 @@ App.Router.map(function() {
   // Route for the section with watched shows
   this.route('watched',{path: '/following'});
   this.route('show',{path: '/following/:show_id'});
-  
+
   this.resource('shows');
   this.resource('show', {path: '/shows/:show_id'});
   this.route('edit_show', {path: '/shows/:show_id/edit'});
@@ -106,6 +106,9 @@ App.ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin
       }
     }
 });
+
+// Show loading screen
+App.LoadingRoute = Ember.Route.extend({});
 
 App.IndexRoute = Ember.Route.extend({
   redirect: function(){

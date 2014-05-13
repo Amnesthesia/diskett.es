@@ -3,7 +3,6 @@ var ShowsController = Ember.ArrayController.extend({
 	searchQuery: '',
 	content: [],
 	needs: 'show',
-	showController: Ember.computed.alias('showController'),
 
 	searchShows: function(){
 

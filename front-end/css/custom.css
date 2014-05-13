@@ -107,6 +107,12 @@ input[type="text"],input[type="password"]{
      -moz-transition: all 0.2s linear;
        -o-transition: all 0.2s linear;
           transition: all 0.2s linear;
+  font-size: 1em;
+}
+
+input[type="password"].form-control
+{
+  width: auto; 
 }
 
 .center
@@ -138,7 +144,8 @@ input[type="text"],input[type="password"]{
 
   .browse-item
   {
-      width: 15em;
+      width: 14em;
+      margin: 5px;
   }
 
  div.browse-item img, img.detailsimg
@@ -462,7 +469,7 @@ div.browse-item-splitter
           border-radius: 0 !important;
 }
 
-@media (max-width: 960px) { 
+@media (max-width: 980px) { 
     .browse-item { width:100%; }
     .browse-item a img {width: 100%;}
     .browse-item .browse-item-rating {font-size: 5em; margin-top:0.4em;}

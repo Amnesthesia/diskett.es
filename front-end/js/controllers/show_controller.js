@@ -3,6 +3,13 @@ var ShowController = Ember.ObjectController.extend({
 	loginController: Ember.computed.alias("controllers.login"),
 	nSeasons: 0,
 	seasonSortedEpisodes: Ember.A(),
+  	
+  	// Returns true if the user is logged in
+  	isLoggedIn: function(){
+  		console.log("User is logged in?");
+  		return this.get('session').isAuthenticated;
+  	}.property('session'),
+
   	// Returns rating as length for the rating progress bar
   	ratingLength: function(){ 
     	return (this.get('rating').toFixed(1)*10);

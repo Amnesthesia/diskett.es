@@ -27,6 +27,7 @@
               <h5>{{show.name}}</h5>
             {{/link-to-animated}}
           </div>
+          {{#if show.isLoggedIn }}
           <div class="browse-item-actions">
              
               <button class="btn btn-small btn-primary follow-button" {{action follow show.id}}> +Follow</button>
@@ -36,6 +37,7 @@
               
               <div class="clear">&nbsp;</div>
           </div>
+          {{/if}}
         </div>
 
     {{/each}}

@@ -1,9 +1,9 @@
 # diskett.es
 
 ## Abstract
-diskett.es is a front-end for the already existing application EpisodeGuide, which helps users stay up to date on their favorite TV shows. All users can browse TV shows and read more about them and the episodes in each season.
+diskett.es is a front-end for the already existing application **EpisodeGuide**, which helps users stay up to date on their favorite TV shows. All users can browse TV shows and read more about them and the episodes in each season.
 
-A significant difference between the base application EpisodeGuide and diskett.es, is that diskett.es is a *real web application* and not just a web site. By web application, we mean that it's a lot more similar to a native application than sites normally are.
+A significant difference between the base application **EpisodeGuide** and **diskett.es**, is that diskett.es is a *real web application* and not just a web site. By web application, we mean that it's a lot more similar to a native application than sites normally are.
 
 Features are very similar to EpisodeGuide's features, however, everything happens client-side without reloading the page. Something we stated in the first project report, and which we will iterate again, was that what separates our application from others, is its simplicity and ease of use -- it doesn't get more intuitive!
 

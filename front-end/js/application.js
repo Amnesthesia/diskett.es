@@ -742,7 +742,7 @@ var ShowController = Ember.ObjectController.extend({
 
   		if(this.get('session.account.shows').contains(this.get('model')))
   		{
-  			console.log("Show model found in users watchlist - hiding element");
+  			console.log("Show model found in users watchlist - graying out follow button");
   			return false;
   		}
   		else
@@ -2438,13 +2438,8 @@ function program5(depth0,data) {
 
 function program7(depth0,data) {
   
-  var buffer = '', hashTypes, hashContexts;
-  data.buffer.push("\n              <button class=\"btn btn-small follow-button\" ");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "follow", "show.id", {hash:{},contexts:[depth0,depth0],types:["ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("><i>Following</i></button>\n            ");
-  return buffer;
+  
+  data.buffer.push("\n              <button class=\"btn btn-small follow-button-grey\"><i>Following</i></button>\n            ");
   }
 
 function program9(depth0,data) {

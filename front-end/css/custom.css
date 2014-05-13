@@ -24,8 +24,15 @@ h1, h2, h3, h4, h5, h6
 
 
 
-
-
+/* AJAX loader -- place in center */
+.loader
+{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -64px;
+  margin-top: -7px;
+}
 
 #content
 {

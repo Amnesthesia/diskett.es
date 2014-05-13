@@ -27,6 +27,7 @@
     "jquery": ">=1.10.2"
   },
   "dependencies": {
-    "ember-addons.bs_for_ember": "~0.6.1"
+    "ember-addons.bs_for_ember": "~0.6.1",
+    "showdown": "~0.3.1"
   }
 }

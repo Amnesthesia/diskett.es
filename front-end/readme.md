@@ -12,7 +12,9 @@ Users are able to ...
 * ... sign up in just a few seconds
 * ... log in
 * ... find (and follow) new (or old) shows
+* ... view information about individual shows and their episodes
 * ... keep the shows they like in a Following list
+* ... keep track of recent and upcoming episodes of shows they follow
 
 ## Overview
 

@@ -37,9 +37,11 @@
 					{{/link-to-animated}}
 				</li>
 				
-				<!-- Link to Help page -->
+				<!-- Link to info page -->
 				<li data-toggle="tooltip" data-placement="right" title="Help, if you need" data-original-title="Help, if you need">
+					{{#link-to-animated 'info' animations='main:slideOverRight'}}
 					<div data-icon="&#xe072;" class="icon"></div>
+					{{/link-to-animated}}
 				</li>
 			</ul>
 			{{#link-to "index" class="navbar-brand" id="navbar-brand"}} {{App.name}} {{/link-to}}

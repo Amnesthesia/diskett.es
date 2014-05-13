@@ -1,9 +1,10 @@
 var InfoController = Ember.Controller.extend({
-	markdown: function(){
+	info: function(){
 
 		// Fetch markdown with a jQuery AJAX request
-		var markdown = Ember.$.ajax("https://raw.githubusercontent.com/Amnesthesia/Project-Rheya/master/diskett.es/readme.md");
+		return Ember.$.ajax("readme.md").then(function(data){return data;});
 
+		console.log(markdown);
 		return markdown;
 	}.property()
 });

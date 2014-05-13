@@ -20,9 +20,6 @@ require('../vendor/bootstrap-css/js/bootstrap.min');
 require('../vendor/ember-simple-auth/ember-simple-auth');
 require('../vendor/jquery.twinkle/jquery.twinkle-0.5.0.min');
 
-// Markdown processor
-require('../vendor/markdown/lib/index');
-
 
 // We need this to do login!
 // With this code right here, we initialize the application,
@@ -62,7 +59,10 @@ Ember.Application.initializer({
   }
 });
 
-var App = Ember.Application.create();
+
+var App = Ember.Application.create({
+
+});
 App.name = "diskett .es";
 
 
@@ -156,4 +156,6 @@ App.CustomAuthorizer = Ember.SimpleAuth.Authorizers.Base.reopen({
 App.Store = require('./store'); // delete if you don't want ember-data
 
 module.exports = App;
+
+
 

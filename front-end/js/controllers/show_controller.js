@@ -6,8 +6,26 @@ var ShowController = Ember.ObjectController.extend({
   	
   	// Returns true if the user is logged in
   	isLoggedIn: function(){
-  		console.log("User is logged in?");
   		return this.get('session').isAuthenticated;
+  	}.property('session'),
+
+  	notFollowing: function(){
+  		if(!this.get('session').isAuthenticated)
+  		{
+  			console.log("User is not authenticated. Displaying show.")
+  			return true;
+  		}
+
+  		if(this.get('session.account.shows').contains(this.get('model')))
+  		{
+  			console.log("Show model found in users watchlist - graying out follow button");
+  			return false;
+  		}
+  		else
+  		{
+  			console.log("Show model not found in users watchlist - displaying element");
+  			return true;
+  		}
   	}.property('session'),
 
   	// Returns rating as length for the rating progress bar

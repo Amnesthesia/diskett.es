@@ -730,8 +730,26 @@ var ShowController = Ember.ObjectController.extend({
   	
   	// Returns true if the user is logged in
   	isLoggedIn: function(){
-  		console.log("User is logged in?");
   		return this.get('session').isAuthenticated;
+  	}.property('session'),
+
+  	notFollowing: function(){
+  		if(!this.get('session').isAuthenticated)
+  		{
+  			console.log("User is not authenticated. Displaying show.")
+  			return true;
+  		}
+
+  		if(this.get('session.account.shows').contains(this.get('model')))
+  		{
+  			console.log("Show model found in users watchlist - hiding element");
+  			return false;
+  		}
+  		else
+  		{
+  			console.log("Show model not found in users watchlist - displaying element");
+  			return true;
+  		}
   	}.property('session'),
 
   	// Returns rating as length for the rating progress bar
@@ -2391,22 +2409,45 @@ function program2(depth0,data) {
 function program4(depth0,data) {
   
   var buffer = '', stack1, stack2, hashTypes, hashContexts, options;
-  data.buffer.push("\n          <div class=\"browse-item-actions\">\n             \n              <button class=\"btn btn-small btn-primary follow-button\" ");
+  data.buffer.push("\n          <div class=\"browse-item-actions\">\n             \n            ");
   hashTypes = {};
   hashContexts = {};
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "follow", "show.id", {hash:{},contexts:[depth0,depth0],types:["ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("> +Follow</button>\n              \n              \n              ");
+  stack1 = helpers['if'].call(depth0, "show.notFollowing", {hash:{},inverse:self.program(7, program7, data),fn:self.program(5, program5, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push(" \n              \n              ");
   hashContexts = {'animations': depth0};
   hashTypes = {'animations': "STRING"};
   options = {hash:{
     'animations': ("main:slideRight")
-  },inverse:self.noop,fn:self.program(5, program5, data),contexts:[depth0,depth0],types:["STRING","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  },inverse:self.noop,fn:self.program(9, program9, data),contexts:[depth0,depth0],types:["STRING","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   stack2 = ((stack1 = helpers['link-to-animated'] || depth0['link-to-animated']),stack1 ? stack1.call(depth0, "show", "show", options) : helperMissing.call(depth0, "link-to-animated", "show", "show", options));
   if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
   data.buffer.push("\n              \n              <div class=\"clear\">&nbsp;</div>\n          </div>\n          ");
   return buffer;
   }
 function program5(depth0,data) {
+  
+  var buffer = '', hashTypes, hashContexts;
+  data.buffer.push("\n              <button class=\"btn btn-small btn-primary follow-button\" ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "follow", "show.id", {hash:{},contexts:[depth0,depth0],types:["ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("> +Follow</button>\n            ");
+  return buffer;
+  }
+
+function program7(depth0,data) {
+  
+  var buffer = '', hashTypes, hashContexts;
+  data.buffer.push("\n              <button class=\"btn btn-small follow-button\" ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "follow", "show.id", {hash:{},contexts:[depth0,depth0],types:["ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("><i>Following</i></button>\n            ");
+  return buffer;
+  }
+
+function program9(depth0,data) {
   
   
   data.buffer.push("<button class=\"btn btn-small btn-info read-more-button\"> More </button>");

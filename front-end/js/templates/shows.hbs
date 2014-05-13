@@ -30,8 +30,11 @@
           {{#if show.isLoggedIn }}
           <div class="browse-item-actions">
              
+            {{#if show.notFollowing}}
               <button class="btn btn-small btn-primary follow-button" {{action follow show.id}}> +Follow</button>
-              
+            {{else}}
+              <button class="btn btn-small follow-button-grey"><i>Following</i></button>
+            {{/if}} 
               
               {{#link-to-animated "show" show animations="main:slideRight"}}<button class="btn btn-small btn-info read-more-button"> More </button>{{/link-to-animated}}
               

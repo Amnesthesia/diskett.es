@@ -21,7 +21,46 @@ diskett.es uses the popular jQuery based framework **EmberJS** at its base, whic
 
 This means that we get some additional initial loading time for the site, but after everything has loaded, each page load happens *instantaneously*. This gives the user a very slick experience similar to a native application -- think about it, what IS an application? An application is usually downloaded code that is then run on a users machine. The code then present the user with a user interface, and allows the user to perform various actions. The difference here being that the code is downloaded and executed in the sandboxed environment of a web browser. This is why it's commonly referred to as a *web application* and not just a web site.
 
-### API & Frameworks
+### Functionality
+The functionality listed above pretty much sums it up, but can be described more in-depth as follows:
+
+* Index - Redirect to Show list
+  * Show list
+    * Individual show
+      * Subtitles for an episode
+      * Torrents for an episode
+  * Login section
+    * Shows followed by the user
+      * Individual show (see above)
+    * Calendar view of upcoming episodes
+  * Help
+* Navigation
+
+This is how we want the sub-pages to be organized from the index page. First, users should be presented with a list of all shows. They should then be able to click any individual show to get to a page containing the information about that show.
+
+For all other sub pages, users should be redirected to the login page first. After signing up and logging in, users should be able to access a page that lists all shows they are currently watching; a calendar that shows all upcoming episodes of the shows the user is currently watching, as well as functionality to Follow a show on any page where a show is displayed.
+
+When viewing an individual show, there should be a list of episodes for that particular show, and clicking on an episode should bring up a list of subtitles and torrents for that specific episode.
+
+### User Interface
+
+#### UX
+The user interface should be responsive, as a lot of users access the internet from portable devices such as phones, tablets or phablets. Therefore, it's necessary that the page adapts according to screen-size, and for this reason we have chosen to use Twitter Bootstrap as the base for styling.
+
+The user experience is where we can beat competitors, and that's why we want to provide an ad-free, slick user interface that runs smoothly on any device. The page should not require reloading, and all user interactions that require communication with the database should be done with AJAX requests to an API.
+
+Furthermore, animations should make the site appear more like an application, and less like a conventional web page.
+
+#### UI
+The most important part of any site is the navigation. For navigation to be the most apparent element on the site, and work equally well on mobile devices, the site should be split in two:
+
+1. A sidebar to the left containing the menu in the form of large icons
+2. Page content to the right displaying the content the user has requested
+
+For additional interaction on a page, modal boxes should be used to avoid switching to another page unless it's necessary.
+
+
+### An in-depth look
 
 Because Ember is a Model-View-Controller framework, this means that we have a set of **Routes**, **Models**, **Controllers**, **Views**, and **Templates** which make up the site (in addition to *components*, *helpers* and *mixins*).
 
@@ -265,19 +304,111 @@ module.exports = ShowController;
 
 As seen here, we have one computed property (ratingText) that operates on the 'rating' property of the default ShowController's model (Show), and returns the rating property with only 1 decimal. When trying to access `show.ratingText` in a template, this method will be called and that value will be returned, just as if it was a regular property value.
 
-We also have the action *follow*, which lets the user add the show to the list of shows he or she follows.
-
+We also have the action *follow*, which lets the user add the show to the list of shows he or she follows, by taking the show's ID as a parameter, and then checking if the user is logged in. As we mentioned previously, **actions bubble up the hierarchy**, and this is why clicking links, although it is an action performed by a user, is typically handled by the Route-map. The action of clicking the link is a special type of action that bubbles up all the way to the routes, and the appropriate transition to that page is then carried out. Thus, only *pure* user actions such as interacting with elements in different ways, like when a user follows a show, is handled in the Controller. However, when a user interacts with different elements on the page, for example, clicking a button to hide an element, this is something that should be handled in the **view**. Although it's not required, that is how it should be done by convention -- a view should not perform requests to the database, or working with models, it should only aid in presenting what the user **views**. That being said, we'll take a closer look at views and templates below.
 
 #### Views & Templates
 
+A *view* controls the visual part of the system normally, but with Ember and Handlebars, views may often seem redundant. Handlebars templates are so powerful in displaying data that views may often not even seem needed -- and oftentimes they aren't. As mentioned above, a view is normally only used if the user needs to interact with the elements on the page, such as performing drag-and-drop, hiding or showing elements, or otherwise manipulating the information presented to the user.
 
+For actually presenting the data, we make use of Handlebars templates. These are `.hbs` files and can be found in
 
-### API & Frameworks
+`/js/templates/`
 
-### Functionality
+These templates are normal HTML files, but compiled into javascript strings when the whole application is minified into one big file. In this way, even the HTML of diskett.es can be contained in the javascript file, but this is not required. It does, however, speed up initial loading time greatly.
 
-### User Interface
+Handlebars files, in addition to containing regular HTML, may also contain conditional statements and loops, which is what makes it so powerful. Just like in PHP, where a `foreach` look can be used to output a list of objects encapsulated in identical elements, a Handlebars `{{#each}}` statement can be used to achieve the same result.
 
+For an individual Show object, we don't really use a lot of functionality to manipulate the element. However, we have added an example of a function that could be used if we were using jQuery DataTables.js to format a table in the template of the view:
+
+```javascript
+var ShowView = Ember.View.extend({
+    templateName: 'show',
+    tableize: function(){
+        this.$('.table').dataTable();
+    }.on('didInsertElement')
+});
+
+module.exports = ShowView;
+```
+The property `templateName` does not have to be set if the name of the template is the same as the name of the view/model being displayed. However, it goes to show that a view can display different templates if requested, by changing this property.
+
+The `tableize` method here only selects all HTML elements in the template with the `table` class using jQuery, and then runs the function `dataTable()` on them. This should be done when the view is done inserting elements on the site, something Ember.View manages, and therefore we use the hook `.on('didInsertElement')`.
+
+This example, although it contains a lot of regular HTML as Handlebars templates do, is located in `/js/templates/show.hbs`. All Handlebars templates can be found in this folder, and are then precompiled before the application is deployed. You'll notice a few different types of syntax surrounded by handlebars, mustaches, or curly brackets if you will, that allow us to perform conditional output as HTML fully client-side.
+
+```html
+<!-- Display the show's rating as a progress bar -->
+<div class="progress progress-striped browse-item-rating-progress topbar" id="browse-show-rating-progress">
+  <div class="progress-bar {{unbound progressType}}" style="width: {{unbound ratingLength}}%">
+    <div id="browse-show-rating">{{ratingText}}</div>
+  </div>
+</div>
+
+<!-- Print the content in the container -->
+<div class="container">
+
+    <div class="row">
+				<!-- First, display the poster for the show -->
+        <div class="col-lg-4">
+            <img src="../media/posters/{{unbound poster}}" class="detailsimg"/>
+        </div>
+				<!-- In the next column, display the other information as text -->
+        <div class="col-lg-8 columns">
+            <div class="row">
+								<!-- First, display the name -->
+                <div class="col-lg-8 columns">
+                    <h1>{{ name }}</h1>
+                </div>
+            </div>
+						<!-- Add an empty row, for space -->
+            <div class="row">
+            </div>
+						<!-- Display the summary in a paragraph block -->
+            <div class="row">
+              <div class="col-lg-8 columns">
+                	<p>{{summary}}</p>
+							</div>
+       			</div>
+						<!-- Add an ACTION to allow the user to follow the show -->
+            <a class="tiny button radius" {{action follow}}>Add to watchlist</a>
+        </div>
+    </div>
+    
+		<!-- List all episodes from the show -->                
+    <h2>Episodes</h2>
+                                    
+                                    
+   <table class="table table-hover table-responsive datatable">
+		<!-- Set up table columns -->     
+		<thead>
+        <th>Season</th>
+        <th>Episode</th>
+        <th>Name</th>
+        <th>Synopsis</th>
+        <th>Aired</th>
+        <th>Watched</th>
+    <thead>
+    <tbody>
+		<!-- Iterate through all show objects in the episodes property of the show object -->
+    {{#each episode in episodes}}
+       <tr>
+          <td>{{ episode.season }}</td>
+          <td>{{ episode.episodeNum }}</td>
+          <td>{{ episode.name }}</td>
+          <td>{{ episode.summary }}</td>
+          <td>{{ formatDate episode.date }}</td>
+          <td>{{ episode.watched }}</td>
+       </tr>
+   {{/each}}
+   </tbody>
+  </table>
+          
+<!-- Link back to all shows, aka the start/index page of the site -->                                                                                                                                                                                                                                                  {{#link-to-animated "index" animations="main:slideLeft"}}←All Shows{{/link-to-animated}}
+                                                                                                                                                                                                                                                          </div>
+
+```
+
+In the example given above, we can see a bunch of different Handlebars-specific syntax, such as iterating through a list of objects, printing out properties of objects, etc.
 
 
 ## Worklog

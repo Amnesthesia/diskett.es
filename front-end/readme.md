@@ -25,7 +25,13 @@ This means that we get some additional initial loading time for the site, but af
 
 Because Ember is a Model-View-Controller framework, this means that we have a set of **Routes**, **Models**, **Controllers**, **Views**, and **Templates** which make up the site (in addition to *components*, *helpers* and *mixins*).
 
-Like with most MVC frameworks, we have *Routes* that control what context the user is viewing and thus, as the name implies, what *route* the user is currently at. In Ember, Routes are usually visible to the user in the form of URLs, which can be seen as /#/route. Routes are assigned resources, which control what model and controller will be used for the route, and that's where the magic happens.
+Like with most MVC frameworks, we have *Routes* that control what context the user is viewing and thus, as the name implies, what *route* the user is currently at. In Ember, Routes are usually visible to the user in the form of URLs, which can be seen as /#/route. Routes are assigned resources, which control what model and controller will be used for the route, and that's where the magic happens. We'll go more into detail of what each of these system components do further on.
+
+Ember builds on jQuery, and as such, we can access jQuery from the (only) global object `Ember`, at `Ember.$`. Even though Ember is completely build on top of jQuery, it still make use of a few other javascript libraries, albeit not to the same extent. These other libraries are:
+
+* RequireJS is used for including the right files at the right time.
+* NodeJS - this is not required, but we use it to write classes as individual NodeJS modules. Classes could also be exported as RequireJS modules.
+* HandlebarsJS - Handlebars is a very powerful but minimal templating system built on MustacheJS (named so because of its use of 'mustaches', or {{ }} for variables) but adding extra functionality such as conditional statements. This is very vital to Ember and lays the foundation of Ember's powerful data templates.
 
 #### API & Server communication
 By default, Ember makes use of its own Store. The Store is actually a separate component (which is not yet fully production ready, but it is operational) called Ember-data. This store allows data to persist in the browsers LocalStorage even on page refresh, which helps us remember things (like user sessions for example) we need, and reduces the amount of required API queries.
@@ -93,7 +99,7 @@ For retrieving data, the expected output is a JSON object. Because a **Model** c
  ]
 }
 ````
-For brevity, we showed only 3 episodes in the output example above, but there may be a lot more. A few things to pay attention to here is the ID. As you can see in the example above, the "id" column actually consists of three comma-separated numbers found again right below it: *show_id*, *episode*, and *season*. This is because each Episode is actually identified in the database by these fields as composite keys, and Episodes **do not have** an ID field. However, Ember being inspired by Rails, **requires** objects to be identified with a field **required** to be named "id", and child-objects cannot be identified by composite keys. The workaround we have implemented for this is to let MySQL solve this when it retrieves the episode rows, with a `CONCAT(`episode`.`show_id`,',',`episode`.`season`,',',`episode`.`episode`)` query. Requests for episodes can then work out the composite keys from this "virtual id" key.
+For brevity, we showed only 3 episodes in the output example above, but there may be a lot more. A few things to pay attention to here is the ID. As you can see in the example above, the "id" column actually consists of three comma-separated numbers found again right below it: *show_id*, *episode*, and *season*. This is because each Episode is actually identified in the database by these fields as composite keys, and Episodes **do not have** an ID field. However, Ember being inspired by Rails, **requires** objects to be identified with a field **required** to be named "id", and child-objects cannot be identified by composite keys. The workaround we have implemented for this is to let MySQL solve this when it retrieves the episode rows, with a ``CONCAT(`episode`.`show_id`,',',`episode`.`season`,',',`episode`.`episode`)`` query. Requests for episodes can then work out the composite keys from this "virtual id" key.
 
 Another thing you may have noticed in this example, is that the *Show* object has a key called *episodes* in plural. This is because Ember expects hasMany relationships to be represented in plural, telling it that "Hey, this object has an array of ids for multiple child objects you can use for the hasMany relationship of the same name!" and after loading the Show object, it will then look for the Episode objects that follow with these key, and make the association.
 
@@ -103,7 +109,7 @@ Now that we've briefly explained how the client-server communication works, lets
 
 #### Structure & File Structure
 
-A route will by default return the model of the same naming convention as the route -- for example, if the user visits the route *Shows*, the *ShowsController* will be loaded and passed the appropriate model. Because *Shows* is *Show* in plural, and according to naming conventions (which we will mention briefly later on in this document), Ember will assume that this is a collection of *Show*, and as such, it will return an array consisting of all available Show objects.
+Files are located in the following directories:
 
 
 Configuration files:
@@ -111,15 +117,160 @@ Configuration files:
 * /js/config/store.js
 * /js/config/routes.js
 
+All individual classes and templates:
 * /js/routes/
 * /js/models/
 * /js/controllers/
 * /js/views/
 * /js/templates/
 
-Additionally, Ember makes use of some other JavaScript libraries:
 
-* HandlebarsJS
+#### Routes
+So, what is a Route, exactly? Well, you could think of it as a context. Our application, diskett.es has many contexts it can be shown in. For example, when the user is looking at a list of all shows, that's one context. When the user browses to the shows he or she follows, that's another context. We're still working with the same database, but we're displaying different information depending on the context, and even if we're displaying the same information, like displaying a list of all shows, or a list of shows the user is following, we're displaying it with similar but different contexts. 
+
+So why is it called a Route? That's because it's a web application. The default route would be the base URL of the site, and all *further* paths from there would be considered different routes. `/shows/` would be a different route from `/account/`, for example, and these do different things. A Route sets up the context which we're working in, fetches the information we need to present to the user and passes it on to the controller, and then renders the page.
+
+A route will by default contain the model of the same naming convention as the route -- for example, if the user visits the route *Shows*, the *ShowsController* will be loaded and passed the appropriate model. Because *Shows* is *Show* in plural, and according to naming conventions (which we will mention briefly later on in this document), Ember will assume that this is a collection of *Show*, and as such, it will return an array consisting of all available Show objects.
+
+The main file for Routes is called `routes.js`, and can be found in:
+
+``/js/config/routes.js``
+
+This is the file where all routes are actually **declared**. We can declare routes *without* having to then **define** them, and if we do that, Ember will dynamically create a Route object for that route, as long as it has been declared. However, if we want to *do* something with the route, we have to further define it to add functionality (such as performing actions, retrieving variables, or making sure the route is only accessible when a user is logged in).
+
+To further define a route that has been declared, we set up a Routes object as such (again, we will use retrieving and displaying an individual `Show` as an example):
+
+```javascript
+var ShowRoute = Ember.Route.extend({
+  model: function(params){
+        return this.store.find('show', params.show_id);
+  },
+  renderTemplate: function(){
+    var controller = this.controllerFor('navigation');
+
+    this.render('show');
+    this.render('navigation', {
+                                outlet: "navigation",
+                                controller: controller
+                             })
+    }
+ });
+
+module.exports = ShowRoute;
+```
+
+Now, here's a lot of information to take in at once, which makes it a rather good example of what a route actually does. First of all, the Routes map in `routes.js` has detected that we want to view a *Show*, so it has now delegated the rest of the job to the ShowRoute (again, Ember's naming convention says that for a model called **Show**, the route is **ShowRoute**, and the controller is **ShowController** by default).
+
+The ShowRoute extends the default Ember.Route with additional functionality. Remember what we mentioned about Ember dynamically setting up Routes for routes that are declared but not defined in the Routes map? The object it sets up is a regular Ember.Route -- we want to extend the functionality of the default route here, that's what this example is all about!
+
+First, what we do is to set up a *model* for this route. This model can then be retrieved by the *ShowController* when it tries to get the model for the context it's in by calling `this.get('model')`. A very exciting feature of Ember is something called *computed properties*. Essentially what that means is that classes (we know, we know, "javascript does not have classes", but you get the point!) can have properties that are not just values, but functions that *return* a value. This is what's happening in the snippet above! The *model* property of the route here is actually a function that contacts the **Store** to find a *Show* object with the help of a parameter to identify it. If it exists in the store already it will be returned, and if it doesn't, Ember will contact the REST API it has been set up to use (or any other adapter actually, but we use REST in our project) to find it, and then returns a fully set up Ember.Model of that type.
+
+Furthermore, we have a *renderTemplate*. This is the default method Ember calls on a route to render the page and find out what data it should show, and where. By default, the application template only has one area for displaying data, so normally, Ember would just put the *template* into that area. But we want to show several areas in our application: The Sidebar for navigation, and the page content.
+
+That's what the *renderTemplate* method does here. It tells Ember to render *Show* with its associated controller, view and template into the default area, but also to render *Navigation* with its own controller, view and template into another area (or, 'outlet') on the page named 'navigation'.
+
+A line similar to the last one can be found in most files for individual classes. This is because each individual class is exported as a separate **NodeJS module**.
+
+Well, isn't that great? But what about that model that was returned? And what happens with it? 
+
+#### Models
+
+A *model* is a set of data, commonly used to represent a single row in a database table along with its relationships. In Ember, a model is an extension of the base class Ember.Model; extended with additional attributes. Although JavaScript typically does not requir strict datatypes, we can set up attributes as strict types in Ember. That is however not required, and Ember can usually figure out the type anyways, but the types available are: Number, String, Date and Boolean. 
+
+We can then add some relationships to the model, which tells Ember that this model has children (or parents) that should be associated with it. In doing, so, we can get all Episodes that belong to a Show, for example. All data we retrieve from the database through the RESTful API is represented in models -- we'll use the `Show` model as an example here to keep that red line from previous examples:
+
+```javascript
+var Show = DS.Model.extend({
+    imdb_id: DS.attr('number'),
+    zap2_id: DS.attr('number'),
+    channel_id: DS.attr('number'),
+    poster: DS.attr('string'),
+    pilot_date: DS.attr('date'),
+    name: DS.attr('string'),
+    summary: DS.attr('string'),
+    lang: DS.attr('string'),
+    rating: DS.attr('number'),
+    episodecount: DS.attr('number'),
+    lst_update: DS.attr('string'),
+    watched: DS.attr('boolean'),
+    episodes: DS.hasMany('Episode')
+
+});
+
+module.exports = Show;
+
+```
+Ember does not want us to define the property *id*, as this is something it works out itself from the JSON set it retrieves, and uses internally for managing the relationships. **This is the object the JSON example earlier would map onto.**
+
+Now that we know what the data objects we're working with look like, and how the context of the page is figured out, let's see how we can **control** this information and users **actions** -- that's what we do in the **controller**.
+
+#### Controllers & Actions
+
+*Controllers* is what manipulates data according to user actions; for example, if the user clicks something, the controller is responsible for reacting on this and making something happen. In a server-side Model-View-Controller system, this would typically happen when a user clicks a link, and different parameters (such as GET or POST variables) define the action the user wants to take. On the client side, the user would only see a static rendered HTML page, and there would be no client-side MVC logic; everything would happen before the page is loaded. In a client-side MVC web application like diskett.es, it's the other way around! The site is first loaded in its entirety, and what's displayed is only a part of what's loaded in the browser. Clicking a link does not lead to another web page, it simply calls a javascript function in the already loaded page. And there you have it. That is what we call an **action**.
+
+Actions can be located in any of the already described system components (except for models!), as well as in a view. Routes, Controllers, or Views may contain actions. In Ember, actions *bubble*. This means that when the user clicks something in the template that has been declared an action, it will go through these steps to find it:
+
+* Does the action exist in the current **view**?
+** If it does, it will be triggered.
+* If it does not, continue to check if the action exists in the current **controller**
+** If it does, it will be triggered.
+* If it does not, continue to check if the action exists in the current **route**
+** If it does, it will be triggered.
+* If it does not, continue to check if the action exists in the default route, the ApplicationRoute
+** If it does, it will be triggered.
+
+This is what's called *bubbling*, a reference to a bubble rising up through water all the way from the bottom. We use these to let users perform actions from templates, such as clicking a link, submitting a form, or otherwise call predefined functions on-demand. In our application, we want to allow users to **follow** shows in different contexts. We could just implement the **follow** method on every controller of every part where a Show might be displayed, but this would result in unnecessary code! Therefore, we can just implement it straight into the ApplicationRoute, allowing the action to bubble up and be captured on any part of the site even without a show object necessarily being visible. However, when a Show object is visible, we override that method in the Show controller, and that stops the action from bubbling up further.
+
+The controller is also where we make the most use of **computed properties** as we mentioned earlier. In Ember, there are three types of Controllers:
+
+* **ArrayController**: This one contains an Array of models (or even an Array of controllers specified as an itemController property)
+* **ObjectController**: This type of controller works with only one object (model)
+* **Controller**: This controller type works without any model (for example, this one is used for the NavigationController, where we don't work with any models but we still work with user actions)
+
+Because there are three types of controllers, giving an example of each individual one would be excessive. To stick to the same red line as previous examples, we'll show the controller used for an individual show, but with some *computed properties* omitted for brevity, as to only show how it works:
+
+```javascript
+var ShowController = Ember.ObjectController.extend({
+        ratingText: function(){
+            return (this.get('rating').toFixed(1));
+        }.property('rating'),
+
+        actions: {
+            follow: function(show_id){
+                // Get the current user session and check if user is logged in
+                if(!this.get('session').isAuthenticated)
+                    this.transitionTo('login');
+                                              
+                // Get the current user from session in the store
+                var user = this.store.find('user',this.get('session.account.id'));
+                
+                // Get the list of shows from the current logged in user's account,
+                // then find the show object in the store, and push it to the list.
+                this.get('session.account.shows').pushObject(this.store.find('show',show_id));
+                
+                // To save the user, we must wait for the user object to be fully loaded, then we can save it.
+                this.get('session.account').then(function(response){
+                                                                    response.save();
+                                                });
+                // Hide the show from the list (it can still be found under the users list of Followed shows)
+                Ember.$("#"+show_id).hide("slideLeft");
+            }
+        }
+});
+
+module.exports = ShowController;
+                                                                    
+
+```
+
+As seen here, we have one computed property (ratingText) that operates on the 'rating' property of the default ShowController's model (Show), and returns the rating property with only 1 decimal. When trying to access `show.ratingText` in a template, this method will be called and that value will be returned, just as if it was a regular property value.
+
+We also have the action *follow*, which lets the user add the show to the list of shows he or she follows.
+
+
+#### Views & Templates
+
+
 
 ### API & Frameworks
 

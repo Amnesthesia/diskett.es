@@ -1,0 +1,56 @@
+<div class="progress progress-striped browse-item-rating-progress topbar" id="browse-show-rating-progress">
+  
+  <div class="progress-bar progress-bar-warning" style="width: 100%">
+   	 <div id="browse-show-rating">
+   	 	<button class="calendar-topbar-icon prev-button"><div data-icon="&#xe059;" class="icon" {{action previousMonth}}></div></button>
+   	 	{{ month }}
+   	 	<button class="calendar-topbar-icon next-button"><div data-icon="&#xe061;" class="icon" {{action nextMonth}}></div></button>
+   	 </div>
+  </div>
+
+</div>
+
+<div class="container">
+<div class="row">
+	{{#each day in daysInMonth}}
+		<div class="col-lg-1 calendar-month-day">
+			{{day.dayNumber}}
+
+			{{#each show in episodesByDay}}
+				<div class="row">
+					<div class="col-lg-12 calendar-airdate">
+						{{#link-to-animated 'show' show.id animations='main:fade'}}
+							{{ show.name }}
+						{{/link-to-animated}}
+					</div>
+				</div>
+			{{/each}}
+		</div>
+	{{/each}}
+</div>
+
+<h2>Upcoming episodes</h2>
+<div class="row">
+
+<table class="table table-responsive">
+	<thead>
+		<th>Show</th>
+		<th>Season</th>
+		<th>Episode</th>
+		<th>Synopsis</th>
+		<th>Date</th>
+	</thead>
+	<tbody>
+{{#each episode in controller}}
+	<tr>
+		<td>{{ episode.show.name }}</td>
+		<td>{{ episode.season }}</td>
+		<td>{{ episode.episodeNum }}</td>
+		<td>{{ episode.summary }}</td>
+		<td>{{ episode.date }}</td>
+	</tr>
+{{/each}}
+	</tbody>
+</table>
+</div>
+</div>

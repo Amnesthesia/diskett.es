@@ -1,12 +1,7 @@
 var EpisodeController = Ember.ObjectController.extend({
 
-  destroy: function() {
-    if (!confirm('Are you sure?')) return;
-    this.get('model').deleteRecord();
-    this.get('store').commit();
-    this.get('target.router').transitionTo('episodes');
-  },
 
+  // Return the episode number (the number within the season)
   episodeNum: function(){
   	
   	var id = this.get('id').split(',');
@@ -14,25 +9,13 @@ var EpisodeController = Ember.ObjectController.extend({
   	return id[2];
   }.property('episode_id'),
 
-  getTime: function(){
-  	return this.get('date').getTime();
-  }.property('date'),
+  show: function(){
+  	//console.log("Trying to find show with id" + this.get('show_id'));
 
-  showname: function(){
-  	return this.get('show_id');
-  }.property('show'),
+  	var show = this.get('store').find('show',this.get('show_id'));
 
-  getMonthNumber: function(){
-  	return this.get('date').getMonth();
-  }.property(),
-
-  getYearNumber: function(){
-  	return (1900+this.get('date').getYear());
-  }.property(),
-
-  getDayNumber: function(){
-  	return this.get('date').getDate();
-  }.property()
+  	return show;
+  }.property('show_id')
 
 });
 

@@ -24,7 +24,7 @@ var Show = DS.Model.extend({
 
   watched: DS.attr('boolean'),
 
-  episodes: DS.hasMany('Episode')
+  episodes: DS.hasMany('Episode', { inverse: 'show'})
 
 });
 

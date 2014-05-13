@@ -39,6 +39,7 @@ h1, h2, h3, h4, h5, h6
    padding: 0;
    margin: 0 auto;
    font-family: "Trebuchet MS","Myriad Pro",Arial,sans-serif;
+   border-bottom: 10px solid #555;
 }
 
 /** fonts used for the icons **/ 
@@ -519,6 +520,18 @@ div.browse-item-splitter
     {
       float: right;
       margin-right: 10px;
+    }
+
+    .calendar-airdate
+    {
+      background: #dc2c0f;
+
+    }
+
+    .calendar-airdate a
+    {
+      color: white;
+      font-weight: bold;
     }
 
 

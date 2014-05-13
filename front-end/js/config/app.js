@@ -20,6 +20,9 @@ require('../vendor/bootstrap-css/js/bootstrap.min');
 require('../vendor/ember-simple-auth/ember-simple-auth');
 require('../vendor/jquery.twinkle/jquery.twinkle-0.5.0.min');
 
+// Markdown processor
+require('../vendor/markdown/lib/index');
+
 
 // We need this to do login!
 // With this code right here, we initialize the application,
@@ -60,7 +63,7 @@ Ember.Application.initializer({
 });
 
 var App = Ember.Application.create();
-App.name = "Episode Guide";
+App.name = "diskett .es";
 
 
 // Set up our REST API

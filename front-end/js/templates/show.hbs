@@ -27,7 +27,9 @@
           <p>{{summary}}</p>
         </div>
       </div>
+      {{#if isNotWatched}}
         <a class="tiny button radius" {{action follow}}>Add to watchlist</a>
+      {{/if}}
     </div>
   </div>
   <div class="row">
@@ -60,7 +62,7 @@
       <td>{{ episode.episodeNum }}</td>
       <td>{{ episode.name }}</td>
       <td>{{ episode.summary }}</td>
-      <td>{{ formatDate episode.date }}</td>
+      <td>{{ episode.date }}</td>
 
       <td>{{ episode.watched }}</td>
     </tr>
@@ -72,6 +74,3 @@
 
 
 {{#link-to-animated "index" animations="main:slideLeft"}}←All Shows{{/link-to-animated}}
-{{#link-to "edit_show" model}}Edit{{/link-to}}
-<a href="#" {{action "destroy"}}>Destroy</a>
-</div>

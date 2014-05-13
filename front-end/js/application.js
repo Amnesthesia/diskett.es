@@ -21,6 +21,9 @@ require('../vendor/bootstrap-css/js/bootstrap.min');
 require('../vendor/ember-simple-auth/ember-simple-auth');
 require('../vendor/jquery.twinkle/jquery.twinkle-0.5.0.min');
 
+// Markdown processor
+require('../vendor/markdown/lib/index');
+
 
 // We need this to do login!
 // With this code right here, we initialize the application,
@@ -61,7 +64,7 @@ Ember.Application.initializer({
 });
 
 var App = Ember.Application.create();
-App.name = "Episode Guide";
+App.name = "diskett .es";
 
 
 // Set up our REST API
@@ -156,7 +159,7 @@ App.Store = require('./store'); // delete if you don't want ember-data
 module.exports = App;
 
 
-},{"../vendor/bootstrap-css/js/bootstrap.min":51,"../vendor/ember":55,"../vendor/ember-animated-outlet/dist/ember-animated-outlet.min":52,"../vendor/ember-data.min":53,"../vendor/ember-simple-auth/ember-simple-auth":54,"../vendor/handlebars":56,"../vendor/handlebars/handlebars.min":57,"../vendor/jquery":59,"../vendor/jquery-ui/ui/jquery-ui":58,"../vendor/jquery.mousewheel/jquery.mousewheel":60,"../vendor/jquery.twinkle/jquery.twinkle-0.5.0.min":61,"./store":3}],2:[function(require,module,exports){
+},{"../vendor/bootstrap-css/js/bootstrap.min":54,"../vendor/ember":58,"../vendor/ember-animated-outlet/dist/ember-animated-outlet.min":55,"../vendor/ember-data.min":56,"../vendor/ember-simple-auth/ember-simple-auth":57,"../vendor/handlebars":59,"../vendor/handlebars/handlebars.min":60,"../vendor/jquery":62,"../vendor/jquery-ui/ui/jquery-ui":61,"../vendor/jquery.mousewheel/jquery.mousewheel":63,"../vendor/jquery.twinkle/jquery.twinkle-0.5.0.min":64,"../vendor/markdown/lib/index":66,"./store":3}],2:[function(require,module,exports){
 var App = require('./app');
 
 App.Router.map(function() {
@@ -291,7 +294,7 @@ module.exports = DS.Store.extend({
 
 
 
-},{"../vendor/localstorage_adapter":62}],4:[function(require,module,exports){
+},{"../vendor/localstorage_adapter":65}],4:[function(require,module,exports){
 var AccountController = Ember.ObjectController.extend({
 	isEditingPassword: false,
 	accountPassword: '',
@@ -365,13 +368,14 @@ var CalendarController = Ember.ArrayController.extend({
 	itemController: 'episode',
 
 	// Sort all episodes by date, ascending
-	sortProperties: ['date'],
+	sortProperties: ['show_id','date'],
 	monthNum: -1,
 	year: -1,
 
 	// Monitor this variable to rerender view when user
 	// clicks a button to change month
 	controlChange: 0,
+	loopDay: 0,
 
 	// Get the name of the current month
 	month: function(num){
@@ -424,6 +428,37 @@ var CalendarController = Ember.ArrayController.extend({
 	currentMonth: function(){
 		return this.get('monthNum');
 	}.property(),
+
+	episodesByDay: function(){
+		this.set('loopDay',this.get('loopDay')+1);
+		var now = new Date();
+		if(this.get('year')<0)
+			this.set('year',now.getYear());
+		var date = new Date(this.get('year'),this.get('monthNum'),this.get('loopDay'),00,00,00,00,00);
+
+		eps = Ember.A();
+
+		var contextThis = this;
+		
+		this.get('model').forEach(function(episode){
+			var airDate = new Date(episode.get('date').getYear(),episode.get('date').getMonth(),episode.get('date').getDate(),02,00,00,00,00);
+			if(episode.get('date').getYear() == date.getYear() && episode.get('date').getMonth() == date.getMonth() && episode.get('date').getDate() == date.getDate())
+			{
+				var s = contextThis.get('store').find('show',episode.get('show_id'));
+				
+				// Workaround to avoid unbound variables on page;
+				// we cannot print any variables on the calendar
+				// and leave them unbound, because we only get empty promises.
+				// This means that variables are updated after they are printed, and 
+				// must be surrounded by <script> tags. This does not work with images.
+				// Thus, we change the property without saving, and let it print it as is.
+				
+				eps.pushObject(s);
+			}
+		});
+
+		return eps;
+	}.property('model').volatile(), // It's volatile because this _should not_ be cached.
 
 
 	actions: {
@@ -566,13 +601,8 @@ module.exports = EditShowController;
 },{}],12:[function(require,module,exports){
 var EpisodeController = Ember.ObjectController.extend({
 
-  destroy: function() {
-    if (!confirm('Are you sure?')) return;
-    this.get('model').deleteRecord();
-    this.get('store').commit();
-    this.get('target.router').transitionTo('episodes');
-  },
 
+  // Return the episode number (the number within the season)
   episodeNum: function(){
   	
   	var id = this.get('id').split(',');
@@ -580,25 +610,13 @@ var EpisodeController = Ember.ObjectController.extend({
   	return id[2];
   }.property('episode_id'),
 
-  getTime: function(){
-  	return this.get('date').getTime();
-  }.property('date'),
+  show: function(){
+  	//console.log("Trying to find show with id" + this.get('show_id'));
 
-  showname: function(){
-  	return this.get('show_id');
-  }.property('show'),
+  	var show = this.get('store').find('show',this.get('show_id'));
 
-  getMonthNumber: function(){
-  	return this.get('date').getMonth();
-  }.property(),
-
-  getYearNumber: function(){
-  	return (1900+this.get('date').getYear());
-  }.property(),
-
-  getDayNumber: function(){
-  	return this.get('date').getDate();
-  }.property()
+  	return show;
+  }.property('show_id')
 
 });
 
@@ -615,6 +633,20 @@ module.exports = EpisodesController;
 
 
 },{}],14:[function(require,module,exports){
+var InfoController = Ember.Controller.extend({
+	markdown: function(){
+
+		// Fetch markdown with a jQuery AJAX request
+		var markdown = Ember.$.ajax("https://raw.githubusercontent.com/Amnesthesia/Project-Rheya/master/diskett.es/readme.md");
+
+		return markdown;
+	}.property()
+});
+
+module.exports = InfoController;
+
+
+},{}],15:[function(require,module,exports){
 var LoginController = Ember.Controller.extend(Ember.SimpleAuth.LoginControllerMixin,{
 	authenticatorFactory: 'authenticator:custom',
 	loginFailed: false, //error message	
@@ -788,7 +820,7 @@ var LoginController = Ember.Controller.extend(Ember.SimpleAuth.LoginControllerMi
 module.exports = LoginController;
 
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 var NavigationController = Ember.Controller.extend({
 	needs: 'login',
 	loginController: Ember.computed.alias("controllers.login"),
@@ -806,7 +838,7 @@ var NavigationController = Ember.Controller.extend({
 module.exports = NavigationController;
 
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 var EditChannelController = require('./edit_channel_controller');
 
 // inherit from edit controller
@@ -815,7 +847,7 @@ var NewChannelController = EditChannelController.extend();
 module.exports = NewChannelController;
 
 
-},{"./edit_channel_controller":8}],17:[function(require,module,exports){
+},{"./edit_channel_controller":8}],18:[function(require,module,exports){
 var EditCountryController = require('./edit_country_controller');
 
 // inherit from edit controller
@@ -824,7 +856,7 @@ var NewCountryController = EditCountryController.extend();
 module.exports = NewCountryController;
 
 
-},{"./edit_country_controller":9}],18:[function(require,module,exports){
+},{"./edit_country_controller":9}],19:[function(require,module,exports){
 var EditEpisodeController = require('./edit_episode_controller');
 
 // inherit from edit controller
@@ -833,7 +865,7 @@ var NewEpisodeController = EditEpisodeController.extend();
 module.exports = NewEpisodeController;
 
 
-},{"./edit_episode_controller":10}],19:[function(require,module,exports){
+},{"./edit_episode_controller":10}],20:[function(require,module,exports){
 var EditShowController = require('./edit_show_controller');
 
 // inherit from edit controller
@@ -842,7 +874,7 @@ var NewShowController = EditShowController.extend();
 module.exports = NewShowController;
 
 
-},{"./edit_show_controller":11}],20:[function(require,module,exports){
+},{"./edit_show_controller":11}],21:[function(require,module,exports){
 var ShowController = Ember.ObjectController.extend({
 	needs: "login",
 	loginController: Ember.computed.alias("controllers.login"),
@@ -954,7 +986,7 @@ var ShowController = Ember.ObjectController.extend({
 module.exports = ShowController;
 
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 var ShowsController = Ember.ArrayController.extend({
 	itemController: 'show',
 	searchQuery: '',
@@ -970,7 +1002,7 @@ var ShowsController = Ember.ArrayController.extend({
 module.exports = ShowsController;
 
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var UserController = Ember.ObjectController.extend({
 	
 });
@@ -978,7 +1010,7 @@ var UserController = Ember.ObjectController.extend({
 module.exports = UserController;
 
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 var WatchedController = Ember.ArrayController.extend({
 	itemController: 'show'
 });
@@ -986,7 +1018,7 @@ var WatchedController = Ember.ArrayController.extend({
 module.exports = WatchedController;
 
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 var WatchedShowController = Ember.ObjectController.extend({
 
 });
@@ -994,11 +1026,11 @@ var WatchedShowController = Ember.ObjectController.extend({
 module.exports = WatchedShowController;
 
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 Handlebars.registerHelper('compare', function (v1, operator, v2, options) {
     switch (operator) {
         case '==':
-            return (v1 == v2) ? options.fn(this) : options.inverse(this);
+            return ((v1) == (v2)) ? options.fn(this) : options.inverse(this);
         case '===':
             return (v1 === v2) ? options.fn(this) : options.inverse(this);
         case '!==':
@@ -1019,13 +1051,13 @@ Handlebars.registerHelper('compare', function (v1, operator, v2, options) {
             return options.inverse(this);
     }
 });
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 Ember.Handlebars.helper('comparison', function() {
 
 });
 
 
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 Ember.Handlebars.registerBoundHelper('formatDate', function(d) {
       return moment(d).format('MMM DD, YYYY');
 });
@@ -1035,13 +1067,23 @@ Ember.Handlebars.registerBoundHelper('sinceUntilTime',function(d){
 });
 
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
+Ember.Handlebars.registerBoundHelper('markdown', function (content) {
+      return new Handlebars.SafeString(markdown.toHTML(content));
+});
+
+},{}],30:[function(require,module,exports){
+  Ember.Handlebars.registerBoundHelper('markdown', function (content) {
+        return new Handlebars.SafeString(markdown.toHTML(content));
+  });
+
+},{}],31:[function(require,module,exports){
 Ember.Handlebars.helper('modalbox', function(value) {
 	return Handlebars.SafeString('<div id="modalbox">'+Handlebars.compile(value)+"</div>");
 });
 
 
-},{}],29:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 // This file is auto-generated by `ember build`.
 // You should not modify it.
 
@@ -1050,6 +1092,8 @@ require('./templates');
 require('./helpers/comparison');
 require('./helpers/comparison.js~');
 require('./helpers/dateformat');
+require('./helpers/markdown');
+require('./helpers/markdown.js~');
 require('./helpers/modalbox');
 
 
@@ -1063,6 +1107,7 @@ App.EditEpisodeController = require('./controllers/edit_episode_controller');
 App.EditShowController = require('./controllers/edit_show_controller');
 App.EpisodeController = require('./controllers/episode_controller');
 App.EpisodesController = require('./controllers/episodes_controller');
+App.InfoController = require('./controllers/info_controller');
 App.LoginController = require('./controllers/login_controller');
 App.NavigationController = require('./controllers/navigation_controller');
 App.NewChannelController = require('./controllers/new_channel_controller');
@@ -1097,6 +1142,7 @@ App.WatchedRoute = require('./routes/watched_route');
 App.AccountView = require('./views/account_view');
 App.CalendarView = require('./views/calendar_view');
 App.EpisodesView = require('./views/episodes_view');
+App.InfoView = require('./views/info_view');
 App.LoadingView = require('./views/loading_view');
 App.LoginView = require('./views/login_view');
 App.NavigationView = require('./views/navigation_view');
@@ -1112,7 +1158,7 @@ require('./config/routes');
 module.exports = App;
 
 
-},{"./config/app":1,"./config/routes":2,"./controllers/account_controller":4,"./controllers/calendar_controller":5,"./controllers/channel_controller":6,"./controllers/country_controller":7,"./controllers/edit_channel_controller":8,"./controllers/edit_country_controller":9,"./controllers/edit_episode_controller":10,"./controllers/edit_show_controller":11,"./controllers/episode_controller":12,"./controllers/episodes_controller":13,"./controllers/login_controller":14,"./controllers/navigation_controller":15,"./controllers/new_channel_controller":16,"./controllers/new_country_controller":17,"./controllers/new_episode_controller":18,"./controllers/new_show_controller":19,"./controllers/show_controller":20,"./controllers/shows_controller":21,"./controllers/user_controller":22,"./controllers/watched_controller":23,"./controllers/watched_show_controller":24,"./helpers/comparison":25,"./helpers/comparison.js~":26,"./helpers/dateformat":27,"./helpers/modalbox":28,"./models/channel":30,"./models/country":31,"./models/episode":32,"./models/role":33,"./models/show":34,"./models/user":35,"./routes/account_route":36,"./routes/calendar_route":37,"./routes/channels_route":38,"./routes/countries_route":39,"./routes/episodes_route":40,"./routes/login_route":41,"./routes/new_channel_route":42,"./routes/new_country_route":43,"./routes/new_episode_route":44,"./routes/new_show_route":45,"./routes/show_route":46,"./routes/shows_route":47,"./routes/user_route":48,"./routes/watched_route":49,"./templates":50,"./views/account_view":63,"./views/calendar_view":64,"./views/episodes_view":65,"./views/loading_view":66,"./views/login_view":67,"./views/navigation_view":68,"./views/show_item_view":69,"./views/show_view":70,"./views/shows_view":71,"./views/user_view":72,"./views/watched_show_view":73,"./views/watched_view":74}],30:[function(require,module,exports){
+},{"./config/app":1,"./config/routes":2,"./controllers/account_controller":4,"./controllers/calendar_controller":5,"./controllers/channel_controller":6,"./controllers/country_controller":7,"./controllers/edit_channel_controller":8,"./controllers/edit_country_controller":9,"./controllers/edit_episode_controller":10,"./controllers/edit_show_controller":11,"./controllers/episode_controller":12,"./controllers/episodes_controller":13,"./controllers/info_controller":14,"./controllers/login_controller":15,"./controllers/navigation_controller":16,"./controllers/new_channel_controller":17,"./controllers/new_country_controller":18,"./controllers/new_episode_controller":19,"./controllers/new_show_controller":20,"./controllers/show_controller":21,"./controllers/shows_controller":22,"./controllers/user_controller":23,"./controllers/watched_controller":24,"./controllers/watched_show_controller":25,"./helpers/comparison":26,"./helpers/comparison.js~":27,"./helpers/dateformat":28,"./helpers/markdown":29,"./helpers/markdown.js~":30,"./helpers/modalbox":31,"./models/channel":33,"./models/country":34,"./models/episode":35,"./models/role":36,"./models/show":37,"./models/user":38,"./routes/account_route":39,"./routes/calendar_route":40,"./routes/channels_route":41,"./routes/countries_route":42,"./routes/episodes_route":43,"./routes/login_route":44,"./routes/new_channel_route":45,"./routes/new_country_route":46,"./routes/new_episode_route":47,"./routes/new_show_route":48,"./routes/show_route":49,"./routes/shows_route":50,"./routes/user_route":51,"./routes/watched_route":52,"./templates":53,"./views/account_view":68,"./views/calendar_view":69,"./views/episodes_view":70,"./views/info_view":71,"./views/loading_view":72,"./views/login_view":73,"./views/navigation_view":74,"./views/show_item_view":75,"./views/show_view":76,"./views/shows_view":77,"./views/user_view":78,"./views/watched_show_view":79,"./views/watched_view":80}],33:[function(require,module,exports){
 var Channel = DS.Model.extend({
 
   country_id: DS.attr('number'),
@@ -1124,7 +1170,7 @@ var Channel = DS.Model.extend({
 module.exports = Channel;
 
 
-},{}],31:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 var Country = DS.Model.extend({
 
   language: DS.attr('string'),
@@ -1136,7 +1182,7 @@ var Country = DS.Model.extend({
 module.exports = Country;
 
 
-},{}],32:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 var Episode = DS.Model.extend({
 
   show_id: DS.attr('number'),
@@ -1162,7 +1208,7 @@ var Episode = DS.Model.extend({
 module.exports = Episode;
 
 
-},{}],33:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 var Role = DS.Model.extend({
 
   name: DS.attr('string'),
@@ -1178,7 +1224,7 @@ var Role = DS.Model.extend({
 module.exports = Role;
 
 
-},{}],34:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 var Show = DS.Model.extend({
 
   imdb_id: DS.attr('number'),
@@ -1205,14 +1251,14 @@ var Show = DS.Model.extend({
 
   watched: DS.attr('boolean'),
 
-  episodes: DS.hasMany('Episode')
+  episodes: DS.hasMany('Episode', { inverse: 'show'})
 
 });
 
 module.exports = Show;
 
 
-},{}],35:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 var User = DS.Model.extend({
 
   email: DS.attr('string'),
@@ -1230,7 +1276,7 @@ var User = DS.Model.extend({
 module.exports = User;
 
 
-},{}],36:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 var AccountRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin,{
   model: function() {
   	
@@ -1260,9 +1306,9 @@ var AccountRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin,{
 module.exports = AccountRoute;
 
 
-},{}],37:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 var CalendarRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin,{
-	model: function() {
+	model: function(params) {
   	console.log("Retrieving user shows ...");
 
   	// We only want episodes aired within the past 3 months, or in the future.
@@ -1280,20 +1326,27 @@ var CalendarRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin,
   	// Maximum time difference in milliseconds
   	var timeDiff = 1000*60*60*24*90;
 
-  	var count = 0;
-  	var count2 = 0;
+  	// Iterate through all shows in the users session
     this.get('session.account.shows').forEach(function(show){
-    	count++;
+    	
+    	// Iterate through all episodes for each show
     	show.get('episodes').forEach(function(ep){
     		
+    		// Check if air date is less than time difference, or
+    		// if air date is in the fuuuuuuuuuture
     		var epTime = ep.get('date').getTime();
     		if(epTime > currentTime || (currentTime-epTime)<timeDiff )
+    		{
     			eps.pushObject(ep);
+    		}
     	});
     });
 
     return Ember.ArrayProxy.create({content: eps});
+
   },
+
+  // Render template into main outlet, and navigation into navigation outlet
   renderTemplate: function(){
     var controller = this.controllerFor('navigation');
 
@@ -1308,7 +1361,7 @@ var CalendarRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin,
 module.exports = CalendarRoute;
 
 
-},{}],38:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 var Channel = require('../models/channel');
 
 var ChannelRoute = Ember.Route.extend({
@@ -1322,7 +1375,7 @@ var ChannelRoute = Ember.Route.extend({
 module.exports = ChannelRoute;
 
 
-},{"../models/channel":30}],39:[function(require,module,exports){
+},{"../models/channel":33}],42:[function(require,module,exports){
 var Country = require('../models/country');
 
 var CountryRoute = Ember.Route.extend({
@@ -1336,7 +1389,7 @@ var CountryRoute = Ember.Route.extend({
 module.exports = CountryRoute;
 
 
-},{"../models/country":31}],40:[function(require,module,exports){
+},{"../models/country":34}],43:[function(require,module,exports){
 var Episode = require('../models/episode');
 
 var EpisodeRoute = Ember.Route.extend({
@@ -1350,7 +1403,7 @@ var EpisodeRoute = Ember.Route.extend({
 module.exports = EpisodeRoute;
 
 
-},{"../models/episode":32}],41:[function(require,module,exports){
+},{"../models/episode":35}],44:[function(require,module,exports){
 var LoginRoute = Ember.Route.extend({
 	// Make sure no old error messages are around from failed logins
 	setupController: function(controller, model){
@@ -1378,7 +1431,7 @@ var LoginRoute = Ember.Route.extend({
 module.exports = LoginRoute;
 
 
-},{}],42:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 var channel = require('../models/channel');
 
 var NewChannelRoute = Ember.Route.extend({
@@ -1403,7 +1456,7 @@ var NewChannelRoute = Ember.Route.extend({
 module.exports = NewChannelRoute;
 
 
-},{"../models/channel":30}],43:[function(require,module,exports){
+},{"../models/channel":33}],46:[function(require,module,exports){
 var country = require('../models/country');
 
 var NewCountryRoute = Ember.Route.extend({
@@ -1428,7 +1481,7 @@ var NewCountryRoute = Ember.Route.extend({
 module.exports = NewCountryRoute;
 
 
-},{"../models/country":31}],44:[function(require,module,exports){
+},{"../models/country":34}],47:[function(require,module,exports){
 var episode = require('../models/episode');
 
 var NewEpisodeRoute = Ember.Route.extend({
@@ -1453,7 +1506,7 @@ var NewEpisodeRoute = Ember.Route.extend({
 module.exports = NewEpisodeRoute;
 
 
-},{"../models/episode":32}],45:[function(require,module,exports){
+},{"../models/episode":35}],48:[function(require,module,exports){
 var show = require('../models/show');
 
 var NewShowRoute = Ember.Route.extend({
@@ -1478,7 +1531,7 @@ var NewShowRoute = Ember.Route.extend({
 module.exports = NewShowRoute;
 
 
-},{"../models/show":34}],46:[function(require,module,exports){
+},{"../models/show":37}],49:[function(require,module,exports){
 var ShowRoute = Ember.Route.extend({
   model: function(params){
   	return this.store.find('show', params.show_id);
@@ -1497,7 +1550,7 @@ var ShowRoute = Ember.Route.extend({
 module.exports = ShowRoute;
 
 
-},{}],47:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 var Show = require('../models/show');
 
 var ShowsRoute = Ember.Route.extend({
@@ -1521,7 +1574,7 @@ var ShowsRoute = Ember.Route.extend({
 module.exports = ShowsRoute;
 
 
-},{"../models/show":34}],48:[function(require,module,exports){
+},{"../models/show":37}],51:[function(require,module,exports){
 var UserRoute = Ember.Route.extend({
   model: function(params){
   	return this.store.find('user', params.user_id);
@@ -1540,7 +1593,7 @@ var UserRoute = Ember.Route.extend({
 module.exports = UserRoute;
 
 
-},{}],49:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 var WatchedRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin,{
 	model: function(){
 
@@ -1566,7 +1619,7 @@ var WatchedRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin,{
 module.exports = WatchedRoute;
 
 
-},{}],50:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 
 Ember.TEMPLATES['account'] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
 this.compilerInfo = [4,'>= 1.0.0'];
@@ -1642,7 +1695,7 @@ function program9(depth0,data) {
   return buffer;
   }
 
-  data.buffer.push("<div class=\"progress progress-striped browse-item-rating-progress topbar\" id=\"browse-show-rating-progress\">\n  \n  <div class=\"progress-bar progress-bar-danger\" style=\"width: 100%\">\n    <div id=\"browse-show-rating\">Account</div>\n  </div>\n\n</div>\n\n<div class=\"container\">\n	<div class=\"col-lg-8\">\n		<ul class=\"account-list\">\n			<li>\n\n				");
+  data.buffer.push("<div class=\"progress progress-striped browse-item-rating-progress topbar\" id=\"browse-show-rating-progress\">\n  \n  <div class=\"progress-bar progress-bar-danger\" style=\"width: 100%\">\n    <div id=\"browse-show-rating\">Account</div>\n  </div>\n\n</div>\n\n<div class=\"container\">\n<div class=\"row\">\n	<div class=\"col-lg-8\">\n		<ul class=\"account-list\">\n			<li>\n\n				");
   hashContexts = {'type': depth0,'disabled': depth0,'placeholder': depth0};
   hashTypes = {'type': "STRING",'disabled': "STRING",'placeholder': "ID"};
   options = {hash:{
@@ -1661,7 +1714,7 @@ function program9(depth0,data) {
   hashContexts = {};
   stack2 = helpers['if'].call(depth0, "accountPassword", {hash:{},inverse:self.noop,fn:self.program(8, program8, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
-  data.buffer.push("\n			</li>\n			<li>\n				<div class=\"alert alert-info col-lg-8\" style=\"display:none;margin:auto auto;\" id=\"passwordwarning\"> \n  					<b>Alright, so ...</b> 8 or more characters. At least a number, an uppercase letter and a lowercase letter. Deal?\n  				</div>\n			</li>\n		</ul>\n	</div>\n</div>\n\n");
+  data.buffer.push("\n			</li>\n			<li>\n				<div class=\"alert alert-info col-lg-8\" style=\"display:none;margin:auto auto;\" id=\"passwordwarning\"> \n  					<b>Alright, so ...</b> 8 or more characters. At least a number, an uppercase letter and a lowercase letter. Deal?\n  				</div>\n			</li>\n		</ul>\n	</div>\n</div>\n</div>\n");
   return buffer;
   
 });
@@ -1722,69 +1775,43 @@ function program1(depth0,data) {
   data.buffer.push("\n\n			");
   hashTypes = {};
   hashContexts = {};
-  stack1 = helpers.each.call(depth0, "episode", "in", "controller", {hash:{},inverse:self.noop,fn:self.program(2, program2, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  stack1 = helpers.each.call(depth0, "show", "in", "episodesByDay", {hash:{},inverse:self.noop,fn:self.program(2, program2, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n		</div>\n	");
   return buffer;
   }
 function program2(depth0,data) {
   
-  var buffer = '', stack1, stack2, hashTypes, hashContexts, options;
-  data.buffer.push("\n				");
-  hashTypes = {};
-  hashContexts = {};
-  options = {hash:{},inverse:self.noop,fn:self.program(3, program3, data),contexts:[depth0,depth0,depth0],types:["ID","STRING","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
-  stack2 = ((stack1 = helpers.compare || depth0.compare),stack1 ? stack1.call(depth0, "episode.getYearNumber", "==", "currentYear", options) : helperMissing.call(depth0, "compare", "episode.getYearNumber", "==", "currentYear", options));
+  var buffer = '', stack1, stack2, hashContexts, hashTypes, options;
+  data.buffer.push("\n				<div class=\"row\">\n					<div class=\"col-lg-12 calendar-airdate\">\n						");
+  hashContexts = {'animations': depth0};
+  hashTypes = {'animations': "STRING"};
+  options = {hash:{
+    'animations': ("main:fade")
+  },inverse:self.noop,fn:self.program(3, program3, data),contexts:[depth0,depth0],types:["STRING","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  stack2 = ((stack1 = helpers['link-to-animated'] || depth0['link-to-animated']),stack1 ? stack1.call(depth0, "show", "show.id", options) : helperMissing.call(depth0, "link-to-animated", "show", "show.id", options));
   if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
-  data.buffer.push("\n			");
+  data.buffer.push("\n					</div>\n				</div>\n			");
   return buffer;
   }
 function program3(depth0,data) {
   
-  var buffer = '', stack1, stack2, hashTypes, hashContexts, options;
-  data.buffer.push("\n					");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "episode.season", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("\n					");
-  hashTypes = {};
-  hashContexts = {};
-  options = {hash:{},inverse:self.noop,fn:self.program(4, program4, data),contexts:[depth0,depth0],types:["ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
-  stack2 = ((stack1 = helpers.compare || depth0.compare),stack1 ? stack1.call(depth0, "episode.getMonthNumber", "currentMonth", options) : helperMissing.call(depth0, "compare", "episode.getMonthNumber", "currentMonth", options));
-  if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
-  data.buffer.push("\n				");
-  return buffer;
-  }
-function program4(depth0,data) {
-  
-  var buffer = '', stack1, stack2, hashTypes, hashContexts, options;
-  data.buffer.push("\n						Month is correct.\n						");
-  hashTypes = {};
-  hashContexts = {};
-  options = {hash:{},inverse:self.noop,fn:self.program(5, program5, data),contexts:[depth0,depth0],types:["ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
-  stack2 = ((stack1 = helpers.compare || depth0.compare),stack1 ? stack1.call(depth0, "episode.getDayNumber", "day.dayNumber", options) : helperMissing.call(depth0, "compare", "episode.getDayNumber", "day.dayNumber", options));
-  if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
-  data.buffer.push("\n					");
-  return buffer;
-  }
-function program5(depth0,data) {
-  
   var buffer = '', hashTypes, hashContexts;
-  data.buffer.push("\n							Day is correct.\n							");
+  data.buffer.push("\n							");
   hashTypes = {};
   hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "episode.showname", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "show.name", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
   data.buffer.push("\n						");
   return buffer;
   }
 
-function program7(depth0,data) {
+function program5(depth0,data) {
   
   var buffer = '', hashTypes, hashContexts;
   data.buffer.push("\n	<tr>\n		<td>");
   hashTypes = {};
   hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "episode.getYearNumber", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "episode.show.name", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
   data.buffer.push("</td>\n		<td>");
   hashTypes = {};
   hashContexts = {};
@@ -1792,7 +1819,7 @@ function program7(depth0,data) {
   data.buffer.push("</td>\n		<td>");
   hashTypes = {};
   hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "episode.episode", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "episode.episodeNum", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
   data.buffer.push("</td>\n		<td>");
   hashTypes = {};
   hashContexts = {};
@@ -1822,10 +1849,10 @@ function program7(depth0,data) {
   hashContexts = {};
   stack1 = helpers.each.call(depth0, "day", "in", "daysInMonth", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n</div>\n\n<div class=\"row\">\n\n<table class=\"table table-responsive\">\n	<thead>\n		<th>Show name</th>\n		<th>Season</th>\n		<th>Episode</th>\n		<th>Synopsis</th>\n		<th>Date</th>\n	</thead>\n	<tbody>\n");
+  data.buffer.push("\n</div>\n\n<h2>Upcoming episodes</h2>\n<div class=\"row\">\n\n<table class=\"table table-responsive\">\n	<thead>\n		<th>Show</th>\n		<th>Season</th>\n		<th>Episode</th>\n		<th>Synopsis</th>\n		<th>Date</th>\n	</thead>\n	<tbody>\n");
   hashTypes = {};
   hashContexts = {};
-  stack1 = helpers.each.call(depth0, "episode", "in", "controller", {hash:{},inverse:self.noop,fn:self.program(7, program7, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  stack1 = helpers.each.call(depth0, "episode", "in", "controller", {hash:{},inverse:self.noop,fn:self.program(5, program5, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n	</tbody>\n</table>\n</div>\n</div>");
   return buffer;
@@ -2380,6 +2407,22 @@ helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
   
 });
 
+Ember.TEMPLATES['info'] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+  var buffer = '', stack1, hashTypes, hashContexts, options, helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression;
+
+
+  data.buffer.push("<div class=\"container\">\n\n	");
+  hashTypes = {};
+  hashContexts = {};
+  options = {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  data.buffer.push(escapeExpression(((stack1 = helpers.markdown || depth0.markdown),stack1 ? stack1.call(depth0, "markdown", options) : helperMissing.call(depth0, "markdown", "markdown", options))));
+  data.buffer.push("\n</div>");
+  return buffer;
+  
+});
+
 Ember.TEMPLATES['loading'] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
 this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
@@ -2593,11 +2636,22 @@ helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
 Ember.TEMPLATES['show'] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
 this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-  var buffer = '', stack1, stack2, hashTypes, hashContexts, options, escapeExpression=this.escapeExpression, helperMissing=helpers.helperMissing, self=this;
+  var buffer = '', stack1, stack2, hashTypes, hashContexts, options, escapeExpression=this.escapeExpression, self=this, helperMissing=helpers.helperMissing;
 
 function program1(depth0,data) {
   
-  var buffer = '', stack1, hashTypes, hashContexts, options;
+  var buffer = '', hashTypes, hashContexts;
+  data.buffer.push("\n        <a class=\"tiny button radius\" ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "follow", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(">Add to watchlist</a>\n      ");
+  return buffer;
+  }
+
+function program3(depth0,data) {
+  
+  var buffer = '', hashTypes, hashContexts;
   data.buffer.push("\n    <tr>\n      <td>");
   hashTypes = {};
   hashContexts = {};
@@ -2617,8 +2671,7 @@ function program1(depth0,data) {
   data.buffer.push("</td>\n      <td>");
   hashTypes = {};
   hashContexts = {};
-  options = {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
-  data.buffer.push(escapeExpression(((stack1 = helpers.formatDate || depth0.formatDate),stack1 ? stack1.call(depth0, "episode.date", options) : helperMissing.call(depth0, "formatDate", "episode.date", options))));
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "episode.date", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
   data.buffer.push("</td>\n\n      <td>");
   hashTypes = {};
   hashContexts = {};
@@ -2627,16 +2680,10 @@ function program1(depth0,data) {
   return buffer;
   }
 
-function program3(depth0,data) {
-  
-  
-  data.buffer.push("←All Shows");
-  }
-
 function program5(depth0,data) {
   
   
-  data.buffer.push("Edit");
+  data.buffer.push("←All Shows");
   }
 
   data.buffer.push("\n<div class=\"progress progress-striped browse-item-rating-progress topbar\" id=\"browse-show-rating-progress\">\n  \n  <div class=\"progress-bar ");
@@ -2663,34 +2710,24 @@ function program5(depth0,data) {
   hashTypes = {};
   hashContexts = {};
   data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "summary", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("</p>\n        </div>\n      </div>\n        <a class=\"tiny button radius\" ");
+  data.buffer.push("</p>\n        </div>\n      </div>\n      ");
   hashTypes = {};
   hashContexts = {};
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "follow", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push(">Add to watchlist</a>\n    </div>\n  </div>\n  <div class=\"row\">\n    <div class=\"col-lg-4 columns\">\n      <ul class=\"inline-list\">\n      \n      </ul>\n    </div>\n  </div>\n  <div class=\"row\">&nbsp;</div>\n  <div class=\"row\">&nbsp;</div>\n\n<h2>Episodes</h2>\n\n\n<table class=\"table table-hover table-responsive datatable\">\n  <thead>\n    <th>Season</th>\n    <th>Episode</th>\n    <th>Name</th>\n    <th>Synopsis</th>\n    <th>Aired</th>\n    <th>Watched</th>\n  </thead>\n  <tbody>\n\n    ");
+  stack1 = helpers['if'].call(depth0, "isNotWatched", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n    </div>\n  </div>\n  <div class=\"row\">\n    <div class=\"col-lg-4 columns\">\n      <ul class=\"inline-list\">\n      \n      </ul>\n    </div>\n  </div>\n  <div class=\"row\">&nbsp;</div>\n  <div class=\"row\">&nbsp;</div>\n\n<h2>Episodes</h2>\n\n\n<table class=\"table table-hover table-responsive datatable\">\n  <thead>\n    <th>Season</th>\n    <th>Episode</th>\n    <th>Name</th>\n    <th>Synopsis</th>\n    <th>Aired</th>\n    <th>Watched</th>\n  </thead>\n  <tbody>\n\n    ");
   hashTypes = {};
   hashContexts = {};
-  stack1 = helpers.each.call(depth0, "episode", "in", "episodes", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  stack1 = helpers.each.call(depth0, "episode", "in", "episodes", {hash:{},inverse:self.noop,fn:self.program(3, program3, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n\n  </tbody>\n</table>\n\n\n\n");
   hashContexts = {'animations': depth0};
   hashTypes = {'animations': "STRING"};
   options = {hash:{
     'animations': ("main:slideLeft")
-  },inverse:self.noop,fn:self.program(3, program3, data),contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  },inverse:self.noop,fn:self.program(5, program5, data),contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   stack2 = ((stack1 = helpers['link-to-animated'] || depth0['link-to-animated']),stack1 ? stack1.call(depth0, "index", options) : helperMissing.call(depth0, "link-to-animated", "index", options));
   if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
-  data.buffer.push("\n");
-  hashTypes = {};
-  hashContexts = {};
-  options = {hash:{},inverse:self.noop,fn:self.program(5, program5, data),contexts:[depth0,depth0],types:["STRING","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
-  stack2 = ((stack1 = helpers['link-to'] || depth0['link-to']),stack1 ? stack1.call(depth0, "edit_show", "model", options) : helperMissing.call(depth0, "link-to", "edit_show", "model", options));
-  if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
-  data.buffer.push("\n<a href=\"#\" ");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "destroy", {hash:{},contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push(">Destroy</a>\n</div>");
   return buffer;
   
 });
@@ -2983,16 +3020,16 @@ helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
 
 
 
-},{}],51:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 /*!
  * Bootstrap v3.1.1 (http://getbootstrap.com)
  * Copyright 2011-2014 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
  */
 if("undefined"==typeof jQuery)throw new Error("Bootstrap's JavaScript requires jQuery");+function(a){"use strict";function b(){var a=document.createElement("bootstrap"),b={WebkitTransition:"webkitTransitionEnd",MozTransition:"transitionend",OTransition:"oTransitionEnd otransitionend",transition:"transitionend"};for(var c in b)if(void 0!==a.style[c])return{end:b[c]};return!1}a.fn.emulateTransitionEnd=function(b){var c=!1,d=this;a(this).one(a.support.transition.end,function(){c=!0});var e=function(){c||a(d).trigger(a.support.transition.end)};return setTimeout(e,b),this},a(function(){a.support.transition=b()})}(jQuery),+function(a){"use strict";var b='[data-dismiss="alert"]',c=function(c){a(c).on("click",b,this.close)};c.prototype.close=function(b){function c(){f.trigger("closed.bs.alert").remove()}var d=a(this),e=d.attr("data-target");e||(e=d.attr("href"),e=e&&e.replace(/.*(?=#[^\s]*$)/,""));var f=a(e);b&&b.preventDefault(),f.length||(f=d.hasClass("alert")?d:d.parent()),f.trigger(b=a.Event("close.bs.alert")),b.isDefaultPrevented()||(f.removeClass("in"),a.support.transition&&f.hasClass("fade")?f.one(a.support.transition.end,c).emulateTransitionEnd(150):c())};var d=a.fn.alert;a.fn.alert=function(b){return this.each(function(){var d=a(this),e=d.data("bs.alert");e||d.data("bs.alert",e=new c(this)),"string"==typeof b&&e[b].call(d)})},a.fn.alert.Constructor=c,a.fn.alert.noConflict=function(){return a.fn.alert=d,this},a(document).on("click.bs.alert.data-api",b,c.prototype.close)}(jQuery),+function(a){"use strict";var b=function(c,d){this.$element=a(c),this.options=a.extend({},b.DEFAULTS,d),this.isLoading=!1};b.DEFAULTS={loadingText:"loading..."},b.prototype.setState=function(b){var c="disabled",d=this.$element,e=d.is("input")?"val":"html",f=d.data();b+="Text",f.resetText||d.data("resetText",d[e]()),d[e](f[b]||this.options[b]),setTimeout(a.proxy(function(){"loadingText"==b?(this.isLoading=!0,d.addClass(c).attr(c,c)):this.isLoading&&(this.isLoading=!1,d.removeClass(c).removeAttr(c))},this),0)},b.prototype.toggle=function(){var a=!0,b=this.$element.closest('[data-toggle="buttons"]');if(b.length){var c=this.$element.find("input");"radio"==c.prop("type")&&(c.prop("checked")&&this.$element.hasClass("active")?a=!1:b.find(".active").removeClass("active")),a&&c.prop("checked",!this.$element.hasClass("active")).trigger("change")}a&&this.$element.toggleClass("active")};var c=a.fn.button;a.fn.button=function(c){return this.each(function(){var d=a(this),e=d.data("bs.button"),f="object"==typeof c&&c;e||d.data("bs.button",e=new b(this,f)),"toggle"==c?e.toggle():c&&e.setState(c)})},a.fn.button.Constructor=b,a.fn.button.noConflict=function(){return a.fn.button=c,this},a(document).on("click.bs.button.data-api","[data-toggle^=button]",function(b){var c=a(b.target);c.hasClass("btn")||(c=c.closest(".btn")),c.button("toggle"),b.preventDefault()})}(jQuery),+function(a){"use strict";var b=function(b,c){this.$element=a(b),this.$indicators=this.$element.find(".carousel-indicators"),this.options=c,this.paused=this.sliding=this.interval=this.$active=this.$items=null,"hover"==this.options.pause&&this.$element.on("mouseenter",a.proxy(this.pause,this)).on("mouseleave",a.proxy(this.cycle,this))};b.DEFAULTS={interval:5e3,pause:"hover",wrap:!0},b.prototype.cycle=function(b){return b||(this.paused=!1),this.interval&&clearInterval(this.interval),this.options.interval&&!this.paused&&(this.interval=setInterval(a.proxy(this.next,this),this.options.interval)),this},b.prototype.getActiveIndex=function(){return this.$active=this.$element.find(".item.active"),this.$items=this.$active.parent().children(),this.$items.index(this.$active)},b.prototype.to=function(b){var c=this,d=this.getActiveIndex();return b>this.$items.length-1||0>b?void 0:this.sliding?this.$element.one("slid.bs.carousel",function(){c.to(b)}):d==b?this.pause().cycle():this.slide(b>d?"next":"prev",a(this.$items[b]))},b.prototype.pause=function(b){return b||(this.paused=!0),this.$element.find(".next, .prev").length&&a.support.transition&&(this.$element.trigger(a.support.transition.end),this.cycle(!0)),this.interval=clearInterval(this.interval),this},b.prototype.next=function(){return this.sliding?void 0:this.slide("next")},b.prototype.prev=function(){return this.sliding?void 0:this.slide("prev")},b.prototype.slide=function(b,c){var d=this.$element.find(".item.active"),e=c||d[b](),f=this.interval,g="next"==b?"left":"right",h="next"==b?"first":"last",i=this;if(!e.length){if(!this.options.wrap)return;e=this.$element.find(".item")[h]()}if(e.hasClass("active"))return this.sliding=!1;var j=a.Event("slide.bs.carousel",{relatedTarget:e[0],direction:g});return this.$element.trigger(j),j.isDefaultPrevented()?void 0:(this.sliding=!0,f&&this.pause(),this.$indicators.length&&(this.$indicators.find(".active").removeClass("active"),this.$element.one("slid.bs.carousel",function(){var b=a(i.$indicators.children()[i.getActiveIndex()]);b&&b.addClass("active")})),a.support.transition&&this.$element.hasClass("slide")?(e.addClass(b),e[0].offsetWidth,d.addClass(g),e.addClass(g),d.one(a.support.transition.end,function(){e.removeClass([b,g].join(" ")).addClass("active"),d.removeClass(["active",g].join(" ")),i.sliding=!1,setTimeout(function(){i.$element.trigger("slid.bs.carousel")},0)}).emulateTransitionEnd(1e3*d.css("transition-duration").slice(0,-1))):(d.removeClass("active"),e.addClass("active"),this.sliding=!1,this.$element.trigger("slid.bs.carousel")),f&&this.cycle(),this)};var c=a.fn.carousel;a.fn.carousel=function(c){return this.each(function(){var d=a(this),e=d.data("bs.carousel"),f=a.extend({},b.DEFAULTS,d.data(),"object"==typeof c&&c),g="string"==typeof c?c:f.slide;e||d.data("bs.carousel",e=new b(this,f)),"number"==typeof c?e.to(c):g?e[g]():f.interval&&e.pause().cycle()})},a.fn.carousel.Constructor=b,a.fn.carousel.noConflict=function(){return a.fn.carousel=c,this},a(document).on("click.bs.carousel.data-api","[data-slide], [data-slide-to]",function(b){var c,d=a(this),e=a(d.attr("data-target")||(c=d.attr("href"))&&c.replace(/.*(?=#[^\s]+$)/,"")),f=a.extend({},e.data(),d.data()),g=d.attr("data-slide-to");g&&(f.interval=!1),e.carousel(f),(g=d.attr("data-slide-to"))&&e.data("bs.carousel").to(g),b.preventDefault()}),a(window).on("load",function(){a('[data-ride="carousel"]').each(function(){var b=a(this);b.carousel(b.data())})})}(jQuery),+function(a){"use strict";var b=function(c,d){this.$element=a(c),this.options=a.extend({},b.DEFAULTS,d),this.transitioning=null,this.options.parent&&(this.$parent=a(this.options.parent)),this.options.toggle&&this.toggle()};b.DEFAULTS={toggle:!0},b.prototype.dimension=function(){var a=this.$element.hasClass("width");return a?"width":"height"},b.prototype.show=function(){if(!this.transitioning&&!this.$element.hasClass("in")){var b=a.Event("show.bs.collapse");if(this.$element.trigger(b),!b.isDefaultPrevented()){var c=this.$parent&&this.$parent.find("> .panel > .in");if(c&&c.length){var d=c.data("bs.collapse");if(d&&d.transitioning)return;c.collapse("hide"),d||c.data("bs.collapse",null)}var e=this.dimension();this.$element.removeClass("collapse").addClass("collapsing")[e](0),this.transitioning=1;var f=function(){this.$element.removeClass("collapsing").addClass("collapse in")[e]("auto"),this.transitioning=0,this.$element.trigger("shown.bs.collapse")};if(!a.support.transition)return f.call(this);var g=a.camelCase(["scroll",e].join("-"));this.$element.one(a.support.transition.end,a.proxy(f,this)).emulateTransitionEnd(350)[e](this.$element[0][g])}}},b.prototype.hide=function(){if(!this.transitioning&&this.$element.hasClass("in")){var b=a.Event("hide.bs.collapse");if(this.$element.trigger(b),!b.isDefaultPrevented()){var c=this.dimension();this.$element[c](this.$element[c]())[0].offsetHeight,this.$element.addClass("collapsing").removeClass("collapse").removeClass("in"),this.transitioning=1;var d=function(){this.transitioning=0,this.$element.trigger("hidden.bs.collapse").removeClass("collapsing").addClass("collapse")};return a.support.transition?void this.$element[c](0).one(a.support.transition.end,a.proxy(d,this)).emulateTransitionEnd(350):d.call(this)}}},b.prototype.toggle=function(){this[this.$element.hasClass("in")?"hide":"show"]()};var c=a.fn.collapse;a.fn.collapse=function(c){return this.each(function(){var d=a(this),e=d.data("bs.collapse"),f=a.extend({},b.DEFAULTS,d.data(),"object"==typeof c&&c);!e&&f.toggle&&"show"==c&&(c=!c),e||d.data("bs.collapse",e=new b(this,f)),"string"==typeof c&&e[c]()})},a.fn.collapse.Constructor=b,a.fn.collapse.noConflict=function(){return a.fn.collapse=c,this},a(document).on("click.bs.collapse.data-api","[data-toggle=collapse]",function(b){var c,d=a(this),e=d.attr("data-target")||b.preventDefault()||(c=d.attr("href"))&&c.replace(/.*(?=#[^\s]+$)/,""),f=a(e),g=f.data("bs.collapse"),h=g?"toggle":d.data(),i=d.attr("data-parent"),j=i&&a(i);g&&g.transitioning||(j&&j.find('[data-toggle=collapse][data-parent="'+i+'"]').not(d).addClass("collapsed"),d[f.hasClass("in")?"addClass":"removeClass"]("collapsed")),f.collapse(h)})}(jQuery),+function(a){"use strict";function b(b){a(d).remove(),a(e).each(function(){var d=c(a(this)),e={relatedTarget:this};d.hasClass("open")&&(d.trigger(b=a.Event("hide.bs.dropdown",e)),b.isDefaultPrevented()||d.removeClass("open").trigger("hidden.bs.dropdown",e))})}function c(b){var c=b.attr("data-target");c||(c=b.attr("href"),c=c&&/#[A-Za-z]/.test(c)&&c.replace(/.*(?=#[^\s]*$)/,""));var d=c&&a(c);return d&&d.length?d:b.parent()}var d=".dropdown-backdrop",e="[data-toggle=dropdown]",f=function(b){a(b).on("click.bs.dropdown",this.toggle)};f.prototype.toggle=function(d){var e=a(this);if(!e.is(".disabled, :disabled")){var f=c(e),g=f.hasClass("open");if(b(),!g){"ontouchstart"in document.documentElement&&!f.closest(".navbar-nav").length&&a('<div class="dropdown-backdrop"/>').insertAfter(a(this)).on("click",b);var h={relatedTarget:this};if(f.trigger(d=a.Event("show.bs.dropdown",h)),d.isDefaultPrevented())return;f.toggleClass("open").trigger("shown.bs.dropdown",h),e.focus()}return!1}},f.prototype.keydown=function(b){if(/(38|40|27)/.test(b.keyCode)){var d=a(this);if(b.preventDefault(),b.stopPropagation(),!d.is(".disabled, :disabled")){var f=c(d),g=f.hasClass("open");if(!g||g&&27==b.keyCode)return 27==b.which&&f.find(e).focus(),d.click();var h=" li:not(.divider):visible a",i=f.find("[role=menu]"+h+", [role=listbox]"+h);if(i.length){var j=i.index(i.filter(":focus"));38==b.keyCode&&j>0&&j--,40==b.keyCode&&j<i.length-1&&j++,~j||(j=0),i.eq(j).focus()}}}};var g=a.fn.dropdown;a.fn.dropdown=function(b){return this.each(function(){var c=a(this),d=c.data("bs.dropdown");d||c.data("bs.dropdown",d=new f(this)),"string"==typeof b&&d[b].call(c)})},a.fn.dropdown.Constructor=f,a.fn.dropdown.noConflict=function(){return a.fn.dropdown=g,this},a(document).on("click.bs.dropdown.data-api",b).on("click.bs.dropdown.data-api",".dropdown form",function(a){a.stopPropagation()}).on("click.bs.dropdown.data-api",e,f.prototype.toggle).on("keydown.bs.dropdown.data-api",e+", [role=menu], [role=listbox]",f.prototype.keydown)}(jQuery),+function(a){"use strict";var b=function(b,c){this.options=c,this.$element=a(b),this.$backdrop=this.isShown=null,this.options.remote&&this.$element.find(".modal-content").load(this.options.remote,a.proxy(function(){this.$element.trigger("loaded.bs.modal")},this))};b.DEFAULTS={backdrop:!0,keyboard:!0,show:!0},b.prototype.toggle=function(a){return this[this.isShown?"hide":"show"](a)},b.prototype.show=function(b){var c=this,d=a.Event("show.bs.modal",{relatedTarget:b});this.$element.trigger(d),this.isShown||d.isDefaultPrevented()||(this.isShown=!0,this.escape(),this.$element.on("click.dismiss.bs.modal",'[data-dismiss="modal"]',a.proxy(this.hide,this)),this.backdrop(function(){var d=a.support.transition&&c.$element.hasClass("fade");c.$element.parent().length||c.$element.appendTo(document.body),c.$element.show().scrollTop(0),d&&c.$element[0].offsetWidth,c.$element.addClass("in").attr("aria-hidden",!1),c.enforceFocus();var e=a.Event("shown.bs.modal",{relatedTarget:b});d?c.$element.find(".modal-dialog").one(a.support.transition.end,function(){c.$element.focus().trigger(e)}).emulateTransitionEnd(300):c.$element.focus().trigger(e)}))},b.prototype.hide=function(b){b&&b.preventDefault(),b=a.Event("hide.bs.modal"),this.$element.trigger(b),this.isShown&&!b.isDefaultPrevented()&&(this.isShown=!1,this.escape(),a(document).off("focusin.bs.modal"),this.$element.removeClass("in").attr("aria-hidden",!0).off("click.dismiss.bs.modal"),a.support.transition&&this.$element.hasClass("fade")?this.$element.one(a.support.transition.end,a.proxy(this.hideModal,this)).emulateTransitionEnd(300):this.hideModal())},b.prototype.enforceFocus=function(){a(document).off("focusin.bs.modal").on("focusin.bs.modal",a.proxy(function(a){this.$element[0]===a.target||this.$element.has(a.target).length||this.$element.focus()},this))},b.prototype.escape=function(){this.isShown&&this.options.keyboard?this.$element.on("keyup.dismiss.bs.modal",a.proxy(function(a){27==a.which&&this.hide()},this)):this.isShown||this.$element.off("keyup.dismiss.bs.modal")},b.prototype.hideModal=function(){var a=this;this.$element.hide(),this.backdrop(function(){a.removeBackdrop(),a.$element.trigger("hidden.bs.modal")})},b.prototype.removeBackdrop=function(){this.$backdrop&&this.$backdrop.remove(),this.$backdrop=null},b.prototype.backdrop=function(b){var c=this.$element.hasClass("fade")?"fade":"";if(this.isShown&&this.options.backdrop){var d=a.support.transition&&c;if(this.$backdrop=a('<div class="modal-backdrop '+c+'" />').appendTo(document.body),this.$element.on("click.dismiss.bs.modal",a.proxy(function(a){a.target===a.currentTarget&&("static"==this.options.backdrop?this.$element[0].focus.call(this.$element[0]):this.hide.call(this))},this)),d&&this.$backdrop[0].offsetWidth,this.$backdrop.addClass("in"),!b)return;d?this.$backdrop.one(a.support.transition.end,b).emulateTransitionEnd(150):b()}else!this.isShown&&this.$backdrop?(this.$backdrop.removeClass("in"),a.support.transition&&this.$element.hasClass("fade")?this.$backdrop.one(a.support.transition.end,b).emulateTransitionEnd(150):b()):b&&b()};var c=a.fn.modal;a.fn.modal=function(c,d){return this.each(function(){var e=a(this),f=e.data("bs.modal"),g=a.extend({},b.DEFAULTS,e.data(),"object"==typeof c&&c);f||e.data("bs.modal",f=new b(this,g)),"string"==typeof c?f[c](d):g.show&&f.show(d)})},a.fn.modal.Constructor=b,a.fn.modal.noConflict=function(){return a.fn.modal=c,this},a(document).on("click.bs.modal.data-api",'[data-toggle="modal"]',function(b){var c=a(this),d=c.attr("href"),e=a(c.attr("data-target")||d&&d.replace(/.*(?=#[^\s]+$)/,"")),f=e.data("bs.modal")?"toggle":a.extend({remote:!/#/.test(d)&&d},e.data(),c.data());c.is("a")&&b.preventDefault(),e.modal(f,this).one("hide",function(){c.is(":visible")&&c.focus()})}),a(document).on("show.bs.modal",".modal",function(){a(document.body).addClass("modal-open")}).on("hidden.bs.modal",".modal",function(){a(document.body).removeClass("modal-open")})}(jQuery),+function(a){"use strict";var b=function(a,b){this.type=this.options=this.enabled=this.timeout=this.hoverState=this.$element=null,this.init("tooltip",a,b)};b.DEFAULTS={animation:!0,placement:"top",selector:!1,template:'<div class="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>',trigger:"hover focus",title:"",delay:0,html:!1,container:!1},b.prototype.init=function(b,c,d){this.enabled=!0,this.type=b,this.$element=a(c),this.options=this.getOptions(d);for(var e=this.options.trigger.split(" "),f=e.length;f--;){var g=e[f];if("click"==g)this.$element.on("click."+this.type,this.options.selector,a.proxy(this.toggle,this));else if("manual"!=g){var h="hover"==g?"mouseenter":"focusin",i="hover"==g?"mouseleave":"focusout";this.$element.on(h+"."+this.type,this.options.selector,a.proxy(this.enter,this)),this.$element.on(i+"."+this.type,this.options.selector,a.proxy(this.leave,this))}}this.options.selector?this._options=a.extend({},this.options,{trigger:"manual",selector:""}):this.fixTitle()},b.prototype.getDefaults=function(){return b.DEFAULTS},b.prototype.getOptions=function(b){return b=a.extend({},this.getDefaults(),this.$element.data(),b),b.delay&&"number"==typeof b.delay&&(b.delay={show:b.delay,hide:b.delay}),b},b.prototype.getDelegateOptions=function(){var b={},c=this.getDefaults();return this._options&&a.each(this._options,function(a,d){c[a]!=d&&(b[a]=d)}),b},b.prototype.enter=function(b){var c=b instanceof this.constructor?b:a(b.currentTarget)[this.type](this.getDelegateOptions()).data("bs."+this.type);return clearTimeout(c.timeout),c.hoverState="in",c.options.delay&&c.options.delay.show?void(c.timeout=setTimeout(function(){"in"==c.hoverState&&c.show()},c.options.delay.show)):c.show()},b.prototype.leave=function(b){var c=b instanceof this.constructor?b:a(b.currentTarget)[this.type](this.getDelegateOptions()).data("bs."+this.type);return clearTimeout(c.timeout),c.hoverState="out",c.options.delay&&c.options.delay.hide?void(c.timeout=setTimeout(function(){"out"==c.hoverState&&c.hide()},c.options.delay.hide)):c.hide()},b.prototype.show=function(){var b=a.Event("show.bs."+this.type);if(this.hasContent()&&this.enabled){if(this.$element.trigger(b),b.isDefaultPrevented())return;var c=this,d=this.tip();this.setContent(),this.options.animation&&d.addClass("fade");var e="function"==typeof this.options.placement?this.options.placement.call(this,d[0],this.$element[0]):this.options.placement,f=/\s?auto?\s?/i,g=f.test(e);g&&(e=e.replace(f,"")||"top"),d.detach().css({top:0,left:0,display:"block"}).addClass(e),this.options.container?d.appendTo(this.options.container):d.insertAfter(this.$element);var h=this.getPosition(),i=d[0].offsetWidth,j=d[0].offsetHeight;if(g){var k=this.$element.parent(),l=e,m=document.documentElement.scrollTop||document.body.scrollTop,n="body"==this.options.container?window.innerWidth:k.outerWidth(),o="body"==this.options.container?window.innerHeight:k.outerHeight(),p="body"==this.options.container?0:k.offset().left;e="bottom"==e&&h.top+h.height+j-m>o?"top":"top"==e&&h.top-m-j<0?"bottom":"right"==e&&h.right+i>n?"left":"left"==e&&h.left-i<p?"right":e,d.removeClass(l).addClass(e)}var q=this.getCalculatedOffset(e,h,i,j);this.applyPlacement(q,e),this.hoverState=null;var r=function(){c.$element.trigger("shown.bs."+c.type)};a.support.transition&&this.$tip.hasClass("fade")?d.one(a.support.transition.end,r).emulateTransitionEnd(150):r()}},b.prototype.applyPlacement=function(b,c){var d,e=this.tip(),f=e[0].offsetWidth,g=e[0].offsetHeight,h=parseInt(e.css("margin-top"),10),i=parseInt(e.css("margin-left"),10);isNaN(h)&&(h=0),isNaN(i)&&(i=0),b.top=b.top+h,b.left=b.left+i,a.offset.setOffset(e[0],a.extend({using:function(a){e.css({top:Math.round(a.top),left:Math.round(a.left)})}},b),0),e.addClass("in");var j=e[0].offsetWidth,k=e[0].offsetHeight;if("top"==c&&k!=g&&(d=!0,b.top=b.top+g-k),/bottom|top/.test(c)){var l=0;b.left<0&&(l=-2*b.left,b.left=0,e.offset(b),j=e[0].offsetWidth,k=e[0].offsetHeight),this.replaceArrow(l-f+j,j,"left")}else this.replaceArrow(k-g,k,"top");d&&e.offset(b)},b.prototype.replaceArrow=function(a,b,c){this.arrow().css(c,a?50*(1-a/b)+"%":"")},b.prototype.setContent=function(){var a=this.tip(),b=this.getTitle();a.find(".tooltip-inner")[this.options.html?"html":"text"](b),a.removeClass("fade in top bottom left right")},b.prototype.hide=function(){function b(){"in"!=c.hoverState&&d.detach(),c.$element.trigger("hidden.bs."+c.type)}var c=this,d=this.tip(),e=a.Event("hide.bs."+this.type);return this.$element.trigger(e),e.isDefaultPrevented()?void 0:(d.removeClass("in"),a.support.transition&&this.$tip.hasClass("fade")?d.one(a.support.transition.end,b).emulateTransitionEnd(150):b(),this.hoverState=null,this)},b.prototype.fixTitle=function(){var a=this.$element;(a.attr("title")||"string"!=typeof a.attr("data-original-title"))&&a.attr("data-original-title",a.attr("title")||"").attr("title","")},b.prototype.hasContent=function(){return this.getTitle()},b.prototype.getPosition=function(){var b=this.$element[0];return a.extend({},"function"==typeof b.getBoundingClientRect?b.getBoundingClientRect():{width:b.offsetWidth,height:b.offsetHeight},this.$element.offset())},b.prototype.getCalculatedOffset=function(a,b,c,d){return"bottom"==a?{top:b.top+b.height,left:b.left+b.width/2-c/2}:"top"==a?{top:b.top-d,left:b.left+b.width/2-c/2}:"left"==a?{top:b.top+b.height/2-d/2,left:b.left-c}:{top:b.top+b.height/2-d/2,left:b.left+b.width}},b.prototype.getTitle=function(){var a,b=this.$element,c=this.options;return a=b.attr("data-original-title")||("function"==typeof c.title?c.title.call(b[0]):c.title)},b.prototype.tip=function(){return this.$tip=this.$tip||a(this.options.template)},b.prototype.arrow=function(){return this.$arrow=this.$arrow||this.tip().find(".tooltip-arrow")},b.prototype.validate=function(){this.$element[0].parentNode||(this.hide(),this.$element=null,this.options=null)},b.prototype.enable=function(){this.enabled=!0},b.prototype.disable=function(){this.enabled=!1},b.prototype.toggleEnabled=function(){this.enabled=!this.enabled},b.prototype.toggle=function(b){var c=b?a(b.currentTarget)[this.type](this.getDelegateOptions()).data("bs."+this.type):this;c.tip().hasClass("in")?c.leave(c):c.enter(c)},b.prototype.destroy=function(){clearTimeout(this.timeout),this.hide().$element.off("."+this.type).removeData("bs."+this.type)};var c=a.fn.tooltip;a.fn.tooltip=function(c){return this.each(function(){var d=a(this),e=d.data("bs.tooltip"),f="object"==typeof c&&c;(e||"destroy"!=c)&&(e||d.data("bs.tooltip",e=new b(this,f)),"string"==typeof c&&e[c]())})},a.fn.tooltip.Constructor=b,a.fn.tooltip.noConflict=function(){return a.fn.tooltip=c,this}}(jQuery),+function(a){"use strict";var b=function(a,b){this.init("popover",a,b)};if(!a.fn.tooltip)throw new Error("Popover requires tooltip.js");b.DEFAULTS=a.extend({},a.fn.tooltip.Constructor.DEFAULTS,{placement:"right",trigger:"click",content:"",template:'<div class="popover"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'}),b.prototype=a.extend({},a.fn.tooltip.Constructor.prototype),b.prototype.constructor=b,b.prototype.getDefaults=function(){return b.DEFAULTS},b.prototype.setContent=function(){var a=this.tip(),b=this.getTitle(),c=this.getContent();a.find(".popover-title")[this.options.html?"html":"text"](b),a.find(".popover-content")[this.options.html?"string"==typeof c?"html":"append":"text"](c),a.removeClass("fade top bottom left right in"),a.find(".popover-title").html()||a.find(".popover-title").hide()},b.prototype.hasContent=function(){return this.getTitle()||this.getContent()},b.prototype.getContent=function(){var a=this.$element,b=this.options;return a.attr("data-content")||("function"==typeof b.content?b.content.call(a[0]):b.content)},b.prototype.arrow=function(){return this.$arrow=this.$arrow||this.tip().find(".arrow")},b.prototype.tip=function(){return this.$tip||(this.$tip=a(this.options.template)),this.$tip};var c=a.fn.popover;a.fn.popover=function(c){return this.each(function(){var d=a(this),e=d.data("bs.popover"),f="object"==typeof c&&c;(e||"destroy"!=c)&&(e||d.data("bs.popover",e=new b(this,f)),"string"==typeof c&&e[c]())})},a.fn.popover.Constructor=b,a.fn.popover.noConflict=function(){return a.fn.popover=c,this}}(jQuery),+function(a){"use strict";function b(c,d){var e,f=a.proxy(this.process,this);this.$element=a(a(c).is("body")?window:c),this.$body=a("body"),this.$scrollElement=this.$element.on("scroll.bs.scroll-spy.data-api",f),this.options=a.extend({},b.DEFAULTS,d),this.selector=(this.options.target||(e=a(c).attr("href"))&&e.replace(/.*(?=#[^\s]+$)/,"")||"")+" .nav li > a",this.offsets=a([]),this.targets=a([]),this.activeTarget=null,this.refresh(),this.process()}b.DEFAULTS={offset:10},b.prototype.refresh=function(){var b=this.$element[0]==window?"offset":"position";this.offsets=a([]),this.targets=a([]);{var c=this;this.$body.find(this.selector).map(function(){var d=a(this),e=d.data("target")||d.attr("href"),f=/^#./.test(e)&&a(e);return f&&f.length&&f.is(":visible")&&[[f[b]().top+(!a.isWindow(c.$scrollElement.get(0))&&c.$scrollElement.scrollTop()),e]]||null}).sort(function(a,b){return a[0]-b[0]}).each(function(){c.offsets.push(this[0]),c.targets.push(this[1])})}},b.prototype.process=function(){var a,b=this.$scrollElement.scrollTop()+this.options.offset,c=this.$scrollElement[0].scrollHeight||this.$body[0].scrollHeight,d=c-this.$scrollElement.height(),e=this.offsets,f=this.targets,g=this.activeTarget;if(b>=d)return g!=(a=f.last()[0])&&this.activate(a);if(g&&b<=e[0])return g!=(a=f[0])&&this.activate(a);for(a=e.length;a--;)g!=f[a]&&b>=e[a]&&(!e[a+1]||b<=e[a+1])&&this.activate(f[a])},b.prototype.activate=function(b){this.activeTarget=b,a(this.selector).parentsUntil(this.options.target,".active").removeClass("active");var c=this.selector+'[data-target="'+b+'"],'+this.selector+'[href="'+b+'"]',d=a(c).parents("li").addClass("active");d.parent(".dropdown-menu").length&&(d=d.closest("li.dropdown").addClass("active")),d.trigger("activate.bs.scrollspy")};var c=a.fn.scrollspy;a.fn.scrollspy=function(c){return this.each(function(){var d=a(this),e=d.data("bs.scrollspy"),f="object"==typeof c&&c;e||d.data("bs.scrollspy",e=new b(this,f)),"string"==typeof c&&e[c]()})},a.fn.scrollspy.Constructor=b,a.fn.scrollspy.noConflict=function(){return a.fn.scrollspy=c,this},a(window).on("load",function(){a('[data-spy="scroll"]').each(function(){var b=a(this);b.scrollspy(b.data())})})}(jQuery),+function(a){"use strict";var b=function(b){this.element=a(b)};b.prototype.show=function(){var b=this.element,c=b.closest("ul:not(.dropdown-menu)"),d=b.data("target");if(d||(d=b.attr("href"),d=d&&d.replace(/.*(?=#[^\s]*$)/,"")),!b.parent("li").hasClass("active")){var e=c.find(".active:last a")[0],f=a.Event("show.bs.tab",{relatedTarget:e});if(b.trigger(f),!f.isDefaultPrevented()){var g=a(d);this.activate(b.parent("li"),c),this.activate(g,g.parent(),function(){b.trigger({type:"shown.bs.tab",relatedTarget:e})})}}},b.prototype.activate=function(b,c,d){function e(){f.removeClass("active").find("> .dropdown-menu > .active").removeClass("active"),b.addClass("active"),g?(b[0].offsetWidth,b.addClass("in")):b.removeClass("fade"),b.parent(".dropdown-menu")&&b.closest("li.dropdown").addClass("active"),d&&d()}var f=c.find("> .active"),g=d&&a.support.transition&&f.hasClass("fade");g?f.one(a.support.transition.end,e).emulateTransitionEnd(150):e(),f.removeClass("in")};var c=a.fn.tab;a.fn.tab=function(c){return this.each(function(){var d=a(this),e=d.data("bs.tab");e||d.data("bs.tab",e=new b(this)),"string"==typeof c&&e[c]()})},a.fn.tab.Constructor=b,a.fn.tab.noConflict=function(){return a.fn.tab=c,this},a(document).on("click.bs.tab.data-api",'[data-toggle="tab"], [data-toggle="pill"]',function(b){b.preventDefault(),a(this).tab("show")})}(jQuery),+function(a){"use strict";var b=function(c,d){this.options=a.extend({},b.DEFAULTS,d),this.$window=a(window).on("scroll.bs.affix.data-api",a.proxy(this.checkPosition,this)).on("click.bs.affix.data-api",a.proxy(this.checkPositionWithEventLoop,this)),this.$element=a(c),this.affixed=this.unpin=this.pinnedOffset=null,this.checkPosition()};b.RESET="affix affix-top affix-bottom",b.DEFAULTS={offset:0},b.prototype.getPinnedOffset=function(){if(this.pinnedOffset)return this.pinnedOffset;this.$element.removeClass(b.RESET).addClass("affix");var a=this.$window.scrollTop(),c=this.$element.offset();return this.pinnedOffset=c.top-a},b.prototype.checkPositionWithEventLoop=function(){setTimeout(a.proxy(this.checkPosition,this),1)},b.prototype.checkPosition=function(){if(this.$element.is(":visible")){var c=a(document).height(),d=this.$window.scrollTop(),e=this.$element.offset(),f=this.options.offset,g=f.top,h=f.bottom;"top"==this.affixed&&(e.top+=d),"object"!=typeof f&&(h=g=f),"function"==typeof g&&(g=f.top(this.$element)),"function"==typeof h&&(h=f.bottom(this.$element));var i=null!=this.unpin&&d+this.unpin<=e.top?!1:null!=h&&e.top+this.$element.height()>=c-h?"bottom":null!=g&&g>=d?"top":!1;if(this.affixed!==i){this.unpin&&this.$element.css("top","");var j="affix"+(i?"-"+i:""),k=a.Event(j+".bs.affix");this.$element.trigger(k),k.isDefaultPrevented()||(this.affixed=i,this.unpin="bottom"==i?this.getPinnedOffset():null,this.$element.removeClass(b.RESET).addClass(j).trigger(a.Event(j.replace("affix","affixed"))),"bottom"==i&&this.$element.offset({top:c-h-this.$element.height()}))}}};var c=a.fn.affix;a.fn.affix=function(c){return this.each(function(){var d=a(this),e=d.data("bs.affix"),f="object"==typeof c&&c;e||d.data("bs.affix",e=new b(this,f)),"string"==typeof c&&e[c]()})},a.fn.affix.Constructor=b,a.fn.affix.noConflict=function(){return a.fn.affix=c,this},a(window).on("load",function(){a('[data-spy="affix"]').each(function(){var b=a(this),c=b.data();c.offset=c.offset||{},c.offsetBottom&&(c.offset.bottom=c.offsetBottom),c.offsetTop&&(c.offset.top=c.offsetTop),b.affix(c)})})}(jQuery);
-},{}],52:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 Ember.AnimatedContainerView=Ember.ContainerView.extend({classNames:["ember-animated-container"],init:function(){this._super(),Ember.AnimatedContainerView._views[this.get("name")]=this,this._isAnimating=!1},willDestroy:function(){this._super();var a=this.get("name");delete Ember.AnimatedContainerView._views[a],delete Ember.AnimatedContainerView._animationQueue[a]},_currentViewWillChange:Ember.beforeObserver(function(){var a=Ember.get(this,"currentView");a&&this.set("oldView",a)},"currentView"),_currentViewDidChange:Ember.observer(function(){var a=Ember.get(this,"currentView"),b=Ember.get(this,"oldView"),c=this.get("name"),d=null;a&&(b&&(Ember.assert("Ember.AnimatedContainerView can only animate non-virtual views. You need to explicitly define your view class.",!b.isVirtual),Ember.assert("Ember.AnimatedContainerView can only animate non-virtual views. You need to explicitly define your view class.",!a.isVirtual),d=Ember.AnimatedContainerView._animationQueue[c],delete Ember.AnimatedContainerView._animationQueue[c],d&&!Ember.AnimatedContainerView._effects[d]&&(Ember.warn("Unknown animation effect: "+d),d=null),this.set("oldView",null)),this._queuedAnimation&&(b.destroy(),b=this._queuedAnimation.oldView),this._queuedAnimation={newView:a,oldView:b,effect:d},this._handleAnimationQueue())},"currentView"),_handleAnimationQueue:function(){if(!this._isAnimating){var a=this,b=this._queuedAnimation;if(b){var c=b.newView,d=b.oldView,e=b.effect;this._queuedAnimation=null,this.pushObject(c),d&&e?(this._isAnimating=!0,c.on("didInsertElement",function(){Ember.AnimatedContainerView._effects[e](a,c,d,function(){Em.run(function(){a.removeObject(d),d.destroy(),a._isAnimating=!1,a._handleAnimationQueue()})})})):d&&(this.removeObject(d),d.destroy())}}},enqueueAnimation:function(a){Ember.AnimatedContainerView._animationQueue[this.get("name")]=a},setCurrentViewAnimated:function(a,b){this.enqueueAnimation(b),this.set("currentView",a)}}),Ember.AnimatedContainerView.reopenClass({_views:{},_animationQueue:{},enqueueAnimations:function(a){for(var b in a)a.hasOwnProperty(b)&&(this._animationQueue[b]=a[b])},_effects:{},registerEffect:function(a,b){this._effects[a]=b}}),Handlebars.registerHelper("animated-outlet",function(a,b){var c;for(a&&a.data&&a.data.isRenderData&&(b=a,a="main"),c=b.data.view;!c.get("template.isTop");)c=c.get("_parentView");return b.data.view.set("outletSource",c),b.hash.currentViewBinding="_view.outletSource._outlets."+a,Ember.Handlebars.helpers.view.call(this,Ember.AnimatedContainerView,b)}),Handlebars.registerHelper("animatedOutlet",function(){return Ember.warn("The 'animatedOutlet' view helper is deprecated in favor of 'animated-outlet'"),Ember.Handlebars.helpers["animated-outlet"].apply(this,arguments)});var get=Ember.get,set=Ember.set;Ember.onLoad("Ember.Handlebars",function(){function a(a){var b=get(a,"routeArgs").slice(),c=a.parameters.animations;return b.splice(1,0,c),b}var b=(Ember.Router.resolveParams,Ember.ViewUtils.isSimpleClick),c=Ember.AnimatedLinkView=Ember.LinkView.extend({_invoke:function(c){if(!b(c))return!0;if(c.preventDefault(),this.bubbles===!1&&c.stopPropagation(),get(this,"_isDisabled"))return!1;if(get(this,"loading"))return Ember.Logger.warn("This link-to is in an inactive loading state because at least one of its parameters presently has a null/undefined value, or the provided route name is invalid."),!1;var d=this.get("router"),e=a(this,d);get(this,"replace")?d.replaceWithAnimated.apply(d,e):d.transitionToAnimated.apply(d,e)}});c.toString=function(){return"AnimatedLinkView"},Ember.Handlebars.registerHelper("link-to-animated",function(a){var b=[].slice.call(arguments,-1)[0],d=[].slice.call(arguments,0,-1),e=b.hash;Ember.assert("link-to-animated must contain animations","string"==typeof e.animations);for(var f=/\s*([a-z]+)\s*:\s*([a-z]+)/gi,g={};match=f.exec(e.animations);)g[match[1]]=match[2];return delete e.animations,e.namedRoute=a,e.currentWhen=e.currentWhen||a,e.disabledBinding=e.disabledWhen,e.parameters={context:this,options:b,animations:g,params:d},Ember.Handlebars.helpers.view.call(this,c,b)}),Ember.Handlebars.registerHelper("linkToAnimated",function(){return Ember.warn("The 'linkToAnimated' view helper is deprecated in favor of 'link-to-animated'"),Ember.Handlebars.helpers["link-to-animated"].apply(this,arguments)})}),Ember.Router.reopen({transitionToAnimated:function(a,b){return Ember.AnimatedContainerView.enqueueAnimations(b),Array.prototype.splice.call(arguments,1,1),this.transitionTo.apply(this,arguments)},replaceWithAnimated:function(a,b){return Ember.AnimatedContainerView.enqueueAnimations(b),Array.prototype.splice.call(arguments,1,1),this.replaceWith.apply(this,arguments)}}),Ember.Route.reopen({transitionToAnimated:function(){var a=this.router;return a.transitionToAnimated.apply(a,arguments)},replaceWithAnimated:function(){var a=this.router;return a.replaceWithAnimated.apply(a,arguments)}}),Ember.ControllerMixin.reopen({transitionToRouteAnimated:function(a,b){return Ember.AnimatedContainerView.enqueueAnimations(b),Array.prototype.splice.call(arguments,1,1),this.transitionToRoute.apply(this,arguments)},replaceRouteAnimated:function(a,b){return Ember.AnimatedContainerView.enqueueAnimations(b),Array.prototype.splice.call(arguments,1,1),this.replaceRoute.apply(this,arguments)}}),Ember.AnimatedContainerView.registerEffect("fade",function(a,b,c,d){var e=b.$(),f=c.$();e.addClass("ember-animated-container-fade-new"),f.addClass("ember-animated-container-fade-old"),setTimeout(function(){f.addClass("ember-animated-container-fade-old-fading"),setTimeout(function(){e.removeClass("ember-animated-container-fade-new"),d()},550)},0)}),Ember.AnimatedContainerView.registerEffect("flip",function(a,b,c,d){var e=a.$(),f=b.$(),g=c.$();e.wrap('<div class="ember-animated-container-flip-wrap"></div>'),e.addClass("ember-animated-container-flip-ct"),f.addClass("ember-animated-container-flip-new"),g.addClass("ember-animated-container-flip-old"),setTimeout(function(){e.addClass("ember-animated-container-flip-ct-flipping"),setTimeout(function(){e.unwrap(),e.removeClass("ember-animated-container-flip-ct"),e.removeClass("ember-animated-container-flip-ct-flipping"),f.removeClass("ember-animated-container-flip-new"),d()},650)},0)}),function(){var a=function(a,b,c,d,e,f){var g=a.$(),h=b.$(),i=f?2050:450;g.addClass("ember-animated-container-slide-"+e+"-ct"),f&&g.addClass("ember-animated-container-slide-slow-ct"),h.addClass("ember-animated-container-slide-"+e+"-new"),setTimeout(function(){g.addClass("ember-animated-container-slide-"+e+"-ct-sliding"),setTimeout(function(){g.removeClass("ember-animated-container-slide-"+e+"-ct"),f&&g.removeClass("ember-animated-container-slide-slow-ct"),g.removeClass("ember-animated-container-slide-"+e+"-ct-sliding"),h.removeClass("ember-animated-container-slide-"+e+"-new"),setTimeout(function(){d()},0)},i)},0)};Ember.AnimatedContainerView.registerEffect("slideLeft",function(b,c,d,e){a(b,c,d,e,"left",!1)}),Ember.AnimatedContainerView.registerEffect("slideRight",function(b,c,d,e){a(b,c,d,e,"right",!1)}),Ember.AnimatedContainerView.registerEffect("slideUp",function(b,c,d,e){a(b,c,d,e,"up",!1)}),Ember.AnimatedContainerView.registerEffect("slideDown",function(b,c,d,e){a(b,c,d,e,"down",!1)}),Ember.AnimatedContainerView.registerEffect("slowSlideLeft",function(b,c,d,e){a(b,c,d,e,"left",!0)}),Ember.AnimatedContainerView.registerEffect("slowSlideRight",function(b,c,d,e){a(b,c,d,e,"right",!0)}),Ember.AnimatedContainerView.registerEffect("slowSlideUp",function(b,c,d,e){a(b,c,d,e,"up",!1)}),Ember.AnimatedContainerView.registerEffect("slowSlideDown",function(b,c,d,e){a(b,c,d,e,"down",!1)})}(),function(){var a=function(a,b,c,d,e){var f=a.$(),g=b.$(),h=450;f.addClass("ember-animated-container-slideOver-old"),g.addClass("ember-animated-container-slideOver-"+e+"-new"),setTimeout(function(){g.addClass("ember-animated-container-slideOver-"+e+"-new-sliding"),setTimeout(function(){g.removeClass("ember-animated-container-slideOver-"+e+"-new"),g.removeClass("ember-animated-container-slideOver-"+e+"-new-sliding"),f.removeClass("ember-animated-container-slideOver-old"),d()},h)},0)};Ember.AnimatedContainerView.registerEffect("slideOverLeft",function(b,c,d,e){a(b,c,d,e,"left")}),Ember.AnimatedContainerView.registerEffect("slideOverRight",function(b,c,d,e){a(b,c,d,e,"right")}),Ember.AnimatedContainerView.registerEffect("slideOverUp",function(b,c,d,e){a(b,c,d,e,"up")}),Ember.AnimatedContainerView.registerEffect("slideOverDown",function(b,c,d,e){a(b,c,d,e,"down")})}();
-},{}],53:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 /*!
  * @overview  Ember Data
  * @copyright Copyright 2011-2014 Tilde Inc. and contributors.
@@ -3003,7 +3040,7 @@ Ember.AnimatedContainerView=Ember.ContainerView.extend({classNames:["ember-anima
 !function(a){var b,c,d,e;!function(){var a={},f={};b=function(b,c,d){a[b]={deps:c,callback:d}},e=d=c=function(b){function d(a){if("."!==a.charAt(0))return a;for(var c=a.split("/"),d=b.split("/").slice(0,-1),e=0,f=c.length;f>e;e++){var g=c[e];if(".."===g)d.pop();else{if("."===g)continue;d.push(g)}}return d.join("/")}if(e._eak_seen=a,f[b])return f[b];if(f[b]={},!a[b])throw new Error("Could not find module "+b);for(var g,h=a[b],i=h.deps,j=h.callback,k=[],l=0,m=i.length;m>l;l++)k.push("exports"===i[l]?g={}:c(d(i[l])));var n=j.apply(this,k);return f[b]=g||n}}(),b("activemodel-adapter/lib/initializers",["../../ember-data/lib/system/container_proxy","./system/active_model_serializer","./system/active_model_adapter"],function(a,b,c){"use strict";var d=a["default"],e=b["default"],f=c["default"];Ember.onLoad("Ember.Application",function(a){a.initializer({name:"activeModelAdapter",initialize:function(a,b){var c=new d(a);c.registerDeprecations([{deprecated:"serializer:_ams",valid:"serializer:-active-model"},{deprecated:"adapter:_ams",valid:"adapter:-active-model"}]),b.register("serializer:-active-model",e),b.register("adapter:-active-model",f)}})})}),b("activemodel-adapter/lib/main",["./system","./initializers","exports"],function(a,b,c){"use strict";var d=a.ActiveModelAdapter,e=a.ActiveModelSerializer,f=a.EmbeddedRecordsMixin;c.ActiveModelAdapter=d,c.ActiveModelSerializer=e,c.EmbeddedRecordsMixin=f}),b("activemodel-adapter/lib/system",["./system/embedded_records_mixin","./system/active_model_adapter","./system/active_model_serializer","exports"],function(a,b,c,d){"use strict";var e=a["default"],f=b["default"],g=c["default"];d.EmbeddedRecordsMixin=e,d.ActiveModelAdapter=f,d.ActiveModelSerializer=g}),b("activemodel-adapter/lib/system/active_model_adapter",["../../../ember-data/lib/adapters","../../../ember-data/lib/system/adapter","../../../ember-inflector/lib/main","./active_model_serializer","./embedded_records_mixin","exports"],function(a,b,c,d,e,f){"use strict";var g=a.RESTAdapter,h=b.InvalidError,i=c.pluralize,j=(d["default"],e["default"],Ember.EnumerableUtils.forEach),k=Ember.String.decamelize,l=Ember.String.underscore,m=g.extend({defaultSerializer:"-active-model",pathForType:function(a){var b=k(a),c=l(b);return i(c)},ajaxError:function(a){var b=this._super(a);if(a&&422===a.status){var c=Ember.$.parseJSON(a.responseText),d={};if(void 0!==c.errors){var e=c.errors;j(Ember.keys(e),function(a){d[Ember.String.camelize(a)]=e[a]})}return new h(d)}return b}});f["default"]=m}),b("activemodel-adapter/lib/system/active_model_serializer",["../../../ember-inflector/lib/main","../../../ember-data/lib/serializers/rest_serializer","exports"],function(a,b,c){"use strict";var d=a.singularize,e=b["default"],f=Ember.get,g=Ember.EnumerableUtils.forEach,h=Ember.String.camelize,i=Ember.String.capitalize,j=Ember.String.decamelize,k=Ember.String.underscore,l=e.extend({keyForAttribute:function(a){return j(a)},keyForRelationship:function(a,b){return a=j(a),"belongsTo"===b?a+"_id":"hasMany"===b?d(a)+"_ids":a},serializeHasMany:Ember.K,serializeIntoHash:function(a,b,c,d){var e=k(j(b.typeKey));a[e]=this.serialize(c,d)},serializePolymorphicType:function(a,b,c){var d=c.key,e=f(a,d);d=this.keyForAttribute(d),b[d+"_type"]=i(h(e.constructor.typeKey))},typeForRoot:function(a){var b=h(a);return d(b)},normalize:function(a,b,c){return this.normalizeLinks(b),this._super(a,b,c)},normalizeLinks:function(a){if(a.links){var b=a.links;for(var c in b){var d=h(c);d!==c&&(b[d]=b[c],delete b[c])}}},normalizeRelationships:function(a,b){var c,d;this.keyForRelationship&&a.eachRelationship(function(a,e){if(e.options.polymorphic){if(c=this.keyForAttribute(a),d=b[c],d&&d.type)d.type=this.typeForRoot(d.type);else if(d&&"hasMany"===e.kind){var f=this;g(d,function(a){a.type=f.typeForRoot(a.type)})}}else c=this.keyForRelationship(a,e.kind),d=b[c];b[a]=d,a!==c&&delete b[c]},this)}});c["default"]=l}),b("activemodel-adapter/lib/system/embedded_records_mixin",["../../../ember-inflector/lib/main","exports"],function(a,b){"use strict";function c(a,b,f,g,h){var i=d(b,"attrs");i&&f.eachRelationship(function(b,f){var j,k,l,m,n=i[b],o=a.serializerFor(f.type.typeKey),p=d(o,"primaryKey");if("hasMany"===f.kind&&n&&("always"===n.embedded||"load"===n.embedded)){if(k="_"+Ember.String.pluralize(f.type.typeKey),j=this.keyForRelationship(b,f.kind),l=this.keyForAttribute(b),m=[],!g[l])return;h[k]=h[k]||[],e(g[l],function(b){var d=a.modelFor(f.type.typeKey);c(a,o,d,b,h),m.push(b[p]),h[k].push(b)}),g[j]=m,delete g[l]}},b)}var d=Ember.get,e=Ember.EnumerableUtils.forEach,f=a.pluralize,g=Ember.Mixin.create({serializeHasMany:function(a,b,c){var e=c.key,f=d(this,"attrs"),g=f&&f[e]&&"always"===f[e].embedded;g&&(b[this.keyForAttribute(e)]=d(a,e).map(function(a){var b=a.serialize(),c=d(this,"primaryKey");return b[c]=d(a,c),b},this))},extractSingle:function(a,b,d,e,f){var g=this.keyForAttribute(b.typeKey),h=d[g];return c(a,this,b,h,d),this._super(a,b,d,e,f)},extractArray:function(a,b,d){var g=this.keyForAttribute(b.typeKey),h=d[f(g)];return e(h,function(e){c(a,this,b,e,d)},this),this._super(a,b,d)}});b["default"]=g}),b("ember-data/lib/adapters",["./adapters/fixture_adapter","./adapters/rest_adapter","exports"],function(a,b,c){"use strict";var d=a["default"],e=b["default"];c.RESTAdapter=e,c.FixtureAdapter=d}),b("ember-data/lib/adapters/fixture_adapter",["../system/adapter","exports"],function(a,b){"use strict";var c=Ember.get,d=Ember.String.fmt,e=Ember.EnumerableUtils.indexOf,f=0,g=a["default"],h=g.extend({serializer:null,simulateRemoteResponse:!0,latency:50,fixturesForType:function(a){if(a.FIXTURES){var b=Ember.A(a.FIXTURES);return b.map(function(a){var b=typeof a.id;if("number"!==b&&"string"!==b)throw new Error(d("the id property must be defined as a number or string for fixture %@",[a]));return a.id=a.id+"",a})}return null},queryFixtures:function(){},updateFixtures:function(a,b){a.FIXTURES||(a.FIXTURES=[]);var c=a.FIXTURES;this.deleteLoadedFixture(a,b),c.push(b)},mockJSON:function(a,b,c){return a.serializerFor(b).serialize(c,{includeId:!0})},generateIdForRecord:function(){return"fixture-"+f++},find:function(a,b,c){var d,e=this.fixturesForType(b);return e&&(d=Ember.A(e).findProperty("id",c)),d?this.simulateRemoteCall(function(){return d},this):void 0},findMany:function(a,b,c){var d=this.fixturesForType(b);return d&&(d=d.filter(function(a){return-1!==e(c,a.id)})),d?this.simulateRemoteCall(function(){return d},this):void 0},findAll:function(a,b){var c=this.fixturesForType(b);return this.simulateRemoteCall(function(){return c},this)},findQuery:function(a,b,c){var d=this.fixturesForType(b);return d=this.queryFixtures(d,c,b),d?this.simulateRemoteCall(function(){return d},this):void 0},createRecord:function(a,b,c){var d=this.mockJSON(a,b,c);return this.updateFixtures(b,d),this.simulateRemoteCall(function(){return d},this)},updateRecord:function(a,b,c){var d=this.mockJSON(a,b,c);return this.updateFixtures(b,d),this.simulateRemoteCall(function(){return d},this)},deleteRecord:function(a,b,c){var d=this.mockJSON(a,b,c);return this.deleteLoadedFixture(b,d),this.simulateRemoteCall(function(){return null})},deleteLoadedFixture:function(a,b){var c=this.findExistingFixture(a,b);if(c){var d=e(a.FIXTURES,c);return a.FIXTURES.splice(d,1),!0}},findExistingFixture:function(a,b){var d=this.fixturesForType(a),e=c(b,"id");return this.findFixtureById(d,e)},findFixtureById:function(a,b){return Ember.A(a).find(function(a){return""+c(a,"id")==""+b?!0:!1})},simulateRemoteCall:function(a,b){var d=this;return new Ember.RSVP.Promise(function(e){c(d,"simulateRemoteResponse")?Ember.run.later(function(){e(a.call(b))},c(d,"latency")):Ember.run.schedule("actions",null,function(){e(a.call(b))})},"DS: FixtureAdapter#simulateRemoteCall")}});b["default"]=h}),b("ember-data/lib/adapters/rest_adapter",["../system/adapter","exports"],function(a,b){"use strict";var c=a["default"],d=Ember.get,e=(Ember.set,Ember.ArrayPolyfills.forEach),f=c.extend({defaultSerializer:"-rest",find:function(a,b,c){return this.ajax(this.buildURL(b.typeKey,c),"GET")},findAll:function(a,b,c){var d;return c&&(d={since:c}),this.ajax(this.buildURL(b.typeKey),"GET",{data:d})},findQuery:function(a,b,c){return this.ajax(this.buildURL(b.typeKey),"GET",{data:c})},findMany:function(a,b,c){return this.ajax(this.buildURL(b.typeKey),"GET",{data:{ids:c}})},findHasMany:function(a,b,c){var e=d(this,"host"),f=d(b,"id"),g=b.constructor.typeKey;return e&&"/"===c.charAt(0)&&"/"!==c.charAt(1)&&(c=e+c),this.ajax(this.urlPrefix(c,this.buildURL(g,f)),"GET")},findBelongsTo:function(a,b,c){var e=d(b,"id"),f=b.constructor.typeKey;return this.ajax(this.urlPrefix(c,this.buildURL(f,e)),"GET")},createRecord:function(a,b,c){var d={},e=a.serializerFor(b.typeKey);return e.serializeIntoHash(d,b,c,{includeId:!0}),this.ajax(this.buildURL(b.typeKey),"POST",{data:d})},updateRecord:function(a,b,c){var e={},f=a.serializerFor(b.typeKey);f.serializeIntoHash(e,b,c);var g=d(c,"id");return this.ajax(this.buildURL(b.typeKey,g),"PUT",{data:e})},deleteRecord:function(a,b,c){var e=d(c,"id");return this.ajax(this.buildURL(b.typeKey,e),"DELETE")},buildURL:function(a,b){var c=[],e=d(this,"host"),f=this.urlPrefix();return a&&c.push(this.pathForType(a)),b&&c.push(b),f&&c.unshift(f),c=c.join("/"),!e&&c&&(c="/"+c),c},urlPrefix:function(a,b){var c=d(this,"host"),e=d(this,"namespace"),f=[];return a?"/"===a.charAt(0)?c&&(a=a.slice(1),f.push(c)):/^http(s)?:\/\//.test(a)||f.push(b):(c&&f.push(c),e&&f.push(e)),a&&f.push(a),f.join("/")},pathForType:function(a){var b=Ember.String.camelize(a);return Ember.String.pluralize(b)},ajaxError:function(a){return a&&(a.then=null),a},ajax:function(a,b,c){var d=this;return new Ember.RSVP.Promise(function(e,f){c=d.ajaxOptions(a,b,c),c.success=function(a){Ember.run(null,e,a)},c.error=function(a){Ember.run(null,f,d.ajaxError(a))},Ember.$.ajax(c)},"DS: RestAdapter#ajax "+b+" to "+a)},ajaxOptions:function(a,b,c){if(c=c||{},c.url=a,c.type=b,c.dataType="json",c.context=this,c.data&&"GET"!==b&&(c.contentType="application/json; charset=utf-8",c.data=JSON.stringify(c.data)),void 0!==this.headers){var d=this.headers;c.beforeSend=function(a){e.call(Ember.keys(d),function(b){a.setRequestHeader(b,d[b])})}}return c}});b["default"]=f}),b("ember-data/lib/core",["exports"],function(a){"use strict";var b;"undefined"==typeof b&&(b=Ember.Namespace.create({VERSION:"1.0.0-beta.7.f87cba88"}),"undefined"!=typeof window&&(window.DS=b),Ember.libraries&&Ember.libraries.registerCoreLibrary("Ember Data",b.VERSION)),a["default"]=b}),b("ember-data/lib/ext/date",[],function(){"use strict";Ember.Date=Ember.Date||{};var a=Date.parse,b=[1,4,5,6,7,10,11];Ember.Date.parse=function(c){var d,e,f=0;if(e=/^(\d{4}|[+\-]\d{6})(?:-(\d{2})(?:-(\d{2}))?)?(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{3}))?)?(?:(Z)|([+\-])(\d{2})(?::(\d{2}))?)?)?$/.exec(c)){for(var g,h=0;g=b[h];++h)e[g]=+e[g]||0;e[2]=(+e[2]||1)-1,e[3]=+e[3]||1,"Z"!==e[8]&&void 0!==e[9]&&(f=60*e[10]+e[11],"+"===e[9]&&(f=0-f)),d=Date.UTC(e[1],e[2],e[3],e[4],e[5]+f,e[6],e[7])}else d=a?a(c):0/0;return d},(Ember.EXTEND_PROTOTYPES===!0||Ember.EXTEND_PROTOTYPES.Date)&&(Date.parse=Ember.Date.parse)}),b("ember-data/lib/initializers",["./system/store","./serializers","./adapters","./system/debug/debug_adapter","./system/container_proxy","./transforms"],function(a,b,c,d,e,f){"use strict";{var g=a["default"],h=b.JSONSerializer,i=b.RESTSerializer,j=c.RESTAdapter,k=d["default"],l=e["default"],m=f.BooleanTransform,n=f.DateTransform,o=f.StringTransform,p=f.NumberTransform;Ember.set}Ember.onLoad("Ember.Application",function(a){a.initializer({name:"store",initialize:function(a,b){b.register("store:main",b.Store||g);var c=new l(a);c.registerDeprecations([{deprecated:"serializer:_default",valid:"serializer:-default"},{deprecated:"serializer:_rest",valid:"serializer:-rest"},{deprecated:"adapter:_rest",valid:"adapter:-rest"}]),b.register("serializer:-default",h),b.register("serializer:-rest",i),b.register("adapter:-rest",j),a.lookup("store:main")}}),a.initializer({name:"transforms",before:"store",initialize:function(a,b){b.register("transform:boolean",m),b.register("transform:date",n),b.register("transform:number",p),b.register("transform:string",o)}}),a.initializer({name:"data-adapter",before:"store",initialize:function(a,b){b.register("data-adapter:main",k)}}),a.initializer({name:"injectStore",before:"store",initialize:function(a,b){b.inject("controller","store","store:main"),b.inject("route","store","store:main"),b.inject("serializer","store","store:main"),b.inject("data-adapter","store","store:main")}})})}),b("ember-data/lib/main",["./core","./ext/date","./system/store","./system/model","./system/changes","./system/adapter","./system/debug","./system/record_arrays","./system/record_array_manager","./adapters","./serializers/json_serializer","./serializers/rest_serializer","../../ember-inflector/lib/main","../../activemodel-adapter/lib/main","./transforms","./system/relationships","./initializers","./system/container_proxy","exports"],function(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s){"use strict";Ember.RSVP.Promise.cast=Ember.RSVP.Promise.cast||Ember.RSVP.resolve;var t=a["default"],u=c.Store,v=c.PromiseArray,w=c.PromiseObject,x=d.Model,y=d.Errors,z=d.RootState,A=d.attr,B=e.AttributeChange,C=e.RelationshipChange,D=e.RelationshipChangeAdd,E=(e.RelationshipChangeRemove,e.OneToManyChange),F=(e.ManyToNoneChange,e.OneToOneChange),G=e.ManyToManyChange,H=f.InvalidError,I=f.Adapter,J=g["default"],K=h.RecordArray,L=h.FilteredRecordArray,M=h.AdapterPopulatedRecordArray,N=h.ManyArray,O=i["default"],P=j.RESTAdapter,Q=j.FixtureAdapter,R=k["default"],S=l["default"],T=n.ActiveModelAdapter,U=n.ActiveModelSerializer,V=n.EmbeddedRecordsMixin,W=o.Transform,X=o.DateTransform,Y=o.NumberTransform,Z=o.StringTransform,$=o.BooleanTransform,_=p.hasMany,ab=p.belongsTo,bb=r["default"];t.Store=u,t.PromiseArray=v,t.PromiseObject=w,t.Model=x,t.RootState=z,t.attr=A,t.Errors=y,t.AttributeChange=B,t.RelationshipChange=C,t.RelationshipChangeAdd=D,t.OneToManyChange=E,t.ManyToNoneChange=E,t.OneToOneChange=F,t.ManyToManyChange=G,t.Adapter=I,t.InvalidError=H,t.DebugAdapter=J,t.RecordArray=K,t.FilteredRecordArray=L,t.AdapterPopulatedRecordArray=M,t.ManyArray=N,t.RecordArrayManager=O,t.RESTAdapter=P,t.FixtureAdapter=Q,t.RESTSerializer=S,t.JSONSerializer=R,t.Transform=W,t.DateTransform=X,t.StringTransform=Z,t.NumberTransform=Y,t.BooleanTransform=$,t.ActiveModelAdapter=T,t.ActiveModelSerializer=U,t.EmbeddedRecordsMixin=V,t.belongsTo=ab,t.hasMany=_,t.ContainerProxy=bb,s["default"]=t}),b("ember-data/lib/serializers",["./serializers/json_serializer","./serializers/rest_serializer","exports"],function(a,b,c){"use strict";var d=a["default"],e=b["default"];c.JSONSerializer=d,c.RESTSerializer=e}),b("ember-data/lib/serializers/json_serializer",["exports"],function(a){"use strict";var b=Ember.get,c=(Ember.set,Ember.isNone),d=Ember.Object.extend({primaryKey:"id",applyTransforms:function(a,b){return a.eachTransformedAttribute(function(a,c){var d=this.transformFor(c);b[a]=d.deserialize(b[a])},this),b},normalize:function(a,b){return b?(this.applyTransforms(a,b),b):b},serialize:function(a,c){var d={};if(c&&c.includeId){var e=b(a,"id");e&&(d[b(this,"primaryKey")]=e)}return a.eachAttribute(function(b,c){this.serializeAttribute(a,d,b,c)},this),a.eachRelationship(function(b,c){"belongsTo"===c.kind?this.serializeBelongsTo(a,d,c):"hasMany"===c.kind&&this.serializeHasMany(a,d,c)},this),d},serializeAttribute:function(a,c,d,e){var f=b(this,"attrs"),g=b(a,d),h=e.type;if(h){var i=this.transformFor(h);g=i.serialize(g)}d=f&&f[d]||(this.keyForAttribute?this.keyForAttribute(d):d),c[d]=g},serializeBelongsTo:function(a,d,e){var f=e.key,g=b(a,f);f=this.keyForRelationship?this.keyForRelationship(f,"belongsTo"):f,d[f]=c(g)?g:b(g,"id"),e.options.polymorphic&&this.serializePolymorphicType(a,d,e)},serializeHasMany:function(a,c,d){var e=d.key,f=DS.RelationshipChange.determineRelationshipType(a.constructor,d);("manyToNone"===f||"manyToMany"===f)&&(c[e]=b(a,e).mapBy("id"))},serializePolymorphicType:Ember.K,extract:function(a,b,c,d,e){this.extractMeta(a,b,c);var f="extract"+e.charAt(0).toUpperCase()+e.substr(1);return this[f](a,b,c,d,e)},extractFindAll:function(a,b,c){return this.extractArray(a,b,c)},extractFindQuery:function(a,b,c){return this.extractArray(a,b,c)},extractFindMany:function(a,b,c){return this.extractArray(a,b,c)},extractFindHasMany:function(a,b,c){return this.extractArray(a,b,c)},extractCreateRecord:function(a,b,c){return this.extractSave(a,b,c)},extractUpdateRecord:function(a,b,c){return this.extractSave(a,b,c)},extractDeleteRecord:function(a,b,c){return this.extractSave(a,b,c)},extractFind:function(a,b,c){return this.extractSingle(a,b,c)},extractFindBelongsTo:function(a,b,c){return this.extractSingle(a,b,c)},extractSave:function(a,b,c){return this.extractSingle(a,b,c)},extractSingle:function(a,b,c){return this.normalize(b,c)},extractArray:function(a,b,c){return this.normalize(b,c)},extractMeta:function(a,b,c){c&&c.meta&&(a.metaForType(b,c.meta),delete c.meta)},transformFor:function(a){var b=this.container.lookup("transform:"+a);return b}});a["default"]=d}),b("ember-data/lib/serializers/rest_serializer",["./json_serializer","exports"],function(a,b){"use strict";function c(a){return null==a?null:a+""}var d=a["default"],e=Ember.get,f=(Ember.set,Ember.ArrayPolyfills.forEach),g=Ember.ArrayPolyfills.map,h=d.extend({normalize:function(a,b,c){return this.normalizeId(b),this.normalizeAttributes(a,b),this.normalizeRelationships(a,b),this.normalizeUsingDeclaredMapping(a,b),this.normalizeHash&&this.normalizeHash[c]&&this.normalizeHash[c](b),this._super(a,b,c)},normalizePayload:function(a,b){return b},normalizeId:function(a){var b=e(this,"primaryKey");"id"!==b&&(a.id=a[b],delete a[b])},normalizeUsingDeclaredMapping:function(a,b){var c,d,f=e(this,"attrs");if(f)for(d in f)c=f[d],c&&c.key&&(c=c.key),"string"==typeof c&&(b[d]=b[c],delete b[c])},normalizeAttributes:function(a,b){var c;this.keyForAttribute&&a.eachAttribute(function(a){c=this.keyForAttribute(a),a!==c&&(b[a]=b[c],delete b[c])},this)},normalizeRelationships:function(a,b){var c;this.keyForRelationship&&a.eachRelationship(function(a,d){c=this.keyForRelationship(a,d.kind),a!==c&&(b[a]=b[c],delete b[c])},this)},extractSingle:function(a,b,d,e){d=this.normalizePayload(b,d);var g,h=b.typeKey;for(var i in d){var j=this.typeForRoot(i),k=a.modelFor(j),l=k.typeKey===h;l&&"array"!==Ember.typeOf(d[i])?g=this.normalize(b,d[i],i):f.call(d[i],function(b){var d=this.typeForRoot(i),f=a.modelFor(d),h=a.serializerFor(f);b=h.normalize(f,b,i);var j=l&&!e&&!g,k=l&&c(b.id)===e;j||k?g=b:a.push(d,b)},this)}return g},extractArray:function(a,b,c){c=this.normalizePayload(b,c);var d,e=b.typeKey;for(var f in c){var h=f,i=!1;"_"===f.charAt(0)&&(i=!0,h=f.substr(1));var j=this.typeForRoot(h),k=a.modelFor(j),l=a.serializerFor(k),m=!i&&k.typeKey===e,n=g.call(c[f],function(a){return l.normalize(k,a,f)},this);m?d=n:a.pushMany(j,n)}return d},pushPayload:function(a,b){b=this.normalizePayload(null,b);for(var c in b){var d=this.typeForRoot(c),e=a.modelFor(d),f=g.call(Ember.makeArray(b[c]),function(a){return this.normalize(e,a,c)},this);a.pushMany(d,f)}},typeForRoot:function(a){return Ember.String.singularize(a)},serialize:function(){return this._super.apply(this,arguments)},serializeIntoHash:function(a,b,c,d){var e=Ember.String.camelize(b.typeKey);a[e]=this.serialize(c,d)},serializePolymorphicType:function(a,b,c){var d=c.key,f=e(a,d);d=this.keyForAttribute?this.keyForAttribute(d):d,b[d+"Type"]=Ember.String.camelize(f.constructor.typeKey)}});b["default"]=h}),b("ember-data/lib/system/adapter",["exports"],function(a){"use strict";var b=Ember.get,c=(Ember.set,Ember.ArrayPolyfills.map),d=["description","fileName","lineNumber","message","name","number","stack"],e=function(a){var b=Error.prototype.constructor.call(this,"The backend rejected the commit because it was invalid: "+Ember.inspect(a));this.errors=a;for(var c=0,e=d.length;e>c;c++)this[d[c]]=b[d[c]]};e.prototype=Ember.create(Error.prototype);var f=Ember.Object.extend({find:Ember.required(Function),findAll:null,findQuery:null,generateIdForRecord:null,serialize:function(a,c){return b(a,"store").serializerFor(a.constructor.typeKey).serialize(a,c)},createRecord:Ember.required(Function),updateRecord:Ember.required(Function),deleteRecord:Ember.required(Function),findMany:function(a,b,d){var e=c.call(d,function(c){return this.find(a,b,c)},this);return Ember.RSVP.all(e)}});a.InvalidError=e,a.Adapter=f,a["default"]=f}),b("ember-data/lib/system/changes",["./changes/attribute_change","./changes/relationship_change","exports"],function(a,b,c){"use strict";var d=a["default"],e=b.RelationshipChange,f=b.RelationshipChangeAdd,g=b.RelationshipChangeRemove,h=b.OneToManyChange,i=b.ManyToNoneChange,j=b.OneToOneChange,k=b.ManyToManyChange;c.AttributeChange=d,c.RelationshipChange=e,c.RelationshipChangeAdd=f,c.RelationshipChangeRemove=g,c.OneToManyChange=h,c.ManyToNoneChange=i,c.OneToOneChange=j,c.ManyToManyChange=k}),b("ember-data/lib/system/changes/attribute_change",["exports"],function(a){"use strict";function b(a){this.record=a.record,this.store=a.store,this.name=a.name,this.value=a.value,this.oldValue=a.oldValue}b.createChange=function(a){return new b(a)},b.prototype={sync:function(){this.value!==this.oldValue&&(this.record.send("becomeDirty"),this.record.updateRecordArraysLater()),this.destroy()},destroy:function(){delete this.record._changesToSync[this.name]}},a["default"]=b}),b("ember-data/lib/system/changes/relationship_change",["../model","exports"],function(a,b){"use strict";function c(a){return"object"==typeof a&&(!a.then||"function"!=typeof a.then)}var d=a.Model,e=Ember.get,f=Ember.set,g=Ember.EnumerableUtils.forEach,h=function(a){this.parentRecord=a.parentRecord,this.childRecord=a.childRecord,this.firstRecord=a.firstRecord,this.firstRecordKind=a.firstRecordKind,this.firstRecordName=a.firstRecordName,this.secondRecord=a.secondRecord,this.secondRecordKind=a.secondRecordKind,this.secondRecordName=a.secondRecordName,this.changeType=a.changeType,this.store=a.store,this.committed={}},i=function(a){h.call(this,a)},j=function(a){h.call(this,a)};h.create=function(a){return new h(a)},i.create=function(a){return new i(a)},j.create=function(a){return new j(a)};var k={},l={},m={},n={},o={};h._createChange=function(a){return"add"===a.changeType?i.create(a):"remove"===a.changeType?j.create(a):void 0},h.determineRelationshipType=function(a,b){var c,d,e=b.key,f=b.kind,g=a.inverseFor(e);return g&&(c=g.name,d=g.kind),g?"belongsTo"===d?"belongsTo"===f?"oneToOne":"manyToOne":"belongsTo"===f?"oneToMany":"manyToMany":"belongsTo"===f?"oneToNone":"manyToNone"},h.createChange=function(a,b,c,d){var e,f=a.constructor;return e=h.determineRelationshipType(f,d),"oneToMany"===e?k.createChange(a,b,c,d):"manyToOne"===e?k.createChange(b,a,c,d):"oneToNone"===e?l.createChange(a,b,c,d):"manyToNone"===e?m.createChange(a,b,c,d):"oneToOne"===e?n.createChange(a,b,c,d):"manyToMany"===e?o.createChange(a,b,c,d):void 0},l.createChange=function(a,b,c,d){var e=d.key,f=h._createChange({parentRecord:b,childRecord:a,firstRecord:a,store:c,changeType:d.changeType,firstRecordName:e,firstRecordKind:"belongsTo"});return c.addRelationshipChangeFor(a,e,b,null,f),f},m.createChange=function(a,b,c,d){var e=d.key,f=h._createChange({parentRecord:a,childRecord:b,secondRecord:a,store:c,changeType:d.changeType,secondRecordName:d.key,secondRecordKind:"hasMany"});return c.addRelationshipChangeFor(a,e,b,null,f),f},o.createChange=function(a,b,c,d){var e=d.key,f=h._createChange({parentRecord:b,childRecord:a,firstRecord:a,secondRecord:b,firstRecordKind:"hasMany",secondRecordKind:"hasMany",store:c,changeType:d.changeType,firstRecordName:e});return c.addRelationshipChangeFor(a,e,b,null,f),f},n.createChange=function(a,b,c,d){var e;d.parentType?e=d.parentType.inverseFor(d.key).name:d.key&&(e=d.key);var f=h._createChange({parentRecord:b,childRecord:a,firstRecord:a,secondRecord:b,firstRecordKind:"belongsTo",secondRecordKind:"belongsTo",store:c,changeType:d.changeType,firstRecordName:e});return c.addRelationshipChangeFor(a,e,b,null,f),f},n.maintainInvariant=function(a,b,c,d){if("add"===a.changeType&&b.recordIsMaterialized(c)){var f=e(c,d);if(f){var g=n.createChange(c,f,b,{parentType:a.parentType,hasManyName:a.hasManyName,changeType:"remove",key:a.key});b.addRelationshipChangeFor(c,d,a.parentRecord,null,g),g.sync()}}},k.createChange=function(a,b,c,d){var e;d.parentType?(e=d.parentType.inverseFor(d.key).name,k.maintainInvariant(d,c,a,e)):d.key&&(e=d.key);var f=h._createChange({parentRecord:b,childRecord:a,firstRecord:a,secondRecord:b,firstRecordKind:"belongsTo",secondRecordKind:"hasMany",store:c,changeType:d.changeType,firstRecordName:e});return c.addRelationshipChangeFor(a,e,b,f.getSecondRecordName(),f),f},k.maintainInvariant=function(a,b,c,d){if("add"===a.changeType&&c){var f=e(c,d);if(f){var g=k.createChange(c,f,b,{parentType:a.parentType,hasManyName:a.hasManyName,changeType:"remove",key:a.key});b.addRelationshipChangeFor(c,d,a.parentRecord,g.getSecondRecordName(),g),g.sync()}}},h.prototype={getSecondRecordName:function(){var a,b=this.secondRecordName;if(!b){if(a=this.secondRecord,!a)return;var c=this.firstRecord.constructor,d=c.inverseFor(this.firstRecordName);this.secondRecordName=d.name}return this.secondRecordName},getFirstRecordName:function(){var a=this.firstRecordName;return a},destroy:function(){var a=this.childRecord,b=this.getFirstRecordName(),c=this.getSecondRecordName(),d=this.store;d.removeRelationshipChangeFor(a,b,this.parentRecord,c,this.changeType)},getSecondRecord:function(){return this.secondRecord},getFirstRecord:function(){return this.firstRecord},coalesce:function(){var a=this.store.relationshipChangePairsFor(this.firstRecord);g(a,function(a){var b=a.add,c=a.remove;b&&c&&(b.destroy(),c.destroy())})}},i.prototype=Ember.create(h.create({})),j.prototype=Ember.create(h.create({})),i.prototype.changeType="add",i.prototype.sync=function(){var a=this.getSecondRecordName(),b=this.getFirstRecordName(),g=this.getFirstRecord(),h=this.getSecondRecord();h instanceof d&&g instanceof d&&("belongsTo"===this.secondRecordKind?h.suspendRelationshipObservers(function(){f(h,a,g)}):"hasMany"===this.secondRecordKind&&h.suspendRelationshipObservers(function(){var b=e(h,a);c(b)&&b.addObject(g)})),g instanceof d&&h instanceof d&&e(g,b)!==h&&("belongsTo"===this.firstRecordKind?g.suspendRelationshipObservers(function(){f(g,b,h)}):"hasMany"===this.firstRecordKind&&g.suspendRelationshipObservers(function(){var a=e(g,b);c(a)&&a.addObject(h)})),this.coalesce()},j.prototype.changeType="remove",j.prototype.sync=function(){var a=this.getSecondRecordName(),b=this.getFirstRecordName(),g=this.getFirstRecord(),h=this.getSecondRecord();h instanceof d&&g instanceof d&&("belongsTo"===this.secondRecordKind?h.suspendRelationshipObservers(function(){f(h,a,null)}):"hasMany"===this.secondRecordKind&&h.suspendRelationshipObservers(function(){var b=e(h,a);c(b)&&b.removeObject(g)})),g instanceof d&&e(g,b)&&("belongsTo"===this.firstRecordKind?g.suspendRelationshipObservers(function(){f(g,b,null)}):"hasMany"===this.firstRecordKind&&g.suspendRelationshipObservers(function(){var a=e(g,b);c(a)&&a.removeObject(h)})),this.coalesce()},b.RelationshipChange=h,b.RelationshipChangeAdd=i,b.RelationshipChangeRemove=j,b.OneToManyChange=k,b.ManyToNoneChange=m,b.OneToOneChange=n,b.ManyToManyChange=o}),b("ember-data/lib/system/container_proxy",["exports"],function(a){"use strict";var b=function(a){this.container=a};b.prototype.aliasedFactory=function(a,b){var c=this;return{create:function(){return b&&b(),c.container.lookup(a)}}},b.prototype.registerAlias=function(a,b,c){var d=this.aliasedFactory(b,c);return this.container.register(a,d)},b.prototype.registerDeprecation=function(a,b){var c=function(){};return this.registerAlias(a,b,c)},b.prototype.registerDeprecations=function(a){for(var b=a.length;b>0;b--){var c=a[b-1],d=c.deprecated,e=c.valid;this.registerDeprecation(d,e)}},a["default"]=b}),b("ember-data/lib/system/debug",["./debug/debug_info","./debug/debug_adapter","exports"],function(a,b,c){"use strict";var d=b["default"];c["default"]=d}),b("ember-data/lib/system/debug/debug_adapter",["../model","exports"],function(a,b){"use strict";var c=a.Model,d=Ember.get,e=Ember.String.capitalize,f=Ember.String.underscore,g=Ember.DataAdapter.extend({getFilters:function(){return[{name:"isNew",desc:"New"},{name:"isModified",desc:"Modified"},{name:"isClean",desc:"Clean"}]},detect:function(a){return a!==c&&c.detect(a)},columnsForType:function(a){var b=[{name:"id",desc:"Id"}],c=0,g=this;return d(a,"attributes").forEach(function(a){if(c++>g.attributeLimit)return!1;var d=e(f(a).replace("_"," "));b.push({name:a,desc:d})}),b},getRecords:function(a){return this.get("store").all(a)},getRecordColumnValues:function(a){var b=this,c=0,e={id:d(a,"id")};return a.eachAttribute(function(f){if(c++>b.attributeLimit)return!1;var g=d(a,f);e[f]=g}),e},getRecordKeywords:function(a){var b=[],c=Ember.A(["id"]);return a.eachAttribute(function(a){c.push(a)}),c.forEach(function(c){b.push(d(a,c))}),b},getRecordFilterValues:function(a){return{isNew:a.get("isNew"),isModified:a.get("isDirty")&&!a.get("isNew"),isClean:!a.get("isDirty")}},getRecordColor:function(a){var b="black";return a.get("isNew")?b="green":a.get("isDirty")&&(b="blue"),b},observeRecord:function(a,b){var c=Ember.A(),d=this,e=Ember.A(["id","isNew","isDirty"]);a.eachAttribute(function(a){e.push(a)}),e.forEach(function(e){var f=function(){b(d.wrapRecord(a))};Ember.addObserver(a,e,f),c.push(function(){Ember.removeObserver(a,e,f)})});var f=function(){c.forEach(function(a){a()})};return f}});b["default"]=g}),b("ember-data/lib/system/debug/debug_info",["../model","exports"],function(a,b){"use strict";var c=a.Model;c.reopen({_debugInfo:function(){var a=["id"],b={belongsTo:[],hasMany:[]},c=[];this.eachAttribute(function(b){a.push(b)},this),this.eachRelationship(function(a,d){b[d.kind].push(a),c.push(a)});var d=[{name:"Attributes",properties:a,expand:!0},{name:"Belongs To",properties:b.belongsTo,expand:!0},{name:"Has Many",properties:b.hasMany,expand:!0},{name:"Flags",properties:["isLoaded","isDirty","isSaving","isDeleted","isError","isNew","isValid"]}];return{propertyInfo:{includeOtherProperties:!0,groups:d,expensiveProperties:c}}}}),b["default"]=c}),b("ember-data/lib/system/model",["./model/model","./model/attributes","./model/states","./model/errors","exports"],function(a,b,c,d,e){"use strict";var f=a["default"],g=b["default"],h=c["default"],i=d["default"];e.Model=f,e.RootState=h,e.attr=g,e.Errors=i}),b("ember-data/lib/system/model/attributes",["./model","exports"],function(a,b){"use strict";function c(a,b){return"function"==typeof b.defaultValue?b.defaultValue.apply(null,arguments):b.defaultValue}function d(a,b){return a._attributes.hasOwnProperty(b)||a._inFlightAttributes.hasOwnProperty(b)||a._data.hasOwnProperty(b)}function e(a,b){return a._attributes.hasOwnProperty(b)?a._attributes[b]:a._inFlightAttributes.hasOwnProperty(b)?a._inFlightAttributes[b]:a._data[b]}function f(a,b){b=b||{};var f={type:a,isAttribute:!0,options:b};return Ember.computed("data",function(a,f){if(arguments.length>1){var g=e(this,a);return f!==g&&(this._attributes[a]=f,this.send("didSetProperty",{name:a,oldValue:g,originalValue:this._data[a],value:f})),f}return d(this,a)?e(this,a):c(this,b,a)}).meta(f)}var g=a["default"],h=Ember.get;g.reopenClass({attributes:Ember.computed(function(){var a=Ember.Map.create();return this.eachComputedProperty(function(b,c){c.isAttribute&&(c.name=b,a.set(b,c))}),a}),transformedAttributes:Ember.computed(function(){var a=Ember.Map.create();return this.eachAttribute(function(b,c){c.type&&a.set(b,c.type)}),a}),eachAttribute:function(a,b){h(this,"attributes").forEach(function(c,d){a.call(b,c,d)},b)},eachTransformedAttribute:function(a,b){h(this,"transformedAttributes").forEach(function(c,d){a.call(b,c,d)})}}),g.reopen({eachAttribute:function(a,b){this.constructor.eachAttribute(a,b)}}),b["default"]=f}),b("ember-data/lib/system/model/errors",["exports"],function(a){"use strict";
 var b=Ember.get,c=Ember.isEmpty,d=Ember.Object.extend(Ember.Enumerable,Ember.Evented,{registerHandlers:function(a,b,c){this.on("becameInvalid",a,b),this.on("becameValid",a,c)},errorsByAttributeName:Ember.reduceComputed("content",{initialValue:function(){return Ember.MapWithDefault.create({defaultValue:function(){return Ember.A()}})},addedItem:function(a,b){return a.get(b.attribute).pushObject(b),a},removedItem:function(a,b){return a.get(b.attribute).removeObject(b),a}}),errorsFor:function(a){return b(this,"errorsByAttributeName").get(a)},messages:Ember.computed.mapBy("content","message"),content:Ember.computed(function(){return Ember.A()}),unknownProperty:function(a){var b=this.errorsFor(a);return c(b)?null:b},nextObject:function(a){return b(this,"content").objectAt(a)},length:Ember.computed.oneWay("content.length").readOnly(),isEmpty:Ember.computed.not("length").readOnly(),add:function(a,c){var d=b(this,"isEmpty");c=this._findOrCreateMessages(a,c),b(this,"content").addObjects(c),this.notifyPropertyChange(a),this.enumerableContentDidChange(),d&&!b(this,"isEmpty")&&this.trigger("becameInvalid")},_findOrCreateMessages:function(a,b){var c=this.errorsFor(a);return Ember.makeArray(b).map(function(b){return c.findBy("message",b)||{attribute:a,message:b}})},remove:function(a){if(!b(this,"isEmpty")){var c=b(this,"content").rejectBy("attribute",a);b(this,"content").setObjects(c),this.notifyPropertyChange(a),this.enumerableContentDidChange(),b(this,"isEmpty")&&this.trigger("becameValid")}},clear:function(){b(this,"isEmpty")||(b(this,"content").clear(),this.enumerableContentDidChange(),this.trigger("becameValid"))},has:function(a){return!c(this.errorsFor(a))}});a["default"]=d}),b("ember-data/lib/system/model/model",["./states","./errors","exports"],function(a,b,c){"use strict";var d=a["default"],e=b["default"],f=Ember.get,g=Ember.set,h=Ember.merge,i=Ember.RSVP.Promise,j=Ember.computed("currentState",function(a){return f(f(this,"currentState"),a)}).readOnly(),k=Ember.Object.extend(Ember.Evented,{_recordArrays:void 0,_relationships:void 0,_loadingRecordArrays:void 0,isEmpty:j,isLoading:j,isLoaded:j,isDirty:j,isSaving:j,isDeleted:j,isNew:j,isValid:j,dirtyType:j,isError:!1,isReloading:!1,clientId:null,id:null,currentState:d.empty,errors:Ember.computed(function(){var a=e.create();return a.registerHandlers(this,function(){this.send("becameInvalid")},function(){this.send("becameValid")}),a}).readOnly(),serialize:function(a){var b=f(this,"store");return b.serialize(this,a)},toJSON:function(a){var b=DS.JSONSerializer.create({container:this.container});return b.serialize(this,a)},didLoad:Ember.K,didUpdate:Ember.K,didCreate:Ember.K,didDelete:Ember.K,becameInvalid:Ember.K,becameError:Ember.K,data:Ember.computed(function(){return this._data=this._data||{},this._data}).readOnly(),_data:null,init:function(){this._super(),this._setup()},_setup:function(){this._changesToSync={},this._deferredTriggers=[],this._data={},this._attributes={},this._inFlightAttributes={},this._relationships={}},send:function(a,b){var c=f(this,"currentState");return c[a]||this._unhandledEvent(c,a,b),c[a](this,b)},transitionTo:function(a){var b=a.split(".",1),c=f(this,"currentState"),d=c;do d.exit&&d.exit(this),d=d.parentState;while(!d.hasOwnProperty(b));var e,h,i=a.split("."),j=[],k=[];for(e=0,h=i.length;h>e;e++)d=d[i[e]],d.enter&&k.push(d),d.setup&&j.push(d);for(e=0,h=k.length;h>e;e++)k[e].enter(this);for(g(this,"currentState",d),e=0,h=j.length;h>e;e++)j[e].setup(this);this.updateRecordArraysLater()},_unhandledEvent:function(a,b,c){var d="Attempted to handle event `"+b+"` ";throw d+="on "+String(this)+" while in state ",d+=a.stateName+". ",void 0!==c&&(d+="Called with "+Ember.inspect(c)+"."),new Ember.Error(d)},withTransaction:function(a){var b=f(this,"transaction");b&&a(b)},loadingData:function(a){this.send("loadingData",a)},loadedData:function(){this.send("loadedData")},notFound:function(){this.send("notFound")},pushedData:function(){this.send("pushedData")},deleteRecord:function(){this.send("deleteRecord")},destroyRecord:function(){return this.deleteRecord(),this.save()},unloadRecord:function(){this.isDestroyed||this.send("unloadRecord")},clearRelationships:function(){this.eachRelationship(function(a,b){if("belongsTo"===b.kind)g(this,a,null);else if("hasMany"===b.kind){var c=this._relationships[a];c&&c.destroy()}},this)},updateRecordArrays:function(){this._updatingRecordArraysLater=!1,f(this,"store").dataWasUpdated(this.constructor,this)},changedAttributes:function(){var a,b=f(this,"_data"),c=f(this,"_attributes"),d={};for(a in c)d[a]=[b[a],c[a]];return d},adapterWillCommit:function(){this.send("willCommit")},adapterDidCommit:function(a){g(this,"isError",!1),a?this._data=a:Ember.mixin(this._data,this._inFlightAttributes),this._inFlightAttributes={},this.send("didCommit"),this.updateRecordArraysLater(),a&&this.suspendRelationshipObservers(function(){this.notifyPropertyChange("data")})},adapterDidDirty:function(){this.send("becomeDirty"),this.updateRecordArraysLater()},dataDidChange:Ember.observer(function(){this.reloadHasManys()},"data"),reloadHasManys:function(){var a=f(this.constructor,"relationshipsByName");this.updateRecordArraysLater(),a.forEach(function(a,b){this._data.links&&this._data.links[a]||"hasMany"===b.kind&&this.hasManyDidChange(b.key)},this)},hasManyDidChange:function(a){var b=this._relationships[a];if(b){var c=this._data[a]||[];g(b,"content",Ember.A(c)),g(b,"isLoaded",!0),b.trigger("didLoad")}},updateRecordArraysLater:function(){this._updatingRecordArraysLater||(this._updatingRecordArraysLater=!0,Ember.run.schedule("actions",this,this.updateRecordArrays))},setupData:function(a,b){b?Ember.merge(this._data,a):this._data=a;var c=this._relationships;this.eachRelationship(function(b,d){a.links&&a.links[b]||d.options.async&&(c[b]=null)}),a&&this.pushedData(),this.suspendRelationshipObservers(function(){this.notifyPropertyChange("data")})},materializeId:function(a){g(this,"id",a)},materializeAttributes:function(a){h(this._data,a)},materializeAttribute:function(a,b){this._data[a]=b},updateHasMany:function(a,b){this._data[a]=b,this.hasManyDidChange(a)},updateBelongsTo:function(a,b){this._data[a]=b},rollback:function(){this._attributes={},f(this,"isError")&&(this._inFlightAttributes={},g(this,"isError",!1)),f(this,"isValid")||(this._inFlightAttributes={}),this.send("rolledBack"),this.suspendRelationshipObservers(function(){this.notifyPropertyChange("data")})},toStringExtension:function(){return f(this,"id")},suspendRelationshipObservers:function(a,b){var c=f(this.constructor,"relationshipNames").belongsTo,d=this;try{this._suspendedRelationships=!0,Ember._suspendObservers(d,c,null,"belongsToDidChange",function(){Ember._suspendBeforeObservers(d,c,null,"belongsToWillChange",function(){a.call(b||d)})})}finally{this._suspendedRelationships=!1}},save:function(){var a="DS: Model#save "+this,b=Ember.RSVP.defer(a);return this.get("store").scheduleSave(this,b),this._inFlightAttributes=this._attributes,this._attributes={},DS.PromiseObject.create({promise:b.promise})},reload:function(){g(this,"isReloading",!0);var a=this,b="DS: Model#reload of "+this,c=new i(function(b){a.send("reloadRecord",b)},b).then(function(){return a.set("isReloading",!1),a.set("isError",!1),a},function(b){throw a.set("isError",!0),b},"DS: Model#reload complete, update flags");return DS.PromiseObject.create({promise:c})},adapterDidUpdateAttribute:function(a,b){void 0!==b?(this._data[a]=b,this.notifyPropertyChange(a)):this._data[a]=this._inFlightAttributes[a],this.updateRecordArraysLater()},adapterDidInvalidate:function(a){function b(b){a[b]&&c.add(b,a[b])}var c=f(this,"errors");this.eachAttribute(b),this.eachRelationship(b)},adapterDidError:function(){this.send("becameError"),g(this,"isError",!0)},trigger:function(a){Ember.tryInvoke(this,a,[].slice.call(arguments,1)),this._super.apply(this,arguments)},triggerLater:function(){1===this._deferredTriggers.push(arguments)&&Ember.run.schedule("actions",this,"_triggerDeferredTriggers")},_triggerDeferredTriggers:function(){for(var a=0,b=this._deferredTriggers.length;b>a;a++)this.trigger.apply(this,this._deferredTriggers[a]);this._deferredTriggers.length=0},willDestroy:function(){this._super(),this.clearRelationships()}});k.reopenClass({_create:k.create,create:function(){throw new Ember.Error("You should not call `create` on a model. Instead, call `store.createRecord` with the attributes you would like to set.")}}),c["default"]=k}),b("ember-data/lib/system/model/states",["exports"],function(a){"use strict";function b(a,b){b.value===b.originalValue?(delete a._attributes[b.name],a.send("propertyWasReset",b.name)):b.value!==b.oldValue&&a.send("becomeDirty"),a.updateRecordArraysLater()}function c(a){var b,d={};for(var e in a)b=a[e],d[e]=b&&"object"==typeof b?c(b):b;return d}function d(a,b){for(var c in b)a[c]=b[c];return a}function e(a){var b=c(j);return d(b,a)}function f(){}function g(a,b,c){a=d(b?Ember.create(b):{},a),a.parentState=b,a.stateName=c;for(var e in a)a.hasOwnProperty(e)&&"parentState"!==e&&"stateName"!==e&&"object"==typeof a[e]&&(a[e]=g(a[e],a,c+"."+e));return a}var h=Ember.get,i=Ember.set,j={initialState:"uncommitted",isDirty:!0,uncommitted:{didSetProperty:b,propertyWasReset:function(a){var b=!1;for(var c in a._attributes){b=!0;break}b||a.send("rolledBack")},pushedData:Ember.K,becomeDirty:Ember.K,willCommit:function(a){a.transitionTo("inFlight")},reloadRecord:function(a,b){b(h(a,"store").reloadRecord(a))},rolledBack:function(a){a.transitionTo("loaded.saved")},becameInvalid:function(a){a.transitionTo("invalid")},rollback:function(a){a.rollback()}},inFlight:{isSaving:!0,didSetProperty:b,becomeDirty:Ember.K,pushedData:Ember.K,unloadRecord:function(){},willCommit:Ember.K,didCommit:function(a){var b=h(this,"dirtyType");a.transitionTo("saved"),a.send("invokeLifecycleCallbacks",b)},becameInvalid:function(a){a.transitionTo("invalid"),a.send("invokeLifecycleCallbacks")},becameError:function(a){a.transitionTo("uncommitted"),a.triggerLater("becameError",a)}},invalid:{isValid:!1,deleteRecord:function(a){a.transitionTo("deleted.uncommitted"),a.clearRelationships()},didSetProperty:function(a,c){h(a,"errors").remove(c.name),b(a,c)},becomeDirty:Ember.K,rolledBack:function(a){h(a,"errors").clear()},becameValid:function(a){a.transitionTo("uncommitted")},invokeLifecycleCallbacks:function(a){a.triggerLater("becameInvalid",a)}}},k=e({dirtyType:"created",isNew:!0});k.uncommitted.rolledBack=function(a){a.transitionTo("deleted.saved")};var l=e({dirtyType:"updated"});k.uncommitted.deleteRecord=function(a){a.clearRelationships(),a.transitionTo("deleted.saved")},k.uncommitted.rollback=function(a){j.uncommitted.rollback.apply(this,arguments),a.transitionTo("deleted.saved")},k.uncommitted.propertyWasReset=Ember.K,l.inFlight.unloadRecord=f,l.uncommitted.deleteRecord=function(a){a.transitionTo("deleted.uncommitted"),a.clearRelationships()};var m={isEmpty:!1,isLoading:!1,isLoaded:!1,isDirty:!1,isSaving:!1,isDeleted:!1,isNew:!1,isValid:!0,rolledBack:Ember.K,unloadRecord:function(a){a.clearRelationships(),a.transitionTo("deleted.saved")},propertyWasReset:Ember.K,empty:{isEmpty:!0,loadingData:function(a,b){a._loadingPromise=b,a.transitionTo("loading")},loadedData:function(a){a.transitionTo("loaded.created.uncommitted"),a.suspendRelationshipObservers(function(){a.notifyPropertyChange("data")})},pushedData:function(a){a.transitionTo("loaded.saved"),a.triggerLater("didLoad")}},loading:{isLoading:!0,exit:function(a){a._loadingPromise=null},pushedData:function(a){a.transitionTo("loaded.saved"),a.triggerLater("didLoad"),i(a,"isError",!1)},becameError:function(a){a.triggerLater("becameError",a)},notFound:function(a){a.transitionTo("empty")}},loaded:{initialState:"saved",isLoaded:!0,saved:{setup:function(a){var b=a._attributes,c=!1;for(var d in b)if(b.hasOwnProperty(d)){c=!0;break}c&&a.adapterDidDirty()},didSetProperty:b,pushedData:Ember.K,becomeDirty:function(a){a.transitionTo("updated.uncommitted")},willCommit:function(a){a.transitionTo("updated.inFlight")},reloadRecord:function(a,b){b(h(a,"store").reloadRecord(a))},deleteRecord:function(a){a.transitionTo("deleted.uncommitted"),a.clearRelationships()},unloadRecord:function(a){a.clearRelationships(),a.transitionTo("deleted.saved")},didCommit:function(a){a.send("invokeLifecycleCallbacks",h(a,"lastDirtyType"))},notFound:Ember.K},created:k,updated:l},deleted:{initialState:"uncommitted",dirtyType:"deleted",isDeleted:!0,isLoaded:!0,isDirty:!0,setup:function(a){a.updateRecordArrays()},uncommitted:{willCommit:function(a){a.transitionTo("inFlight")},rollback:function(a){a.rollback()},becomeDirty:Ember.K,deleteRecord:Ember.K,rolledBack:function(a){a.transitionTo("loaded.saved")}},inFlight:{isSaving:!0,unloadRecord:f,willCommit:Ember.K,didCommit:function(a){a.transitionTo("saved"),a.send("invokeLifecycleCallbacks")},becameError:function(a){a.transitionTo("uncommitted"),a.triggerLater("becameError",a)}},saved:{isDirty:!1,setup:function(a){var b=h(a,"store");b.dematerializeRecord(a)},invokeLifecycleCallbacks:function(a){a.triggerLater("didDelete",a),a.triggerLater("didCommit",a)}}},invokeLifecycleCallbacks:function(a,b){"created"===b?a.triggerLater("didCreate",a):a.triggerLater("didUpdate",a),a.triggerLater("didCommit",a)}};m=g(m,null,"root"),a["default"]=m}),b("ember-data/lib/system/record_array_manager",["./record_arrays","exports"],function(a,b){"use strict";function c(a){for(var b=[],c=Ember.keys(a),d=0;d<c.length;d++)b.push(a[c[d]]);return b}function d(a){a.destroy()}function e(a){for(var b=a.length,c=Ember.A(),d=0;b>d;d++)c=c.concat(a[d]);return c}var f=a.ManyArray,g=Ember.get,h=(Ember.set,Ember.EnumerableUtils.forEach),i=Ember.Object.extend({init:function(){this.filteredRecordArrays=Ember.MapWithDefault.create({defaultValue:function(){return[]}}),this.changedRecords=[],this._adapterPopulatedRecordArrays=[]},recordDidChange:function(a){1===this.changedRecords.push(a)&&Ember.run.schedule("actions",this,this.updateRecordArrays)},recordArraysForRecord:function(a){return a._recordArrays=a._recordArrays||Ember.OrderedSet.create(),a._recordArrays},updateRecordArrays:function(){h(this.changedRecords,function(a){g(a,"isDeleted")?this._recordWasDeleted(a):this._recordWasChanged(a)},this),this.changedRecords.length=0},_recordWasDeleted:function(a){var b=a._recordArrays;b&&h(b,function(b){b.removeRecord(a)})},_recordWasChanged:function(a){var b,c=a.constructor,d=this.filteredRecordArrays.get(c);h(d,function(d){b=g(d,"filterFunction"),this.updateRecordArray(d,b,c,a)},this);var e=a._loadingRecordArrays;if(e){for(var f=0,i=e.length;i>f;f++)e[f].loadedRecord();a._loadingRecordArrays=[]}},updateRecordArray:function(a,b,c,d){var e;e=b?b(d):!0;var f=this.recordArraysForRecord(d);e?(f.add(a),a.addRecord(d)):e||(f.remove(a),a.removeRecord(d))},updateFilter:function(a,b,c){for(var d,e=this.store.typeMapFor(b),f=e.records,h=0,i=f.length;i>h;h++)d=f[h],g(d,"isDeleted")||g(d,"isEmpty")||this.updateRecordArray(a,c,b,d)},createManyArray:function(a,b){var c=f.create({type:a,content:b,store:this.store});return h(b,function(a){var b=this.recordArraysForRecord(a);b.add(c)},this),c},createRecordArray:function(a){var b=DS.RecordArray.create({type:a,content:Ember.A(),store:this.store,isLoaded:!0});return this.registerFilteredRecordArray(b,a),b},createFilteredRecordArray:function(a,b){var c=DS.FilteredRecordArray.create({type:a,content:Ember.A(),store:this.store,manager:this,filterFunction:b});return this.registerFilteredRecordArray(c,a,b),c},createAdapterPopulatedRecordArray:function(a,b){var c=DS.AdapterPopulatedRecordArray.create({type:a,query:b,content:Ember.A(),store:this.store});return this._adapterPopulatedRecordArrays.push(c),c},registerFilteredRecordArray:function(a,b,c){var d=this.filteredRecordArrays.get(b);d.push(a),this.updateFilter(a,b,c)},registerWaitingRecordArray:function(a,b){var c=a._loadingRecordArrays||[];c.push(b),a._loadingRecordArrays=c},willDestroy:function(){this._super(),e(c(this.filteredRecordArrays.values)).forEach(d),this._adapterPopulatedRecordArrays.forEach(d)}});b["default"]=i}),b("ember-data/lib/system/record_arrays",["./record_arrays/record_array","./record_arrays/filtered_record_array","./record_arrays/adapter_populated_record_array","./record_arrays/many_array","exports"],function(a,b,c,d,e){"use strict";var f=a["default"],g=b["default"],h=c["default"],i=d["default"];e.RecordArray=f,e.FilteredRecordArray=g,e.AdapterPopulatedRecordArray=h,e.ManyArray=i}),b("ember-data/lib/system/record_arrays/adapter_populated_record_array",["./record_array","exports"],function(a,b){"use strict";var c=a["default"],d=Ember.get,e=(Ember.set,c.extend({query:null,replace:function(){var a=d(this,"type").toString();throw new Error("The result of a server query (on "+a+") is immutable.")},load:function(a){var b=d(this,"store"),c=d(this,"type"),e=b.pushMany(c,a),f=b.metadataFor(c);this.setProperties({content:Ember.A(e),isLoaded:!0,meta:f}),Ember.run.once(this,"trigger","didLoad")}}));b["default"]=e}),b("ember-data/lib/system/record_arrays/filtered_record_array",["./record_array","exports"],function(a,b){"use strict";var c=a["default"],d=Ember.get,e=c.extend({filterFunction:null,isLoaded:!0,replace:function(){var a=d(this,"type").toString();throw new Error("The result of a client-side filter (on "+a+") is immutable.")},updateFilter:Ember.observer(function(){var a=d(this,"manager");a.updateFilter(this,d(this,"type"),d(this,"filterFunction"))},"filterFunction")});b["default"]=e}),b("ember-data/lib/system/record_arrays/many_array",["./record_array","../changes","exports"],function(a,b,c){"use strict";function d(a){a.sync()}var e=a["default"],f=b.RelationshipChange,g=Ember.get,h=Ember.set,i=Ember.EnumerableUtils.map,j=e.extend({init:function(){this._super.apply(this,arguments),this._changesToSync=Ember.OrderedSet.create()},name:null,owner:null,isPolymorphic:!1,isLoaded:!1,promise:null,loadingRecordsCount:function(a){this.loadingRecordsCount=a},loadedRecord:function(){this.loadingRecordsCount--,0===this.loadingRecordsCount&&(h(this,"isLoaded",!0),this.trigger("didLoad"))},fetch:function(){var a=g(this,"content"),b=g(this,"store"),c=g(this,"owner"),d=Ember.RSVP.defer("DS: ManyArray#fetch "+g(this,"type")),e=a.filterProperty("isEmpty",!0);b.fetchMany(e,c,d)},replaceContent:function(a,b,c){c=i(c,function(a){return a},this),this._super(a,b,c)},arrangedContentDidChange:function(){Ember.run.once(this,"fetch")},arrayContentWillChange:function(a,b){var c=g(this,"owner"),d=g(this,"name");if(!c._suspendedRelationships)for(var e=a;a+b>e;e++){var h=g(this,"content").objectAt(e),i=f.createChange(c,h,g(this,"store"),{parentType:c.constructor,changeType:"remove",kind:"hasMany",key:d});this._changesToSync.add(i)}return this._super.apply(this,arguments)},arrayContentDidChange:function(a,b,c){this._super.apply(this,arguments);var e=g(this,"owner"),h=g(this,"name"),i=g(this,"store");if(!e._suspendedRelationships){for(var j=a;a+c>j;j++){var k=g(this,"content").objectAt(j),l=f.createChange(e,k,i,{parentType:e.constructor,changeType:"add",kind:"hasMany",key:h});l.hasManyName=h,this._changesToSync.add(l)}this._changesToSync.forEach(d),this._changesToSync.clear()}},createRecord:function(a){var b,c=g(this,"owner"),d=g(c,"store"),e=g(this,"type");return b=d.createRecord.call(d,e,a),this.pushObject(b),b}});c["default"]=j}),b("ember-data/lib/system/record_arrays/record_array",["../store","exports"],function(a,b){"use strict";var c=a.PromiseArray,d=Ember.get,e=(Ember.set,Ember.ArrayProxy.extend(Ember.Evented,{type:null,content:null,isLoaded:!1,isUpdating:!1,store:null,objectAtContent:function(a){var b=d(this,"content");return b.objectAt(a)},update:function(){if(!d(this,"isUpdating")){var a=d(this,"store"),b=d(this,"type");return a.fetchAll(b,this)}},addRecord:function(a){d(this,"content").addObject(a)},removeRecord:function(a){d(this,"content").removeObject(a)},save:function(){var a="DS: RecordArray#save "+d(this,"type"),b=Ember.RSVP.all(this.invoke("save"),a).then(function(a){return Ember.A(a)},null,"DS: RecordArray#save apply Ember.NativeArray");return c.create({promise:b})},_dissociateFromOwnRecords:function(){var a=this;this.forEach(function(b){var c=b._recordArrays;c&&c.remove(a)})},willDestroy:function(){this._dissociateFromOwnRecords(),this._super()}}));b["default"]=e}),b("ember-data/lib/system/relationships",["./relationships/belongs_to","./relationships/has_many","../system/relationships/ext","exports"],function(a,b,c,d){"use strict";var e=a["default"],f=b["default"];d.belongsTo=e,d.hasMany=f}),b("ember-data/lib/system/relationships/belongs_to",["../model","exports"],function(a,b){"use strict";function c(a,b,c){return Ember.computed("data",function(a,b){var d,h=e(this,"data"),i=e(this,"store"),j="DS: Async belongsTo "+this+" : "+a;if(2===arguments.length)return void 0===b?null:DS.PromiseObject.create({promise:g.cast(b,j)});var k=h.links&&h.links[a],l=h[a];return f(l)?k?(d=i.findBelongsTo(this,k,c),DS.PromiseObject.create({promise:d})):null:(d=i.fetchRecord(l)||g.cast(l,j),DS.PromiseObject.create({promise:d}))}).meta(c)}function d(a,b){"object"==typeof a&&(b=a,a=void 0),b=b||{};var d={type:a,isRelationship:!0,options:b,kind:"belongsTo"};return b.async?c(a,b,d):Ember.computed("data",function(b,c){var d,g,h=e(this,"data"),i=e(this,"store");return g="string"==typeof a?i.modelFor(a):a,2===arguments.length?void 0===c?null:c:(d=h[b],f(d)?null:(i.fetchRecord(d),d))}).meta(d)}var e=Ember.get,f=(Ember.set,Ember.isNone),g=Ember.RSVP.Promise,h=a.Model;h.reopen({belongsToWillChange:Ember.beforeObserver(function(a,b){if(e(a,"isLoaded")){var c=e(a,b);if(c){var d=e(a,"store"),f=DS.RelationshipChange.createChange(a,c,d,{key:b,kind:"belongsTo",changeType:"remove"});f.sync(),this._changesToSync[b]=f}}}),belongsToDidChange:Ember.immediateObserver(function(a,b){if(e(a,"isLoaded")){var c=e(a,b);if(c){var d=e(a,"store"),f=DS.RelationshipChange.createChange(a,c,d,{key:b,kind:"belongsTo",changeType:"add"});f.sync()}}delete this._changesToSync[b]})}),b["default"]=d}),b("ember-data/lib/system/relationships/ext",["../../../../ember-inflector/lib/system","../model"],function(a,b){"use strict";{var c=a.singularize,d=b.Model,e=Ember.get;Ember.set}d.reopen({didDefineProperty:function(a,b,c){if(c instanceof Ember.Descriptor){var d=c.meta();d.isRelationship&&"belongsTo"===d.kind&&(Ember.addObserver(a,b,null,"belongsToDidChange"),Ember.addBeforeObserver(a,b,null,"belongsToWillChange")),d.parentType=a.constructor}}}),d.reopenClass({typeForRelationship:function(a){var b=e(this,"relationshipsByName").get(a);return b&&b.type},inverseFor:function(a){function b(a,c,d){d=d||[];var f=e(c,"relationships");if(f){var g=f.get(a);return g&&d.push.apply(d,f.get(a)),a.superclass&&b(a.superclass,c,d),d}}var c=this.typeForRelationship(a);if(!c)return null;var d=this.metaForProperty(a).options;if(null===d.inverse)return null;var f,g;if(d.inverse)f=d.inverse,g=Ember.get(c,"relationshipsByName").get(f).kind;else{var h=b(this,c);if(0===h.length)return null;f=h[0].name,g=h[0].kind}return{type:c,name:f,kind:g}},relationships:Ember.computed(function(){var a=new Ember.MapWithDefault({defaultValue:function(){return[]}});return this.eachComputedProperty(function(b,c){if(c.isRelationship){"string"==typeof c.type&&(c.type=this.store.modelFor(c.type));var d=a.get(c.type);d.push({name:b,kind:c.kind})}}),a}),relationshipNames:Ember.computed(function(){var a={hasMany:[],belongsTo:[]};return this.eachComputedProperty(function(b,c){c.isRelationship&&a[c.kind].push(b)}),a}),relatedTypes:Ember.computed(function(){var a,b=Ember.A();return this.eachComputedProperty(function(c,d){d.isRelationship&&(a=d.type,"string"==typeof a&&(a=e(this,a,!1)||this.store.modelFor(a)),b.contains(a)||b.push(a))}),b}),relationshipsByName:Ember.computed(function(){var a,b=Ember.Map.create();return this.eachComputedProperty(function(d,e){e.isRelationship&&(e.key=d,a=e.type,a||"hasMany"!==e.kind?a||(a=d):a=c(d),"string"==typeof a&&(e.type=this.store.modelFor(a)),b.set(d,e))}),b}),fields:Ember.computed(function(){var a=Ember.Map.create();return this.eachComputedProperty(function(b,c){c.isRelationship?a.set(b,c.kind):c.isAttribute&&a.set(b,"attribute")}),a}),eachRelationship:function(a,b){e(this,"relationshipsByName").forEach(function(c,d){a.call(b,c,d)})},eachRelatedType:function(a,b){e(this,"relatedTypes").forEach(function(c){a.call(b,c)})}}),d.reopen({eachRelationship:function(a,b){this.constructor.eachRelationship(a,b)}})}),b("ember-data/lib/system/relationships/has_many",["exports"],function(a){"use strict";function b(a,b,d){return Ember.computed("data",function(a){var e=this._relationships[a],f="DS: Async hasMany "+this+" : "+a;if(!e){var h=Ember.RSVP.defer(f);e=c(this,a,b,function(b,c){var e,f=c.links&&c.links[a];return e=f?b.findHasMany(this,f,d,h):b.findMany(this,c[a],d.type,h),g(e,"promise",h.promise),e})}var i=e.get("promise").then(function(){return e},null,"DS: Async hasMany records received");return DS.PromiseArray.create({promise:i})}).meta(d).readOnly()}function c(a,b,c,d){var e=a._relationships;if(e[b])return e[b];var g=f(a,"data"),i=f(a,"store"),j=e[b]=d.call(a,i,g);return h(j,{owner:a,name:b,isPolymorphic:c.polymorphic})}function d(a,d){d=d||{};var e={type:a,isRelationship:!0,options:d,kind:"hasMany"};return d.async?b(a,d,e):Ember.computed("data",function(a){return c(this,a,d,function(b,c){c[a];return b.findMany(this,c[a],e.type)})}).meta(e).readOnly()}function e(a,b){return"object"==typeof a&&(b=a,a=void 0),d(a,b)}var f=Ember.get,g=Ember.set,h=Ember.setProperties;a["default"]=e}),b("ember-data/lib/system/store",["exports"],function(a){"use strict";function b(a){return null==a?null:a+""}function c(a,b,c,e){return b.eachRelationship(function(b,h){if(c.links&&c.links[b])return void(e&&h.options.async&&(e._relationships[b]=null));var i=h.kind,j=c[b];null!=j&&("belongsTo"===i?d(a,c,b,h,j):"hasMany"===i&&(f(a,c,b,h,j),g(e,b,j)))}),c}function d(a,b,c,d,f){if(!(z(f)||f instanceof DS.Model)){var g;"number"==typeof f||"string"==typeof f?(g=e(d,c,b),b[c]=a.recordForId(g,f)):"object"==typeof f&&(b[c]=a.recordForId(f.type,f.id))}}function e(a,b,c){return a.options.polymorphic?c[b+"Type"]:a.type}function f(a,b,c,e,f){for(var g=0,h=f.length;h>g;g++)d(a,f,g,e,f[g])}function g(a,b,c){a&&c.pushObjects(a.get(b).filterBy("isNew"))}function h(a,b){return u.create({promise:D.cast(a,b)})}function i(a,b){return v.create({promise:D.cast(a,b)})}function j(a,b,c){return a.lookup("serializer:"+b)||a.lookup("serializer:application")||a.lookup("serializer:"+c)||a.lookup("serializer:-default")}function k(a){return a.lookup("serializer:application")||a.lookup("serializer:-default")}function l(a,b){var c=a.serializer,d=a.defaultSerializer,e=a.container;return e&&void 0===c&&(c=j(e,b.typeKey,d)),(null===c||void 0===c)&&(c={extract:function(a,b,c){return c}}),c}function m(a,b,c,d){var e=a.find(b,c,d),f=l(a,c),g="DS: Handle Adapter#find of "+c+" with id: "+d;return D.cast(e,g).then(function(a){var e=f.extract(b,c,a,d,"find");return b.push(c,e)},function(a){var e=b.getById(c,d);throw e.notFound(),a},"DS: Extract payload of '"+c+"'")}function n(a,b,c,d,e){var f=a.findMany(b,c,d,e),g=l(a,c),h="DS: Handle Adapter#findMany of "+c;return D.cast(f,h).then(function(a){var d=g.extract(b,c,a,null,"findMany");b.pushMany(c,d)},null,"DS: Extract payload of "+c)}function o(a,b,c,d,e){var f=a.findHasMany(b,c,d,e),g=l(a,e.type),h="DS: Handle Adapter#findHasMany of "+c+" : "+e.type;return D.cast(f,h).then(function(a){var d=g.extract(b,e.type,a,null,"findHasMany"),f=b.pushMany(e.type,d);c.updateHasMany(e.key,f)},null,"DS: Extract payload of "+c+" : hasMany "+e.type)}function p(a,b,c,d,e){var f=a.findBelongsTo(b,c,d,e),g=l(a,e.type),h="DS: Handle Adapter#findBelongsTo of "+c+" : "+e.type;return D.cast(f,h).then(function(a){var c=g.extract(b,e.type,a,null,"findBelongsTo"),d=b.push(e.type,c);return d.updateBelongsTo(e.key,d),d},null,"DS: Extract payload of "+c+" : "+e.type)}function q(a,b,c,d){var e=a.findAll(b,c,d),f=l(a,c),g="DS: Handle Adapter#findAll of "+c;return D.cast(e,g).then(function(a){var d=f.extract(b,c,a,null,"findAll");return b.pushMany(c,d),b.didUpdateAll(c),b.all(c)},null,"DS: Extract payload of findAll "+c)}function r(a,b,c,d,e){var f=a.findQuery(b,c,d,e),g=l(a,c),h="DS: Handle Adapter#findQuery of "+c;return D.cast(f,h).then(function(a){var d=g.extract(b,c,a,null,"findQuery");return e.load(d),e},null,"DS: Extract payload of findQuery "+c)}function s(a,b,c,d){var e=d.constructor,f=a[c](b,e,d),g=l(a,e),h="DS: Extract and notify about "+c+" completion of "+d;return f.then(function(a){var f;return f=a?g.extract(b,e,a,w(d,"id"),c):a,b.didSaveRecord(d,f),d},function(a){throw a instanceof DS.InvalidError?b.recordWasInvalid(d,a.errors):b.recordWasError(d,a),a},h)}var t,u,v,w=Ember.get,x=Ember.set,y=Ember.run.once,z=Ember.isNone,A=Ember.EnumerableUtils.forEach,B=Ember.EnumerableUtils.indexOf,C=Ember.EnumerableUtils.map,D=Ember.RSVP.Promise,E=Ember.copy;t=Ember.Object.extend({init:function(){this.typeMaps={},this.recordArrayManager=DS.RecordArrayManager.create({store:this}),this._relationshipChanges={},this._pendingSave=[]},adapter:"-rest",serialize:function(a,b){return this.serializerFor(a.constructor.typeKey).serialize(a,b)},defaultAdapter:Ember.computed("adapter",function(){var a=w(this,"adapter");return"string"==typeof a&&(a=this.container.lookup("adapter:"+a)||this.container.lookup("adapter:application")||this.container.lookup("adapter:-rest")),DS.Adapter.detect(a)&&(a=a.create({container:this.container})),a}),createRecord:function(a,c){a=this.modelFor(a),c=E(c)||{},z(c.id)&&(c.id=this._generateId(a)),c.id=b(c.id);var d=this.buildRecord(a,c.id);return d.loadedData(),d.setProperties(c),d},_generateId:function(a){var b=this.adapterFor(a);return b&&b.generateIdForRecord?b.generateIdForRecord(this):null},deleteRecord:function(a){a.deleteRecord()},unloadRecord:function(a){a.unloadRecord()},find:function(a,c){return 1===arguments.length?this.findAll(a):"object"===Ember.typeOf(c)?this.findQuery(a,c):this.findById(a,b(c))},findById:function(a,b){a=this.modelFor(a);var c=this.recordForId(a,b),d=this.fetchRecord(c);return h(d||c,"DS: Store#findById "+a+" with id: "+b)},findByIds:function(a,b){var c=this;return i(Ember.RSVP.all(C(b,function(b){return c.findById(a,b)})).then(Ember.A,null,"DS: Store#findByIds of "+a+" complete"))},fetchRecord:function(a){if(z(a))return null;if(a._loadingPromise)return a._loadingPromise;if(!w(a,"isEmpty"))return null;var b=a.constructor,c=w(a,"id"),d=this.adapterFor(b),e=m(d,this,b,c);return a.loadingData(e),e},getById:function(a,b){return this.hasRecordForId(a,b)?this.recordForId(a,b):null},reloadRecord:function(a){var b=a.constructor,c=this.adapterFor(b),d=w(a,"id");return m(c,this,b,d)},fetchMany:function(a,b){if(a.length){var c=Ember.MapWithDefault.create({defaultValue:function(){return Ember.A()}});A(a,function(a){c.get(a.constructor).push(a)});var d=[];return A(c,function(a,c){var e=c.mapProperty("id"),f=this.adapterFor(a);d.push(n(f,this,a,e,b))},this),Ember.RSVP.all(d)}},hasRecordForId:function(a,c){return c=b(c),a=this.modelFor(a),!!this.typeMapFor(a).idToRecord[c]},recordForId:function(a,c){a=this.modelFor(a),c=b(c);var d=this.typeMapFor(a).idToRecord[c];return d||(d=this.buildRecord(a,c)),d},findMany:function(a,b,c,d){c=this.modelFor(c),b=Ember.A(b);var e=b.filterProperty("isEmpty",!0),f=this.recordArrayManager.createManyArray(c,b);return A(e,function(a){a.loadingData()}),f.loadingRecordsCount=e.length,e.length?(A(e,function(a){this.recordArrayManager.registerWaitingRecordArray(a,f)},this),d.resolve(this.fetchMany(e,a))):(d&&d.resolve(),f.set("isLoaded",!0),y(f,"trigger","didLoad")),f},findHasMany:function(a,b,c,d){var e=this.adapterFor(a.constructor),f=this.recordArrayManager.createManyArray(c.type,Ember.A([]));return d.resolve(o(e,this,a,b,c)),f},findBelongsTo:function(a,b,c){var d=this.adapterFor(a.constructor);return p(d,this,a,b,c)},findQuery:function(a,b){a=this.modelFor(a);var c=this.recordArrayManager.createAdapterPopulatedRecordArray(a,b),d=this.adapterFor(a);
 return i(r(d,this,a,b,c))},findAll:function(a){return a=this.modelFor(a),this.fetchAll(a,this.all(a))},fetchAll:function(a,b){var c=this.adapterFor(a),d=this.typeMapFor(a).metadata.since;return x(b,"isUpdating",!0),i(q(c,this,a,d))},didUpdateAll:function(a){var b=this.typeMapFor(a).findAllCache;x(b,"isUpdating",!1)},all:function(a){a=this.modelFor(a);var b=this.typeMapFor(a),c=b.findAllCache;if(c)return c;var d=this.recordArrayManager.createRecordArray(a);return b.findAllCache=d,d},unloadAll:function(a){for(var b,c=this.modelFor(a),d=this.typeMapFor(c),e=d.records.slice(),f=0;f<e.length;f++)b=e[f],b.unloadRecord(),b.destroy();d.findAllCache=null},filter:function(a,b,c){var d;3===arguments.length?d=this.findQuery(a,b):2===arguments.length&&(c=b),a=this.modelFor(a);var e=this.recordArrayManager.createFilteredRecordArray(a,c);return d=d||D.cast(e),i(d.then(function(){return e},null,"DS: Store#filter of "+a))},recordIsLoaded:function(a,b){return this.hasRecordForId(a,b)?!w(this.recordForId(a,b),"isEmpty"):!1},metadataFor:function(a){return a=this.modelFor(a),this.typeMapFor(a).metadata},dataWasUpdated:function(a,b){this.recordArrayManager.recordDidChange(b)},scheduleSave:function(a,b){a.adapterWillCommit(),this._pendingSave.push([a,b]),y(this,"flushPendingSave")},flushPendingSave:function(){var a=this._pendingSave.slice();this._pendingSave=[],A(a,function(a){var b,c=a[0],d=a[1],e=this.adapterFor(c.constructor);b=w(c,"isNew")?"createRecord":w(c,"isDeleted")?"deleteRecord":"updateRecord",d.resolve(s(e,this,b,c))},this)},didSaveRecord:function(a,b){b&&(b=c(this,a.constructor,b,a),this.updateId(a,b)),a.adapterDidCommit(b)},recordWasInvalid:function(a,b){a.adapterDidInvalidate(b)},recordWasError:function(a){a.adapterDidError()},updateId:function(a,c){var d=(w(a,"id"),b(c.id));this.typeMapFor(a.constructor).idToRecord[d]=a,x(a,"id",d)},typeMapFor:function(a){var b,c=w(this,"typeMaps"),d=Ember.guidFor(a);return(b=c[d])?b:(b={idToRecord:{},records:[],metadata:{},type:a},c[d]=b,b)},_load:function(a,c,d){var e=b(c.id),f=this.recordForId(a,e);return f.setupData(c,d),this.recordArrayManager.recordDidChange(f),f},modelFor:function(a){var b;if("string"==typeof a){var c=this.container.normalize("model:"+a);if(b=this.container.lookupFactory(c),!b)throw new Ember.Error("No model was found for '"+a+"'");b.typeKey=c.split(":",2)[1]}else b=a;return b.store=this,b},push:function(a,b,d){return a=this.modelFor(a),b=c(this,a,b),this._load(a,b,d),this.recordForId(a,b.id)},pushPayload:function(a,b){var c;b?c=this.serializerFor(a):(b=a,c=k(this.container)),c.pushPayload(this,b)},update:function(a,b){return this.push(a,b,!0)},pushMany:function(a,b){return C(b,function(b){return this.push(a,b)},this)},metaForType:function(a,b){a=this.modelFor(a),Ember.merge(this.typeMapFor(a).metadata,b)},buildRecord:function(a,b,c){var d=this.typeMapFor(a),e=d.idToRecord,f=a._create({id:b,store:this,container:this.container});return c&&f.setupData(c),b&&(e[b]=f),d.records.push(f),f},dematerializeRecord:function(a){var b=a.constructor,c=this.typeMapFor(b),d=w(a,"id");a.updateRecordArrays(),d&&delete c.idToRecord[d];var e=B(c.records,a);c.records.splice(e,1)},addRelationshipChangeFor:function(a,b,c,d,e){var f=a.clientId,g=c?c:c,h=b+d,i=this._relationshipChanges;f in i||(i[f]={}),g in i[f]||(i[f][g]={}),h in i[f][g]||(i[f][g][h]={}),i[f][g][h][e.changeType]=e},removeRelationshipChangeFor:function(a,b,c,d,e){var f=a.clientId,g=c?c.clientId:c,h=this._relationshipChanges,i=b+d;f in h&&g in h[f]&&i in h[f][g]&&delete h[f][g][i][e]},relationshipChangePairsFor:function(a){var b=[];if(!a)return b;var c=this._relationshipChanges[a.clientId];for(var d in c)if(c.hasOwnProperty(d))for(var e in c[d])c[d].hasOwnProperty(e)&&b.push(c[d][e]);return b},adapterFor:function(a){var b,c=this.container;return c&&(b=c.lookup("adapter:"+a.typeKey)||c.lookup("adapter:application")),b||w(this,"defaultAdapter")},serializerFor:function(a){a=this.modelFor(a);var b=this.adapterFor(a);return j(this.container,a.typeKey,b&&b.defaultSerializer)},willDestroy:function(){function a(a){return b[a].type}var b=this.typeMaps,c=Ember.keys(b),d=c.map(a);this.recordArrayManager.destroy(),d.forEach(this.unloadAll,this)}}),v=Ember.ArrayProxy.extend(Ember.PromiseProxyMixin),u=Ember.ObjectProxy.extend(Ember.PromiseProxyMixin),a.Store=t,a.PromiseArray=v,a.PromiseObject=u,a["default"]=t}),b("ember-data/lib/transforms",["./transforms/base","./transforms/number","./transforms/date","./transforms/string","./transforms/boolean","exports"],function(a,b,c,d,e,f){"use strict";var g=a["default"],h=b["default"],i=c["default"],j=d["default"],k=e["default"];f.Transform=g,f.NumberTransform=h,f.DateTransform=i,f.StringTransform=j,f.BooleanTransform=k}),b("ember-data/lib/transforms/base",["exports"],function(a){"use strict";var b=Ember.Object.extend({serialize:Ember.required(),deserialize:Ember.required()});a["default"]=b}),b("ember-data/lib/transforms/boolean",["./base","exports"],function(a,b){"use strict";var c=a["default"],d=c.extend({deserialize:function(a){var b=typeof a;return"boolean"===b?a:"string"===b?null!==a.match(/^true$|^t$|^1$/i):"number"===b?1===a:!1},serialize:function(a){return Boolean(a)}});b["default"]=d}),b("ember-data/lib/transforms/date",["./base","exports"],function(a,b){"use strict";var c=a["default"],d=c.extend({deserialize:function(a){var b=typeof a;return"string"===b?new Date(Ember.Date.parse(a)):"number"===b?new Date(a):null===a||void 0===a?a:null},serialize:function(a){if(a instanceof Date){var b=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],c=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],d=function(a){return 10>a?"0"+a:""+a},e=a.getUTCFullYear(),f=a.getUTCMonth(),g=a.getUTCDate(),h=a.getUTCDay(),i=a.getUTCHours(),j=a.getUTCMinutes(),k=a.getUTCSeconds(),l=b[h],m=d(g),n=c[f];return l+", "+m+" "+n+" "+e+" "+d(i)+":"+d(j)+":"+d(k)+" GMT"}return null}});b["default"]=d}),b("ember-data/lib/transforms/number",["./base","exports"],function(a,b){"use strict";var c=a["default"],d=Ember.isEmpty,e=c.extend({deserialize:function(a){return d(a)?null:Number(a)},serialize:function(a){return d(a)?null:Number(a)}});b["default"]=e}),b("ember-data/lib/transforms/string",["./base","exports"],function(a,b){"use strict";var c=a["default"],d=Ember.isNone,e=c.extend({deserialize:function(a){return d(a)?null:String(a)},serialize:function(a){return d(a)?null:String(a)}});b["default"]=e}),b("ember-inflector/lib/ext/string",["../system/string"],function(a){"use strict";var b=a.pluralize,c=a.singularize;(Ember.EXTEND_PROTOTYPES===!0||Ember.EXTEND_PROTOTYPES.String)&&(String.prototype.pluralize=function(){return b(this)},String.prototype.singularize=function(){return c(this)})}),b("ember-inflector/lib/main",["./system","./ext/string","exports"],function(a,b,c){"use strict";var d=a.Inflector,e=a.inflections,f=a.pluralize,g=a.singularize;d.defaultRules=e,Ember.Inflector=d,Ember.String.pluralize=f,Ember.String.singularize=g,c["default"]=d,c.pluralize=f,c.singularize=g}),b("ember-inflector/lib/system",["./system/inflector","./system/string","./system/inflections","exports"],function(a,b,c,d){"use strict";var e=a["default"],f=b.pluralize,g=b.singularize,h=c["default"];e.inflector=new e(h),d.Inflector=e,d.singularize=g,d.pluralize=f,d.defaultRules=h}),b("ember-inflector/lib/system/inflections",["exports"],function(a){"use strict";var b={plurals:[[/$/,"s"],[/s$/i,"s"],[/^(ax|test)is$/i,"$1es"],[/(octop|vir)us$/i,"$1i"],[/(octop|vir)i$/i,"$1i"],[/(alias|status)$/i,"$1es"],[/(bu)s$/i,"$1ses"],[/(buffal|tomat)o$/i,"$1oes"],[/([ti])um$/i,"$1a"],[/([ti])a$/i,"$1a"],[/sis$/i,"ses"],[/(?:([^f])fe|([lr])f)$/i,"$1$2ves"],[/(hive)$/i,"$1s"],[/([^aeiouy]|qu)y$/i,"$1ies"],[/(x|ch|ss|sh)$/i,"$1es"],[/(matr|vert|ind)(?:ix|ex)$/i,"$1ices"],[/^(m|l)ouse$/i,"$1ice"],[/^(m|l)ice$/i,"$1ice"],[/^(ox)$/i,"$1en"],[/^(oxen)$/i,"$1"],[/(quiz)$/i,"$1zes"]],singular:[[/s$/i,""],[/(ss)$/i,"$1"],[/(n)ews$/i,"$1ews"],[/([ti])a$/i,"$1um"],[/((a)naly|(b)a|(d)iagno|(p)arenthe|(p)rogno|(s)ynop|(t)he)(sis|ses)$/i,"$1sis"],[/(^analy)(sis|ses)$/i,"$1sis"],[/([^f])ves$/i,"$1fe"],[/(hive)s$/i,"$1"],[/(tive)s$/i,"$1"],[/([lr])ves$/i,"$1f"],[/([^aeiouy]|qu)ies$/i,"$1y"],[/(s)eries$/i,"$1eries"],[/(m)ovies$/i,"$1ovie"],[/(x|ch|ss|sh)es$/i,"$1"],[/^(m|l)ice$/i,"$1ouse"],[/(bus)(es)?$/i,"$1"],[/(o)es$/i,"$1"],[/(shoe)s$/i,"$1"],[/(cris|test)(is|es)$/i,"$1is"],[/^(a)x[ie]s$/i,"$1xis"],[/(octop|vir)(us|i)$/i,"$1us"],[/(alias|status)(es)?$/i,"$1"],[/^(ox)en/i,"$1"],[/(vert|ind)ices$/i,"$1ex"],[/(matr)ices$/i,"$1ix"],[/(quiz)zes$/i,"$1"],[/(database)s$/i,"$1"]],irregularPairs:[["person","people"],["man","men"],["child","children"],["sex","sexes"],["move","moves"],["cow","kine"],["zombie","zombies"]],uncountable:["equipment","information","rice","money","species","series","fish","sheep","jeans","police"]};a["default"]=b}),b("ember-inflector/lib/system/inflector",["exports"],function(a){"use strict";function b(a,b){for(var c=0,d=b.length;d>c;c++)a.uncountable[b[c].toLowerCase()]=!0}function c(a,b){for(var c,d=0,e=b.length;e>d;d++)c=b[d],a.irregular[c[0].toLowerCase()]=c[1],a.irregularInverse[c[1].toLowerCase()]=c[0]}function d(a){a=a||{},a.uncountable=a.uncountable||{},a.irregularPairs=a.irregularPairs||{};var d=this.rules={plurals:a.plurals||[],singular:a.singular||[],irregular:{},irregularInverse:{},uncountable:{}};b(d,a.uncountable),c(d,a.irregularPairs)}var e=/^\s*$/;d.prototype={plural:function(a,b){this.rules.plurals.push([a,b.toLowerCase()])},singular:function(a,b){this.rules.singular.push([a,b.toLowerCase()])},uncountable:function(a){b(this.rules,[a.toLowerCase()])},irregular:function(a,b){c(this.rules,[[a,b]])},pluralize:function(a){return this.inflect(a,this.rules.plurals,this.rules.irregular)},singularize:function(a){return this.inflect(a,this.rules.singular,this.rules.irregularInverse)},inflect:function(a,b,c){var d,f,g,h,i,j,k,l;if(i=e.test(a))return a;if(h=a.toLowerCase(),j=this.rules.uncountable[h])return a;if(k=c&&c[h])return k;for(var m=b.length,n=0;m>n&&(d=b[m-1],l=d[0],!l.test(a));m--);return d=d||[],l=d[0],f=d[1],g=a.replace(l,f)}},a["default"]=d}),b("ember-inflector/lib/system/string",["./inflector","exports"],function(a,b){"use strict";var c=a["default"],d=function(a){return c.inflector.pluralize(a)},e=function(a){return c.inflector.singularize(a)};b.pluralize=d,b.singularize=e}),a.DS=c("ember-data/lib/main")["default"]}(window);
-},{}],54:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 var global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};(function(global) {
 
 var define, requireModule;
@@ -4463,7 +4500,7 @@ define("ember-simple-auth/utils/is_secure_url",
 global.Ember.SimpleAuth = requireModule('ember-simple-auth');
 })((typeof global !== 'undefined') ? global : window);
 
-},{}],55:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 /*!
  * @overview  Ember - JavaScript Application Framework
  * @copyright Copyright 2011-2014 Tilde Inc. and contributors
@@ -48732,7 +48769,7 @@ Ember.State = generateRemovedClass("Ember.State");
 
 })();
 
-},{}],56:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 /*
 
 Copyright (C) 2011 by Yehuda Katz
@@ -49096,7 +49133,7 @@ Handlebars.template = Handlebars.VM.template;
 })(Handlebars);
 ;
 
-},{}],57:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 /*!
 
  handlebars v1.3.0
@@ -49125,7 +49162,7 @@ THE SOFTWARE.
 */
 var Handlebars=function(){var a=function(){"use strict";function a(a){this.string=a}var b;return a.prototype.toString=function(){return""+this.string},b=a}(),b=function(a){"use strict";function b(a){return h[a]||"&amp;"}function c(a,b){for(var c in b)Object.prototype.hasOwnProperty.call(b,c)&&(a[c]=b[c])}function d(a){return a instanceof g?a.toString():a||0===a?(a=""+a,j.test(a)?a.replace(i,b):a):""}function e(a){return a||0===a?m(a)&&0===a.length?!0:!1:!0}var f={},g=a,h={"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#x27;","`":"&#x60;"},i=/[&<>"'`]/g,j=/[&<>"'`]/;f.extend=c;var k=Object.prototype.toString;f.toString=k;var l=function(a){return"function"==typeof a};l(/x/)&&(l=function(a){return"function"==typeof a&&"[object Function]"===k.call(a)});var l;f.isFunction=l;var m=Array.isArray||function(a){return a&&"object"==typeof a?"[object Array]"===k.call(a):!1};return f.isArray=m,f.escapeExpression=d,f.isEmpty=e,f}(a),c=function(){"use strict";function a(a,b){var d;b&&b.firstLine&&(d=b.firstLine,a+=" - "+d+":"+b.firstColumn);for(var e=Error.prototype.constructor.call(this,a),f=0;f<c.length;f++)this[c[f]]=e[c[f]];d&&(this.lineNumber=d,this.column=b.firstColumn)}var b,c=["description","fileName","lineNumber","message","name","number","stack"];return a.prototype=new Error,b=a}(),d=function(a,b){"use strict";function c(a,b){this.helpers=a||{},this.partials=b||{},d(this)}function d(a){a.registerHelper("helperMissing",function(a){if(2===arguments.length)return void 0;throw new h("Missing helper: '"+a+"'")}),a.registerHelper("blockHelperMissing",function(b,c){var d=c.inverse||function(){},e=c.fn;return m(b)&&(b=b.call(this)),b===!0?e(this):b===!1||null==b?d(this):l(b)?b.length>0?a.helpers.each(b,c):d(this):e(b)}),a.registerHelper("each",function(a,b){var c,d=b.fn,e=b.inverse,f=0,g="";if(m(a)&&(a=a.call(this)),b.data&&(c=q(b.data)),a&&"object"==typeof a)if(l(a))for(var h=a.length;h>f;f++)c&&(c.index=f,c.first=0===f,c.last=f===a.length-1),g+=d(a[f],{data:c});else for(var i in a)a.hasOwnProperty(i)&&(c&&(c.key=i,c.index=f,c.first=0===f),g+=d(a[i],{data:c}),f++);return 0===f&&(g=e(this)),g}),a.registerHelper("if",function(a,b){return m(a)&&(a=a.call(this)),!b.hash.includeZero&&!a||g.isEmpty(a)?b.inverse(this):b.fn(this)}),a.registerHelper("unless",function(b,c){return a.helpers["if"].call(this,b,{fn:c.inverse,inverse:c.fn,hash:c.hash})}),a.registerHelper("with",function(a,b){return m(a)&&(a=a.call(this)),g.isEmpty(a)?void 0:b.fn(a)}),a.registerHelper("log",function(b,c){var d=c.data&&null!=c.data.level?parseInt(c.data.level,10):1;a.log(d,b)})}function e(a,b){p.log(a,b)}var f={},g=a,h=b,i="1.3.0";f.VERSION=i;var j=4;f.COMPILER_REVISION=j;var k={1:"<= 1.0.rc.2",2:"== 1.0.0-rc.3",3:"== 1.0.0-rc.4",4:">= 1.0.0"};f.REVISION_CHANGES=k;var l=g.isArray,m=g.isFunction,n=g.toString,o="[object Object]";f.HandlebarsEnvironment=c,c.prototype={constructor:c,logger:p,log:e,registerHelper:function(a,b,c){if(n.call(a)===o){if(c||b)throw new h("Arg not supported with multiple helpers");g.extend(this.helpers,a)}else c&&(b.not=c),this.helpers[a]=b},registerPartial:function(a,b){n.call(a)===o?g.extend(this.partials,a):this.partials[a]=b}};var p={methodMap:{0:"debug",1:"info",2:"warn",3:"error"},DEBUG:0,INFO:1,WARN:2,ERROR:3,level:3,log:function(a,b){if(p.level<=a){var c=p.methodMap[a];"undefined"!=typeof console&&console[c]&&console[c].call(console,b)}}};f.logger=p,f.log=e;var q=function(a){var b={};return g.extend(b,a),b};return f.createFrame=q,f}(b,c),e=function(a,b,c){"use strict";function d(a){var b=a&&a[0]||1,c=m;if(b!==c){if(c>b){var d=n[c],e=n[b];throw new l("Template was precompiled with an older version of Handlebars than the current runtime. Please update your precompiler to a newer version ("+d+") or downgrade your runtime to an older version ("+e+").")}throw new l("Template was precompiled with a newer version of Handlebars than the current runtime. Please update your runtime to a newer version ("+a[1]+").")}}function e(a,b){if(!b)throw new l("No environment passed to template");var c=function(a,c,d,e,f,g){var h=b.VM.invokePartial.apply(this,arguments);if(null!=h)return h;if(b.compile){var i={helpers:e,partials:f,data:g};return f[c]=b.compile(a,{data:void 0!==g},b),f[c](d,i)}throw new l("The partial "+c+" could not be compiled when running in runtime-only mode")},d={escapeExpression:k.escapeExpression,invokePartial:c,programs:[],program:function(a,b,c){var d=this.programs[a];return c?d=g(a,b,c):d||(d=this.programs[a]=g(a,b)),d},merge:function(a,b){var c=a||b;return a&&b&&a!==b&&(c={},k.extend(c,b),k.extend(c,a)),c},programWithDepth:b.VM.programWithDepth,noop:b.VM.noop,compilerInfo:null};return function(c,e){e=e||{};var f,g,h=e.partial?e:b;e.partial||(f=e.helpers,g=e.partials);var i=a.call(d,h,c,f,g,e.data);return e.partial||b.VM.checkRevision(d.compilerInfo),i}}function f(a,b,c){var d=Array.prototype.slice.call(arguments,3),e=function(a,e){return e=e||{},b.apply(this,[a,e.data||c].concat(d))};return e.program=a,e.depth=d.length,e}function g(a,b,c){var d=function(a,d){return d=d||{},b(a,d.data||c)};return d.program=a,d.depth=0,d}function h(a,b,c,d,e,f){var g={partial:!0,helpers:d,partials:e,data:f};if(void 0===a)throw new l("The partial "+b+" could not be found");return a instanceof Function?a(c,g):void 0}function i(){return""}var j={},k=a,l=b,m=c.COMPILER_REVISION,n=c.REVISION_CHANGES;return j.checkRevision=d,j.template=e,j.programWithDepth=f,j.program=g,j.invokePartial=h,j.noop=i,j}(b,c,d),f=function(a,b,c,d,e){"use strict";var f,g=a,h=b,i=c,j=d,k=e,l=function(){var a=new g.HandlebarsEnvironment;return j.extend(a,g),a.SafeString=h,a.Exception=i,a.Utils=j,a.VM=k,a.template=function(b){return k.template(b,a)},a},m=l();return m.create=l,f=m}(d,a,c,b,e),g=function(a){"use strict";function b(a){a=a||{},this.firstLine=a.first_line,this.firstColumn=a.first_column,this.lastColumn=a.last_column,this.lastLine=a.last_line}var c,d=a,e={ProgramNode:function(a,c,d,f){var g,h;3===arguments.length?(f=d,d=null):2===arguments.length&&(f=c,c=null),b.call(this,f),this.type="program",this.statements=a,this.strip={},d?(h=d[0],h?(g={first_line:h.firstLine,last_line:h.lastLine,last_column:h.lastColumn,first_column:h.firstColumn},this.inverse=new e.ProgramNode(d,c,g)):this.inverse=new e.ProgramNode(d,c),this.strip.right=c.left):c&&(this.strip.left=c.right)},MustacheNode:function(a,c,d,f,g){if(b.call(this,g),this.type="mustache",this.strip=f,null!=d&&d.charAt){var h=d.charAt(3)||d.charAt(2);this.escaped="{"!==h&&"&"!==h}else this.escaped=!!d;this.sexpr=a instanceof e.SexprNode?a:new e.SexprNode(a,c),this.sexpr.isRoot=!0,this.id=this.sexpr.id,this.params=this.sexpr.params,this.hash=this.sexpr.hash,this.eligibleHelper=this.sexpr.eligibleHelper,this.isHelper=this.sexpr.isHelper},SexprNode:function(a,c,d){b.call(this,d),this.type="sexpr",this.hash=c;var e=this.id=a[0],f=this.params=a.slice(1),g=this.eligibleHelper=e.isSimple;this.isHelper=g&&(f.length||c)},PartialNode:function(a,c,d,e){b.call(this,e),this.type="partial",this.partialName=a,this.context=c,this.strip=d},BlockNode:function(a,c,e,f,g){if(b.call(this,g),a.sexpr.id.original!==f.path.original)throw new d(a.sexpr.id.original+" doesn't match "+f.path.original,this);this.type="block",this.mustache=a,this.program=c,this.inverse=e,this.strip={left:a.strip.left,right:f.strip.right},(c||e).strip.left=a.strip.right,(e||c).strip.right=f.strip.left,e&&!c&&(this.isInverse=!0)},ContentNode:function(a,c){b.call(this,c),this.type="content",this.string=a},HashNode:function(a,c){b.call(this,c),this.type="hash",this.pairs=a},IdNode:function(a,c){b.call(this,c),this.type="ID";for(var e="",f=[],g=0,h=0,i=a.length;i>h;h++){var j=a[h].part;if(e+=(a[h].separator||"")+j,".."===j||"."===j||"this"===j){if(f.length>0)throw new d("Invalid path: "+e,this);".."===j?g++:this.isScoped=!0}else f.push(j)}this.original=e,this.parts=f,this.string=f.join("."),this.depth=g,this.isSimple=1===a.length&&!this.isScoped&&0===g,this.stringModeValue=this.string},PartialNameNode:function(a,c){b.call(this,c),this.type="PARTIAL_NAME",this.name=a.original},DataNode:function(a,c){b.call(this,c),this.type="DATA",this.id=a},StringNode:function(a,c){b.call(this,c),this.type="STRING",this.original=this.string=this.stringModeValue=a},IntegerNode:function(a,c){b.call(this,c),this.type="INTEGER",this.original=this.integer=a,this.stringModeValue=Number(a)},BooleanNode:function(a,c){b.call(this,c),this.type="BOOLEAN",this.bool=a,this.stringModeValue="true"===a},CommentNode:function(a,c){b.call(this,c),this.type="comment",this.comment=a}};return c=e}(c),h=function(){"use strict";var a,b=function(){function a(a,b){return{left:"~"===a.charAt(2),right:"~"===b.charAt(0)||"~"===b.charAt(1)}}function b(){this.yy={}}var c={trace:function(){},yy:{},symbols_:{error:2,root:3,statements:4,EOF:5,program:6,simpleInverse:7,statement:8,openInverse:9,closeBlock:10,openBlock:11,mustache:12,partial:13,CONTENT:14,COMMENT:15,OPEN_BLOCK:16,sexpr:17,CLOSE:18,OPEN_INVERSE:19,OPEN_ENDBLOCK:20,path:21,OPEN:22,OPEN_UNESCAPED:23,CLOSE_UNESCAPED:24,OPEN_PARTIAL:25,partialName:26,partial_option0:27,sexpr_repetition0:28,sexpr_option0:29,dataName:30,param:31,STRING:32,INTEGER:33,BOOLEAN:34,OPEN_SEXPR:35,CLOSE_SEXPR:36,hash:37,hash_repetition_plus0:38,hashSegment:39,ID:40,EQUALS:41,DATA:42,pathSegments:43,SEP:44,$accept:0,$end:1},terminals_:{2:"error",5:"EOF",14:"CONTENT",15:"COMMENT",16:"OPEN_BLOCK",18:"CLOSE",19:"OPEN_INVERSE",20:"OPEN_ENDBLOCK",22:"OPEN",23:"OPEN_UNESCAPED",24:"CLOSE_UNESCAPED",25:"OPEN_PARTIAL",32:"STRING",33:"INTEGER",34:"BOOLEAN",35:"OPEN_SEXPR",36:"CLOSE_SEXPR",40:"ID",41:"EQUALS",42:"DATA",44:"SEP"},productions_:[0,[3,2],[3,1],[6,2],[6,3],[6,2],[6,1],[6,1],[6,0],[4,1],[4,2],[8,3],[8,3],[8,1],[8,1],[8,1],[8,1],[11,3],[9,3],[10,3],[12,3],[12,3],[13,4],[7,2],[17,3],[17,1],[31,1],[31,1],[31,1],[31,1],[31,1],[31,3],[37,1],[39,3],[26,1],[26,1],[26,1],[30,2],[21,1],[43,3],[43,1],[27,0],[27,1],[28,0],[28,2],[29,0],[29,1],[38,1],[38,2]],performAction:function(b,c,d,e,f,g){var h=g.length-1;switch(f){case 1:return new e.ProgramNode(g[h-1],this._$);case 2:return new e.ProgramNode([],this._$);case 3:this.$=new e.ProgramNode([],g[h-1],g[h],this._$);break;case 4:this.$=new e.ProgramNode(g[h-2],g[h-1],g[h],this._$);break;case 5:this.$=new e.ProgramNode(g[h-1],g[h],[],this._$);break;case 6:this.$=new e.ProgramNode(g[h],this._$);break;case 7:this.$=new e.ProgramNode([],this._$);break;case 8:this.$=new e.ProgramNode([],this._$);break;case 9:this.$=[g[h]];break;case 10:g[h-1].push(g[h]),this.$=g[h-1];break;case 11:this.$=new e.BlockNode(g[h-2],g[h-1].inverse,g[h-1],g[h],this._$);break;case 12:this.$=new e.BlockNode(g[h-2],g[h-1],g[h-1].inverse,g[h],this._$);break;case 13:this.$=g[h];break;case 14:this.$=g[h];break;case 15:this.$=new e.ContentNode(g[h],this._$);break;case 16:this.$=new e.CommentNode(g[h],this._$);break;case 17:this.$=new e.MustacheNode(g[h-1],null,g[h-2],a(g[h-2],g[h]),this._$);break;case 18:this.$=new e.MustacheNode(g[h-1],null,g[h-2],a(g[h-2],g[h]),this._$);break;case 19:this.$={path:g[h-1],strip:a(g[h-2],g[h])};break;case 20:this.$=new e.MustacheNode(g[h-1],null,g[h-2],a(g[h-2],g[h]),this._$);break;case 21:this.$=new e.MustacheNode(g[h-1],null,g[h-2],a(g[h-2],g[h]),this._$);break;case 22:this.$=new e.PartialNode(g[h-2],g[h-1],a(g[h-3],g[h]),this._$);break;case 23:this.$=a(g[h-1],g[h]);break;case 24:this.$=new e.SexprNode([g[h-2]].concat(g[h-1]),g[h],this._$);break;case 25:this.$=new e.SexprNode([g[h]],null,this._$);break;case 26:this.$=g[h];break;case 27:this.$=new e.StringNode(g[h],this._$);break;case 28:this.$=new e.IntegerNode(g[h],this._$);break;case 29:this.$=new e.BooleanNode(g[h],this._$);break;case 30:this.$=g[h];break;case 31:g[h-1].isHelper=!0,this.$=g[h-1];break;case 32:this.$=new e.HashNode(g[h],this._$);break;case 33:this.$=[g[h-2],g[h]];break;case 34:this.$=new e.PartialNameNode(g[h],this._$);break;case 35:this.$=new e.PartialNameNode(new e.StringNode(g[h],this._$),this._$);break;case 36:this.$=new e.PartialNameNode(new e.IntegerNode(g[h],this._$));break;case 37:this.$=new e.DataNode(g[h],this._$);break;case 38:this.$=new e.IdNode(g[h],this._$);break;case 39:g[h-2].push({part:g[h],separator:g[h-1]}),this.$=g[h-2];break;case 40:this.$=[{part:g[h]}];break;case 43:this.$=[];break;case 44:g[h-1].push(g[h]);break;case 47:this.$=[g[h]];break;case 48:g[h-1].push(g[h])}},table:[{3:1,4:2,5:[1,3],8:4,9:5,11:6,12:7,13:8,14:[1,9],15:[1,10],16:[1,12],19:[1,11],22:[1,13],23:[1,14],25:[1,15]},{1:[3]},{5:[1,16],8:17,9:5,11:6,12:7,13:8,14:[1,9],15:[1,10],16:[1,12],19:[1,11],22:[1,13],23:[1,14],25:[1,15]},{1:[2,2]},{5:[2,9],14:[2,9],15:[2,9],16:[2,9],19:[2,9],20:[2,9],22:[2,9],23:[2,9],25:[2,9]},{4:20,6:18,7:19,8:4,9:5,11:6,12:7,13:8,14:[1,9],15:[1,10],16:[1,12],19:[1,21],20:[2,8],22:[1,13],23:[1,14],25:[1,15]},{4:20,6:22,7:19,8:4,9:5,11:6,12:7,13:8,14:[1,9],15:[1,10],16:[1,12],19:[1,21],20:[2,8],22:[1,13],23:[1,14],25:[1,15]},{5:[2,13],14:[2,13],15:[2,13],16:[2,13],19:[2,13],20:[2,13],22:[2,13],23:[2,13],25:[2,13]},{5:[2,14],14:[2,14],15:[2,14],16:[2,14],19:[2,14],20:[2,14],22:[2,14],23:[2,14],25:[2,14]},{5:[2,15],14:[2,15],15:[2,15],16:[2,15],19:[2,15],20:[2,15],22:[2,15],23:[2,15],25:[2,15]},{5:[2,16],14:[2,16],15:[2,16],16:[2,16],19:[2,16],20:[2,16],22:[2,16],23:[2,16],25:[2,16]},{17:23,21:24,30:25,40:[1,28],42:[1,27],43:26},{17:29,21:24,30:25,40:[1,28],42:[1,27],43:26},{17:30,21:24,30:25,40:[1,28],42:[1,27],43:26},{17:31,21:24,30:25,40:[1,28],42:[1,27],43:26},{21:33,26:32,32:[1,34],33:[1,35],40:[1,28],43:26},{1:[2,1]},{5:[2,10],14:[2,10],15:[2,10],16:[2,10],19:[2,10],20:[2,10],22:[2,10],23:[2,10],25:[2,10]},{10:36,20:[1,37]},{4:38,8:4,9:5,11:6,12:7,13:8,14:[1,9],15:[1,10],16:[1,12],19:[1,11],20:[2,7],22:[1,13],23:[1,14],25:[1,15]},{7:39,8:17,9:5,11:6,12:7,13:8,14:[1,9],15:[1,10],16:[1,12],19:[1,21],20:[2,6],22:[1,13],23:[1,14],25:[1,15]},{17:23,18:[1,40],21:24,30:25,40:[1,28],42:[1,27],43:26},{10:41,20:[1,37]},{18:[1,42]},{18:[2,43],24:[2,43],28:43,32:[2,43],33:[2,43],34:[2,43],35:[2,43],36:[2,43],40:[2,43],42:[2,43]},{18:[2,25],24:[2,25],36:[2,25]},{18:[2,38],24:[2,38],32:[2,38],33:[2,38],34:[2,38],35:[2,38],36:[2,38],40:[2,38],42:[2,38],44:[1,44]},{21:45,40:[1,28],43:26},{18:[2,40],24:[2,40],32:[2,40],33:[2,40],34:[2,40],35:[2,40],36:[2,40],40:[2,40],42:[2,40],44:[2,40]},{18:[1,46]},{18:[1,47]},{24:[1,48]},{18:[2,41],21:50,27:49,40:[1,28],43:26},{18:[2,34],40:[2,34]},{18:[2,35],40:[2,35]},{18:[2,36],40:[2,36]},{5:[2,11],14:[2,11],15:[2,11],16:[2,11],19:[2,11],20:[2,11],22:[2,11],23:[2,11],25:[2,11]},{21:51,40:[1,28],43:26},{8:17,9:5,11:6,12:7,13:8,14:[1,9],15:[1,10],16:[1,12],19:[1,11],20:[2,3],22:[1,13],23:[1,14],25:[1,15]},{4:52,8:4,9:5,11:6,12:7,13:8,14:[1,9],15:[1,10],16:[1,12],19:[1,11],20:[2,5],22:[1,13],23:[1,14],25:[1,15]},{14:[2,23],15:[2,23],16:[2,23],19:[2,23],20:[2,23],22:[2,23],23:[2,23],25:[2,23]},{5:[2,12],14:[2,12],15:[2,12],16:[2,12],19:[2,12],20:[2,12],22:[2,12],23:[2,12],25:[2,12]},{14:[2,18],15:[2,18],16:[2,18],19:[2,18],20:[2,18],22:[2,18],23:[2,18],25:[2,18]},{18:[2,45],21:56,24:[2,45],29:53,30:60,31:54,32:[1,57],33:[1,58],34:[1,59],35:[1,61],36:[2,45],37:55,38:62,39:63,40:[1,64],42:[1,27],43:26},{40:[1,65]},{18:[2,37],24:[2,37],32:[2,37],33:[2,37],34:[2,37],35:[2,37],36:[2,37],40:[2,37],42:[2,37]},{14:[2,17],15:[2,17],16:[2,17],19:[2,17],20:[2,17],22:[2,17],23:[2,17],25:[2,17]},{5:[2,20],14:[2,20],15:[2,20],16:[2,20],19:[2,20],20:[2,20],22:[2,20],23:[2,20],25:[2,20]},{5:[2,21],14:[2,21],15:[2,21],16:[2,21],19:[2,21],20:[2,21],22:[2,21],23:[2,21],25:[2,21]},{18:[1,66]},{18:[2,42]},{18:[1,67]},{8:17,9:5,11:6,12:7,13:8,14:[1,9],15:[1,10],16:[1,12],19:[1,11],20:[2,4],22:[1,13],23:[1,14],25:[1,15]},{18:[2,24],24:[2,24],36:[2,24]},{18:[2,44],24:[2,44],32:[2,44],33:[2,44],34:[2,44],35:[2,44],36:[2,44],40:[2,44],42:[2,44]},{18:[2,46],24:[2,46],36:[2,46]},{18:[2,26],24:[2,26],32:[2,26],33:[2,26],34:[2,26],35:[2,26],36:[2,26],40:[2,26],42:[2,26]},{18:[2,27],24:[2,27],32:[2,27],33:[2,27],34:[2,27],35:[2,27],36:[2,27],40:[2,27],42:[2,27]},{18:[2,28],24:[2,28],32:[2,28],33:[2,28],34:[2,28],35:[2,28],36:[2,28],40:[2,28],42:[2,28]},{18:[2,29],24:[2,29],32:[2,29],33:[2,29],34:[2,29],35:[2,29],36:[2,29],40:[2,29],42:[2,29]},{18:[2,30],24:[2,30],32:[2,30],33:[2,30],34:[2,30],35:[2,30],36:[2,30],40:[2,30],42:[2,30]},{17:68,21:24,30:25,40:[1,28],42:[1,27],43:26},{18:[2,32],24:[2,32],36:[2,32],39:69,40:[1,70]},{18:[2,47],24:[2,47],36:[2,47],40:[2,47]},{18:[2,40],24:[2,40],32:[2,40],33:[2,40],34:[2,40],35:[2,40],36:[2,40],40:[2,40],41:[1,71],42:[2,40],44:[2,40]},{18:[2,39],24:[2,39],32:[2,39],33:[2,39],34:[2,39],35:[2,39],36:[2,39],40:[2,39],42:[2,39],44:[2,39]},{5:[2,22],14:[2,22],15:[2,22],16:[2,22],19:[2,22],20:[2,22],22:[2,22],23:[2,22],25:[2,22]},{5:[2,19],14:[2,19],15:[2,19],16:[2,19],19:[2,19],20:[2,19],22:[2,19],23:[2,19],25:[2,19]},{36:[1,72]},{18:[2,48],24:[2,48],36:[2,48],40:[2,48]},{41:[1,71]},{21:56,30:60,31:73,32:[1,57],33:[1,58],34:[1,59],35:[1,61],40:[1,28],42:[1,27],43:26},{18:[2,31],24:[2,31],32:[2,31],33:[2,31],34:[2,31],35:[2,31],36:[2,31],40:[2,31],42:[2,31]},{18:[2,33],24:[2,33],36:[2,33],40:[2,33]}],defaultActions:{3:[2,2],16:[2,1],50:[2,42]},parseError:function(a){throw new Error(a)},parse:function(a){function b(){var a;return a=c.lexer.lex()||1,"number"!=typeof a&&(a=c.symbols_[a]||a),a}var c=this,d=[0],e=[null],f=[],g=this.table,h="",i=0,j=0,k=0;this.lexer.setInput(a),this.lexer.yy=this.yy,this.yy.lexer=this.lexer,this.yy.parser=this,"undefined"==typeof this.lexer.yylloc&&(this.lexer.yylloc={});var l=this.lexer.yylloc;f.push(l);var m=this.lexer.options&&this.lexer.options.ranges;"function"==typeof this.yy.parseError&&(this.parseError=this.yy.parseError);for(var n,o,p,q,r,s,t,u,v,w={};;){if(p=d[d.length-1],this.defaultActions[p]?q=this.defaultActions[p]:((null===n||"undefined"==typeof n)&&(n=b()),q=g[p]&&g[p][n]),"undefined"==typeof q||!q.length||!q[0]){var x="";if(!k){v=[];for(s in g[p])this.terminals_[s]&&s>2&&v.push("'"+this.terminals_[s]+"'");x=this.lexer.showPosition?"Parse error on line "+(i+1)+":\n"+this.lexer.showPosition()+"\nExpecting "+v.join(", ")+", got '"+(this.terminals_[n]||n)+"'":"Parse error on line "+(i+1)+": Unexpected "+(1==n?"end of input":"'"+(this.terminals_[n]||n)+"'"),this.parseError(x,{text:this.lexer.match,token:this.terminals_[n]||n,line:this.lexer.yylineno,loc:l,expected:v})}}if(q[0]instanceof Array&&q.length>1)throw new Error("Parse Error: multiple actions possible at state: "+p+", token: "+n);switch(q[0]){case 1:d.push(n),e.push(this.lexer.yytext),f.push(this.lexer.yylloc),d.push(q[1]),n=null,o?(n=o,o=null):(j=this.lexer.yyleng,h=this.lexer.yytext,i=this.lexer.yylineno,l=this.lexer.yylloc,k>0&&k--);break;case 2:if(t=this.productions_[q[1]][1],w.$=e[e.length-t],w._$={first_line:f[f.length-(t||1)].first_line,last_line:f[f.length-1].last_line,first_column:f[f.length-(t||1)].first_column,last_column:f[f.length-1].last_column},m&&(w._$.range=[f[f.length-(t||1)].range[0],f[f.length-1].range[1]]),r=this.performAction.call(w,h,j,i,this.yy,q[1],e,f),"undefined"!=typeof r)return r;t&&(d=d.slice(0,-1*t*2),e=e.slice(0,-1*t),f=f.slice(0,-1*t)),d.push(this.productions_[q[1]][0]),e.push(w.$),f.push(w._$),u=g[d[d.length-2]][d[d.length-1]],d.push(u);break;case 3:return!0}}return!0}},d=function(){var a={EOF:1,parseError:function(a,b){if(!this.yy.parser)throw new Error(a);this.yy.parser.parseError(a,b)},setInput:function(a){return this._input=a,this._more=this._less=this.done=!1,this.yylineno=this.yyleng=0,this.yytext=this.matched=this.match="",this.conditionStack=["INITIAL"],this.yylloc={first_line:1,first_column:0,last_line:1,last_column:0},this.options.ranges&&(this.yylloc.range=[0,0]),this.offset=0,this},input:function(){var a=this._input[0];this.yytext+=a,this.yyleng++,this.offset++,this.match+=a,this.matched+=a;var b=a.match(/(?:\r\n?|\n).*/g);return b?(this.yylineno++,this.yylloc.last_line++):this.yylloc.last_column++,this.options.ranges&&this.yylloc.range[1]++,this._input=this._input.slice(1),a},unput:function(a){var b=a.length,c=a.split(/(?:\r\n?|\n)/g);this._input=a+this._input,this.yytext=this.yytext.substr(0,this.yytext.length-b-1),this.offset-=b;var d=this.match.split(/(?:\r\n?|\n)/g);this.match=this.match.substr(0,this.match.length-1),this.matched=this.matched.substr(0,this.matched.length-1),c.length-1&&(this.yylineno-=c.length-1);var e=this.yylloc.range;return this.yylloc={first_line:this.yylloc.first_line,last_line:this.yylineno+1,first_column:this.yylloc.first_column,last_column:c?(c.length===d.length?this.yylloc.first_column:0)+d[d.length-c.length].length-c[0].length:this.yylloc.first_column-b},this.options.ranges&&(this.yylloc.range=[e[0],e[0]+this.yyleng-b]),this},more:function(){return this._more=!0,this},less:function(a){this.unput(this.match.slice(a))},pastInput:function(){var a=this.matched.substr(0,this.matched.length-this.match.length);return(a.length>20?"...":"")+a.substr(-20).replace(/\n/g,"")},upcomingInput:function(){var a=this.match;return a.length<20&&(a+=this._input.substr(0,20-a.length)),(a.substr(0,20)+(a.length>20?"...":"")).replace(/\n/g,"")},showPosition:function(){var a=this.pastInput(),b=new Array(a.length+1).join("-");return a+this.upcomingInput()+"\n"+b+"^"},next:function(){if(this.done)return this.EOF;this._input||(this.done=!0);var a,b,c,d,e;this._more||(this.yytext="",this.match="");for(var f=this._currentRules(),g=0;g<f.length&&(c=this._input.match(this.rules[f[g]]),!c||b&&!(c[0].length>b[0].length)||(b=c,d=g,this.options.flex));g++);return b?(e=b[0].match(/(?:\r\n?|\n).*/g),e&&(this.yylineno+=e.length),this.yylloc={first_line:this.yylloc.last_line,last_line:this.yylineno+1,first_column:this.yylloc.last_column,last_column:e?e[e.length-1].length-e[e.length-1].match(/\r?\n?/)[0].length:this.yylloc.last_column+b[0].length},this.yytext+=b[0],this.match+=b[0],this.matches=b,this.yyleng=this.yytext.length,this.options.ranges&&(this.yylloc.range=[this.offset,this.offset+=this.yyleng]),this._more=!1,this._input=this._input.slice(b[0].length),this.matched+=b[0],a=this.performAction.call(this,this.yy,this,f[d],this.conditionStack[this.conditionStack.length-1]),this.done&&this._input&&(this.done=!1),a?a:void 0):""===this._input?this.EOF:this.parseError("Lexical error on line "+(this.yylineno+1)+". Unrecognized text.\n"+this.showPosition(),{text:"",token:null,line:this.yylineno})},lex:function(){var a=this.next();return"undefined"!=typeof a?a:this.lex()},begin:function(a){this.conditionStack.push(a)},popState:function(){return this.conditionStack.pop()},_currentRules:function(){return this.conditions[this.conditionStack[this.conditionStack.length-1]].rules},topState:function(){return this.conditionStack[this.conditionStack.length-2]},pushState:function(a){this.begin(a)}};return a.options={},a.performAction=function(a,b,c,d){function e(a,c){return b.yytext=b.yytext.substr(a,b.yyleng-c)}switch(c){case 0:if("\\\\"===b.yytext.slice(-2)?(e(0,1),this.begin("mu")):"\\"===b.yytext.slice(-1)?(e(0,1),this.begin("emu")):this.begin("mu"),b.yytext)return 14;break;case 1:return 14;case 2:return this.popState(),14;case 3:return e(0,4),this.popState(),15;case 4:return 35;case 5:return 36;case 6:return 25;case 7:return 16;case 8:return 20;case 9:return 19;case 10:return 19;case 11:return 23;case 12:return 22;case 13:this.popState(),this.begin("com");break;case 14:return e(3,5),this.popState(),15;case 15:return 22;case 16:return 41;case 17:return 40;case 18:return 40;case 19:return 44;case 20:break;case 21:return this.popState(),24;case 22:return this.popState(),18;case 23:return b.yytext=e(1,2).replace(/\\"/g,'"'),32;case 24:return b.yytext=e(1,2).replace(/\\'/g,"'"),32;case 25:return 42;case 26:return 34;case 27:return 34;case 28:return 33;case 29:return 40;case 30:return b.yytext=e(1,2),40;case 31:return"INVALID";case 32:return 5}},a.rules=[/^(?:[^\x00]*?(?=(\{\{)))/,/^(?:[^\x00]+)/,/^(?:[^\x00]{2,}?(?=(\{\{|\\\{\{|\\\\\{\{|$)))/,/^(?:[\s\S]*?--\}\})/,/^(?:\()/,/^(?:\))/,/^(?:\{\{(~)?>)/,/^(?:\{\{(~)?#)/,/^(?:\{\{(~)?\/)/,/^(?:\{\{(~)?\^)/,/^(?:\{\{(~)?\s*else\b)/,/^(?:\{\{(~)?\{)/,/^(?:\{\{(~)?&)/,/^(?:\{\{!--)/,/^(?:\{\{![\s\S]*?\}\})/,/^(?:\{\{(~)?)/,/^(?:=)/,/^(?:\.\.)/,/^(?:\.(?=([=~}\s\/.)])))/,/^(?:[\/.])/,/^(?:\s+)/,/^(?:\}(~)?\}\})/,/^(?:(~)?\}\})/,/^(?:"(\\["]|[^"])*")/,/^(?:'(\\[']|[^'])*')/,/^(?:@)/,/^(?:true(?=([~}\s)])))/,/^(?:false(?=([~}\s)])))/,/^(?:-?[0-9]+(?=([~}\s)])))/,/^(?:([^\s!"#%-,\.\/;->@\[-\^`\{-~]+(?=([=~}\s\/.)]))))/,/^(?:\[[^\]]*\])/,/^(?:.)/,/^(?:$)/],a.conditions={mu:{rules:[4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32],inclusive:!1},emu:{rules:[2],inclusive:!1},com:{rules:[3],inclusive:!1},INITIAL:{rules:[0,1,32],inclusive:!0}},a}();return c.lexer=d,b.prototype=c,c.Parser=b,new b}();return a=b}(),i=function(a,b){"use strict";function c(a){return a.constructor===f.ProgramNode?a:(e.yy=f,e.parse(a))}var d={},e=a,f=b;return d.parser=e,d.parse=c,d}(h,g),j=function(a){"use strict";function b(){}function c(a,b,c){if(null==a||"string"!=typeof a&&a.constructor!==c.AST.ProgramNode)throw new f("You must pass a string or Handlebars AST to Handlebars.precompile. You passed "+a);b=b||{},"data"in b||(b.data=!0);var d=c.parse(a),e=(new c.Compiler).compile(d,b);return(new c.JavaScriptCompiler).compile(e,b)}function d(a,b,c){function d(){var d=c.parse(a),e=(new c.Compiler).compile(d,b),f=(new c.JavaScriptCompiler).compile(e,b,void 0,!0);return c.template(f)}if(null==a||"string"!=typeof a&&a.constructor!==c.AST.ProgramNode)throw new f("You must pass a string or Handlebars AST to Handlebars.compile. You passed "+a);b=b||{},"data"in b||(b.data=!0);var e;return function(a,b){return e||(e=d()),e.call(this,a,b)}}var e={},f=a;return e.Compiler=b,b.prototype={compiler:b,disassemble:function(){for(var a,b,c,d=this.opcodes,e=[],f=0,g=d.length;g>f;f++)if(a=d[f],"DECLARE"===a.opcode)e.push("DECLARE "+a.name+"="+a.value);else{b=[];for(var h=0;h<a.args.length;h++)c=a.args[h],"string"==typeof c&&(c='"'+c.replace("\n","\\n")+'"'),b.push(c);e.push(a.opcode+" "+b.join(" "))}return e.join("\n")},equals:function(a){var b=this.opcodes.length;if(a.opcodes.length!==b)return!1;for(var c=0;b>c;c++){var d=this.opcodes[c],e=a.opcodes[c];if(d.opcode!==e.opcode||d.args.length!==e.args.length)return!1;for(var f=0;f<d.args.length;f++)if(d.args[f]!==e.args[f])return!1}if(b=this.children.length,a.children.length!==b)return!1;for(c=0;b>c;c++)if(!this.children[c].equals(a.children[c]))return!1;return!0},guid:0,compile:function(a,b){this.opcodes=[],this.children=[],this.depths={list:[]},this.options=b;var c=this.options.knownHelpers;if(this.options.knownHelpers={helperMissing:!0,blockHelperMissing:!0,each:!0,"if":!0,unless:!0,"with":!0,log:!0},c)for(var d in c)this.options.knownHelpers[d]=c[d];return this.accept(a)},accept:function(a){var b,c=a.strip||{};return c.left&&this.opcode("strip"),b=this[a.type](a),c.right&&this.opcode("strip"),b},program:function(a){for(var b=a.statements,c=0,d=b.length;d>c;c++)this.accept(b[c]);return this.isSimple=1===d,this.depths.list=this.depths.list.sort(function(a,b){return a-b}),this},compileProgram:function(a){var b,c=(new this.compiler).compile(a,this.options),d=this.guid++;this.usePartial=this.usePartial||c.usePartial,this.children[d]=c;for(var e=0,f=c.depths.list.length;f>e;e++)b=c.depths.list[e],2>b||this.addDepth(b-1);return d},block:function(a){var b=a.mustache,c=a.program,d=a.inverse;c&&(c=this.compileProgram(c)),d&&(d=this.compileProgram(d));var e=b.sexpr,f=this.classifySexpr(e);"helper"===f?this.helperSexpr(e,c,d):"simple"===f?(this.simpleSexpr(e),this.opcode("pushProgram",c),this.opcode("pushProgram",d),this.opcode("emptyHash"),this.opcode("blockValue")):(this.ambiguousSexpr(e,c,d),this.opcode("pushProgram",c),this.opcode("pushProgram",d),this.opcode("emptyHash"),this.opcode("ambiguousBlockValue")),this.opcode("append")},hash:function(a){var b,c,d=a.pairs;this.opcode("pushHash");for(var e=0,f=d.length;f>e;e++)b=d[e],c=b[1],this.options.stringParams?(c.depth&&this.addDepth(c.depth),this.opcode("getContext",c.depth||0),this.opcode("pushStringParam",c.stringModeValue,c.type),"sexpr"===c.type&&this.sexpr(c)):this.accept(c),this.opcode("assignToHash",b[0]);this.opcode("popHash")},partial:function(a){var b=a.partialName;this.usePartial=!0,a.context?this.ID(a.context):this.opcode("push","depth0"),this.opcode("invokePartial",b.name),this.opcode("append")},content:function(a){this.opcode("appendContent",a.string)},mustache:function(a){this.sexpr(a.sexpr),a.escaped&&!this.options.noEscape?this.opcode("appendEscaped"):this.opcode("append")},ambiguousSexpr:function(a,b,c){var d=a.id,e=d.parts[0],f=null!=b||null!=c;this.opcode("getContext",d.depth),this.opcode("pushProgram",b),this.opcode("pushProgram",c),this.opcode("invokeAmbiguous",e,f)},simpleSexpr:function(a){var b=a.id;"DATA"===b.type?this.DATA(b):b.parts.length?this.ID(b):(this.addDepth(b.depth),this.opcode("getContext",b.depth),this.opcode("pushContext")),this.opcode("resolvePossibleLambda")},helperSexpr:function(a,b,c){var d=this.setupFullMustacheParams(a,b,c),e=a.id.parts[0];if(this.options.knownHelpers[e])this.opcode("invokeKnownHelper",d.length,e);else{if(this.options.knownHelpersOnly)throw new f("You specified knownHelpersOnly, but used the unknown helper "+e,a);this.opcode("invokeHelper",d.length,e,a.isRoot)}},sexpr:function(a){var b=this.classifySexpr(a);"simple"===b?this.simpleSexpr(a):"helper"===b?this.helperSexpr(a):this.ambiguousSexpr(a)},ID:function(a){this.addDepth(a.depth),this.opcode("getContext",a.depth);var b=a.parts[0];b?this.opcode("lookupOnContext",a.parts[0]):this.opcode("pushContext");for(var c=1,d=a.parts.length;d>c;c++)this.opcode("lookup",a.parts[c])},DATA:function(a){if(this.options.data=!0,a.id.isScoped||a.id.depth)throw new f("Scoped data references are not supported: "+a.original,a);this.opcode("lookupData");for(var b=a.id.parts,c=0,d=b.length;d>c;c++)this.opcode("lookup",b[c])},STRING:function(a){this.opcode("pushString",a.string)},INTEGER:function(a){this.opcode("pushLiteral",a.integer)},BOOLEAN:function(a){this.opcode("pushLiteral",a.bool)},comment:function(){},opcode:function(a){this.opcodes.push({opcode:a,args:[].slice.call(arguments,1)})},declare:function(a,b){this.opcodes.push({opcode:"DECLARE",name:a,value:b})},addDepth:function(a){0!==a&&(this.depths[a]||(this.depths[a]=!0,this.depths.list.push(a)))},classifySexpr:function(a){var b=a.isHelper,c=a.eligibleHelper,d=this.options;if(c&&!b){var e=a.id.parts[0];d.knownHelpers[e]?b=!0:d.knownHelpersOnly&&(c=!1)}return b?"helper":c?"ambiguous":"simple"},pushParams:function(a){for(var b,c=a.length;c--;)b=a[c],this.options.stringParams?(b.depth&&this.addDepth(b.depth),this.opcode("getContext",b.depth||0),this.opcode("pushStringParam",b.stringModeValue,b.type),"sexpr"===b.type&&this.sexpr(b)):this[b.type](b)},setupFullMustacheParams:function(a,b,c){var d=a.params;return this.pushParams(d),this.opcode("pushProgram",b),this.opcode("pushProgram",c),a.hash?this.hash(a.hash):this.opcode("emptyHash"),d}},e.precompile=c,e.compile=d,e}(c),k=function(a,b){"use strict";function c(a){this.value=a}function d(){}var e,f=a.COMPILER_REVISION,g=a.REVISION_CHANGES,h=a.log,i=b;d.prototype={nameLookup:function(a,b){var c,e;return 0===a.indexOf("depth")&&(c=!0),e=/^[0-9]+$/.test(b)?a+"["+b+"]":d.isValidJavaScriptVariableName(b)?a+"."+b:a+"['"+b+"']",c?"("+a+" && "+e+")":e},compilerInfo:function(){var a=f,b=g[a];return"this.compilerInfo = ["+a+",'"+b+"'];\n"},appendToBuffer:function(a){return this.environment.isSimple?"return "+a+";":{appendToBuffer:!0,content:a,toString:function(){return"buffer += "+a+";"}}},initializeBuffer:function(){return this.quotedString("")},namespace:"Handlebars",compile:function(a,b,c,d){this.environment=a,this.options=b||{},h("debug",this.environment.disassemble()+"\n\n"),this.name=this.environment.name,this.isChild=!!c,this.context=c||{programs:[],environments:[],aliases:{}},this.preamble(),this.stackSlot=0,this.stackVars=[],this.registers={list:[]},this.hashes=[],this.compileStack=[],this.inlineStack=[],this.compileChildren(a,b);
 var e,f=a.opcodes;this.i=0;for(var g=f.length;this.i<g;this.i++)e=f[this.i],"DECLARE"===e.opcode?this[e.name]=e.value:this[e.opcode].apply(this,e.args),e.opcode!==this.stripNext&&(this.stripNext=!1);if(this.pushSource(""),this.stackSlot||this.inlineStack.length||this.compileStack.length)throw new i("Compile completed with content left on stack");return this.createFunctionContext(d)},preamble:function(){var a=[];if(this.isChild)a.push("");else{var b=this.namespace,c="helpers = this.merge(helpers, "+b+".helpers);";this.environment.usePartial&&(c=c+" partials = this.merge(partials, "+b+".partials);"),this.options.data&&(c+=" data = data || {};"),a.push(c)}this.environment.isSimple?a.push(""):a.push(", buffer = "+this.initializeBuffer()),this.lastContext=0,this.source=a},createFunctionContext:function(a){var b=this.stackVars.concat(this.registers.list);if(b.length>0&&(this.source[1]=this.source[1]+", "+b.join(", ")),!this.isChild)for(var c in this.context.aliases)this.context.aliases.hasOwnProperty(c)&&(this.source[1]=this.source[1]+", "+c+"="+this.context.aliases[c]);this.source[1]&&(this.source[1]="var "+this.source[1].substring(2)+";"),this.isChild||(this.source[1]+="\n"+this.context.programs.join("\n")+"\n"),this.environment.isSimple||this.pushSource("return buffer;");for(var d=this.isChild?["depth0","data"]:["Handlebars","depth0","helpers","partials","data"],e=0,f=this.environment.depths.list.length;f>e;e++)d.push("depth"+this.environment.depths.list[e]);var g=this.mergeSource();if(this.isChild||(g=this.compilerInfo()+g),a)return d.push(g),Function.apply(this,d);var i="function "+(this.name||"")+"("+d.join(",")+") {\n  "+g+"}";return h("debug",i+"\n\n"),i},mergeSource:function(){for(var a,b="",c=0,d=this.source.length;d>c;c++){var e=this.source[c];e.appendToBuffer?a=a?a+"\n    + "+e.content:e.content:(a&&(b+="buffer += "+a+";\n  ",a=void 0),b+=e+"\n  ")}return b},blockValue:function(){this.context.aliases.blockHelperMissing="helpers.blockHelperMissing";var a=["depth0"];this.setupParams(0,a),this.replaceStack(function(b){return a.splice(1,0,b),"blockHelperMissing.call("+a.join(", ")+")"})},ambiguousBlockValue:function(){this.context.aliases.blockHelperMissing="helpers.blockHelperMissing";var a=["depth0"];this.setupParams(0,a);var b=this.topStack();a.splice(1,0,b),this.pushSource("if (!"+this.lastHelper+") { "+b+" = blockHelperMissing.call("+a.join(", ")+"); }")},appendContent:function(a){this.pendingContent&&(a=this.pendingContent+a),this.stripNext&&(a=a.replace(/^\s+/,"")),this.pendingContent=a},strip:function(){this.pendingContent&&(this.pendingContent=this.pendingContent.replace(/\s+$/,"")),this.stripNext="strip"},append:function(){this.flushInline();var a=this.popStack();this.pushSource("if("+a+" || "+a+" === 0) { "+this.appendToBuffer(a)+" }"),this.environment.isSimple&&this.pushSource("else { "+this.appendToBuffer("''")+" }")},appendEscaped:function(){this.context.aliases.escapeExpression="this.escapeExpression",this.pushSource(this.appendToBuffer("escapeExpression("+this.popStack()+")"))},getContext:function(a){this.lastContext!==a&&(this.lastContext=a)},lookupOnContext:function(a){this.push(this.nameLookup("depth"+this.lastContext,a,"context"))},pushContext:function(){this.pushStackLiteral("depth"+this.lastContext)},resolvePossibleLambda:function(){this.context.aliases.functionType='"function"',this.replaceStack(function(a){return"typeof "+a+" === functionType ? "+a+".apply(depth0) : "+a})},lookup:function(a){this.replaceStack(function(b){return b+" == null || "+b+" === false ? "+b+" : "+this.nameLookup(b,a,"context")})},lookupData:function(){this.pushStackLiteral("data")},pushStringParam:function(a,b){this.pushStackLiteral("depth"+this.lastContext),this.pushString(b),"sexpr"!==b&&("string"==typeof a?this.pushString(a):this.pushStackLiteral(a))},emptyHash:function(){this.pushStackLiteral("{}"),this.options.stringParams&&(this.push("{}"),this.push("{}"))},pushHash:function(){this.hash&&this.hashes.push(this.hash),this.hash={values:[],types:[],contexts:[]}},popHash:function(){var a=this.hash;this.hash=this.hashes.pop(),this.options.stringParams&&(this.push("{"+a.contexts.join(",")+"}"),this.push("{"+a.types.join(",")+"}")),this.push("{\n    "+a.values.join(",\n    ")+"\n  }")},pushString:function(a){this.pushStackLiteral(this.quotedString(a))},push:function(a){return this.inlineStack.push(a),a},pushLiteral:function(a){this.pushStackLiteral(a)},pushProgram:function(a){null!=a?this.pushStackLiteral(this.programExpression(a)):this.pushStackLiteral(null)},invokeHelper:function(a,b,c){this.context.aliases.helperMissing="helpers.helperMissing",this.useRegister("helper");var d=this.lastHelper=this.setupHelper(a,b,!0),e=this.nameLookup("depth"+this.lastContext,b,"context"),f="helper = "+d.name+" || "+e;d.paramsInit&&(f+=","+d.paramsInit),this.push("("+f+",helper ? helper.call("+d.callParams+") : helperMissing.call("+d.helperMissingParams+"))"),c||this.flushInline()},invokeKnownHelper:function(a,b){var c=this.setupHelper(a,b);this.push(c.name+".call("+c.callParams+")")},invokeAmbiguous:function(a,b){this.context.aliases.functionType='"function"',this.useRegister("helper"),this.emptyHash();var c=this.setupHelper(0,a,b),d=this.lastHelper=this.nameLookup("helpers",a,"helper"),e=this.nameLookup("depth"+this.lastContext,a,"context"),f=this.nextStack();c.paramsInit&&this.pushSource(c.paramsInit),this.pushSource("if (helper = "+d+") { "+f+" = helper.call("+c.callParams+"); }"),this.pushSource("else { helper = "+e+"; "+f+" = typeof helper === functionType ? helper.call("+c.callParams+") : helper; }")},invokePartial:function(a){var b=[this.nameLookup("partials",a,"partial"),"'"+a+"'",this.popStack(),"helpers","partials"];this.options.data&&b.push("data"),this.context.aliases.self="this",this.push("self.invokePartial("+b.join(", ")+")")},assignToHash:function(a){var b,c,d=this.popStack();this.options.stringParams&&(c=this.popStack(),b=this.popStack());var e=this.hash;b&&e.contexts.push("'"+a+"': "+b),c&&e.types.push("'"+a+"': "+c),e.values.push("'"+a+"': ("+d+")")},compiler:d,compileChildren:function(a,b){for(var c,d,e=a.children,f=0,g=e.length;g>f;f++){c=e[f],d=new this.compiler;var h=this.matchExistingProgram(c);null==h?(this.context.programs.push(""),h=this.context.programs.length,c.index=h,c.name="program"+h,this.context.programs[h]=d.compile(c,b,this.context),this.context.environments[h]=c):(c.index=h,c.name="program"+h)}},matchExistingProgram:function(a){for(var b=0,c=this.context.environments.length;c>b;b++){var d=this.context.environments[b];if(d&&d.equals(a))return b}},programExpression:function(a){if(this.context.aliases.self="this",null==a)return"self.noop";for(var b,c=this.environment.children[a],d=c.depths.list,e=[c.index,c.name,"data"],f=0,g=d.length;g>f;f++)b=d[f],1===b?e.push("depth0"):e.push("depth"+(b-1));return(0===d.length?"self.program(":"self.programWithDepth(")+e.join(", ")+")"},register:function(a,b){this.useRegister(a),this.pushSource(a+" = "+b+";")},useRegister:function(a){this.registers[a]||(this.registers[a]=!0,this.registers.list.push(a))},pushStackLiteral:function(a){return this.push(new c(a))},pushSource:function(a){this.pendingContent&&(this.source.push(this.appendToBuffer(this.quotedString(this.pendingContent))),this.pendingContent=void 0),a&&this.source.push(a)},pushStack:function(a){this.flushInline();var b=this.incrStack();return a&&this.pushSource(b+" = "+a+";"),this.compileStack.push(b),b},replaceStack:function(a){var b,d,e,f="",g=this.isInline();if(g){var h=this.popStack(!0);if(h instanceof c)b=h.value,e=!0;else{d=!this.stackSlot;var i=d?this.incrStack():this.topStackName();f="("+this.push(i)+" = "+h+"),",b=this.topStack()}}else b=this.topStack();var j=a.call(this,b);return g?(e||this.popStack(),d&&this.stackSlot--,this.push("("+f+j+")")):(/^stack/.test(b)||(b=this.nextStack()),this.pushSource(b+" = ("+f+j+");")),b},nextStack:function(){return this.pushStack()},incrStack:function(){return this.stackSlot++,this.stackSlot>this.stackVars.length&&this.stackVars.push("stack"+this.stackSlot),this.topStackName()},topStackName:function(){return"stack"+this.stackSlot},flushInline:function(){var a=this.inlineStack;if(a.length){this.inlineStack=[];for(var b=0,d=a.length;d>b;b++){var e=a[b];e instanceof c?this.compileStack.push(e):this.pushStack(e)}}},isInline:function(){return this.inlineStack.length},popStack:function(a){var b=this.isInline(),d=(b?this.inlineStack:this.compileStack).pop();if(!a&&d instanceof c)return d.value;if(!b){if(!this.stackSlot)throw new i("Invalid stack pop");this.stackSlot--}return d},topStack:function(a){var b=this.isInline()?this.inlineStack:this.compileStack,d=b[b.length-1];return!a&&d instanceof c?d.value:d},quotedString:function(a){return'"'+a.replace(/\\/g,"\\\\").replace(/"/g,'\\"').replace(/\n/g,"\\n").replace(/\r/g,"\\r").replace(/\u2028/g,"\\u2028").replace(/\u2029/g,"\\u2029")+'"'},setupHelper:function(a,b,c){var d=[],e=this.setupParams(a,d,c),f=this.nameLookup("helpers",b,"helper");return{params:d,paramsInit:e,name:f,callParams:["depth0"].concat(d).join(", "),helperMissingParams:c&&["depth0",this.quotedString(b)].concat(d).join(", ")}},setupOptions:function(a,b){var c,d,e,f=[],g=[],h=[];f.push("hash:"+this.popStack()),this.options.stringParams&&(f.push("hashTypes:"+this.popStack()),f.push("hashContexts:"+this.popStack())),d=this.popStack(),e=this.popStack(),(e||d)&&(e||(this.context.aliases.self="this",e="self.noop"),d||(this.context.aliases.self="this",d="self.noop"),f.push("inverse:"+d),f.push("fn:"+e));for(var i=0;a>i;i++)c=this.popStack(),b.push(c),this.options.stringParams&&(h.push(this.popStack()),g.push(this.popStack()));return this.options.stringParams&&(f.push("contexts:["+g.join(",")+"]"),f.push("types:["+h.join(",")+"]")),this.options.data&&f.push("data:data"),f},setupParams:function(a,b,c){var d="{"+this.setupOptions(a,b).join(",")+"}";return c?(this.useRegister("options"),b.push("options"),"options="+d):(b.push(d),"")}};for(var j="break else new var case finally return void catch for switch while continue function this with default if throw delete in try do instanceof typeof abstract enum int short boolean export interface static byte extends long super char final native synchronized class float package throws const goto private transient debugger implements protected volatile double import public let yield".split(" "),k=d.RESERVED_WORDS={},l=0,m=j.length;m>l;l++)k[j[l]]=!0;return d.isValidJavaScriptVariableName=function(a){return!d.RESERVED_WORDS[a]&&/^[a-zA-Z_$][0-9a-zA-Z_$]*$/.test(a)?!0:!1},e=d}(d,c),l=function(a,b,c,d,e){"use strict";var f,g=a,h=b,i=c.parser,j=c.parse,k=d.Compiler,l=d.compile,m=d.precompile,n=e,o=g.create,p=function(){var a=o();return a.compile=function(b,c){return l(b,c,a)},a.precompile=function(b,c){return m(b,c,a)},a.AST=h,a.Compiler=k,a.JavaScriptCompiler=n,a.Parser=i,a.parse=j,a};return g=p(),g.create=p,f=g}(f,g,i,j,k);return l}();
-},{}],58:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 /*! jQuery UI - v1.10.4 - 2014-04-02
 * http://jqueryui.com
 * Includes: jquery.ui.core.js, jquery.ui.widget.js, jquery.ui.mouse.js, jquery.ui.position.js, jquery.ui.accordion.js, jquery.ui.autocomplete.js, jquery.ui.button.js, jquery.ui.datepicker.js, jquery.ui.dialog.js, jquery.ui.draggable.js, jquery.ui.droppable.js, jquery.ui.effect.js, jquery.ui.effect-blind.js, jquery.ui.effect-bounce.js, jquery.ui.effect-clip.js, jquery.ui.effect-drop.js, jquery.ui.effect-explode.js, jquery.ui.effect-fade.js, jquery.ui.effect-fold.js, jquery.ui.effect-highlight.js, jquery.ui.effect-pulsate.js, jquery.ui.effect-scale.js, jquery.ui.effect-shake.js, jquery.ui.effect-slide.js, jquery.ui.effect-transfer.js, jquery.ui.menu.js, jquery.ui.progressbar.js, jquery.ui.resizable.js, jquery.ui.selectable.js, jquery.ui.slider.js, jquery.ui.sortable.js, jquery.ui.spinner.js, jquery.ui.tabs.js, jquery.ui.tooltip.js
@@ -64135,7 +64172,7 @@ $.widget( "ui.tooltip", {
 
 }( jQuery ) );
 
-},{}],59:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v1.9.1
  * http://jquery.com/
@@ -73733,7 +73770,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
 }
 
 })( window );
-},{}],60:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 /*! Copyright (c) 2013 Brandon Aaron (http://brandonaaron.net)
  * Licensed under the MIT License (LICENSE.txt).
  *
@@ -73850,14 +73887,14 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
 
 }));
 
-},{}],61:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 /*!
 jQuery.twinkle 0.5.0
 http://larsjung.de/twinkle/
 MIT License
 */
 !function(t){"use strict";var e=function(t,e){var n=[].slice,i=jQuery,o=i.extend,r=i.isFunction,a=o({},e),s=function(e,n,o,a){return o=r(o)?o.apply(e,n):o,r(a[o])?a[o].apply(e,n):(i.error('Method "'+o+'" does not exist on jQuery.'+t),void 0)},u=function(){return s(this,n.call(arguments),a.defaultStatic,u)},c=function(t){return r(c[t])?c[t].apply(this,n.call(arguments,1)):s(this,n.call(arguments),a.defaultMethod,c)},l=function(t){t&&(o(u,t.statics),o(c,t.methods)),u.modplug=l};l.prev={statics:i[t],methods:i.fn[t]},l(e),i[t]=u,i.fn[t]=c},n={widthRatio:.5,heightRatio:.5,delay:0,gap:0,effect:"splash",effectOptions:void 0,callback:void 0},i={id:void 0,effectOptions:void 0,callback:void 0},o=function(t,e,n,i,o){this.offset={left:t,top:e},this.element=n,this.position={left:i,top:o}},r=function(){var e={};this.add=function(t){return e[t.id]||(e[t.id]=t),this},this.remove=function(t){return e[t]?delete e[t]:t.id&&e[t.id]&&delete e[t.id],this},this.twinkle=function(i,o){var r=t.extend({},n,o),a=e[r.effect];return a&&(i.element=i.element||"body",a.run(i,r.effectOptions,function(){r.callback()})),this},this.stop=function(n,o){var r=t.extend({},i,o),a=e[r.effect];return a&&(n.element=n.element||"body",a.stop(n,r.effectOptions,r.callback)),this},this.twinkleAtElement=function(e,i){var r=t.extend({},n,i),a=t(e),s=a.offset(),u=a.position(),c=a.outerWidth(!0),l=a.outerHeight(!0),d=s.left+c*r.widthRatio,f=s.top+l*r.heightRatio,h=u.left+c*r.widthRatio,p=u.top+l*r.heightRatio;return this.twinkle(new o(d,f,e,h,p),i)},this.twinkleAtElements=function(e,i){var o=this,r=t.extend({},n,i),a=r.delay,s=t(e),u=s.size();return s.each(function(e){var n=this,s=t.extend({},i);e!==u-1&&delete s.callback,setTimeout(function(){o.twinkleAtElement(n,s)},a),a+=r.gap}),this},this.stopAtElement=function(e,i){var r=t.extend({},n,i),a=t(e),s=a.offset(),u=a.position(),c=a.outerWidth(!0),l=a.outerHeight(!0),d=s.left+c*r.widthRatio,f=s.top+l*r.heightRatio,h=u.left+c*r.widthRatio,p=u.top+l*r.heightRatio;return this.twinkle(new o(d,f,e,h,p),i)},this.stopAtElements=function(e,n){var o=this,r=t.extend({},i,n),a=(r.delay,t(e)),s=a.size();return a.each(function(e){var i=this,r=t.extend({},n);e!==s-1&&delete r.callback,o.stopAtElement(i,r)}),this}},a=new r;e("twinkle",{statics:{twinkle:function(t,e,n,i){return a.twinkle(new o(0,0,t,e,n),i),this},add:function(t){return a.add(t),this},remove:function(t){return a.remove(t),this}},methods:{twinkle:function(t){return a.twinkleAtElements(this,t),this},stop:function(t){return a.stopAtElements(this,t),this}},defaultStatic:"twinkle",defaultMethod:"twinkle"})}(jQuery),function(t){"use strict";var e=function(t){return t.stopImmediatePropagation(),t.preventDefault(),!1},n=function(n,i,o,r){var a,s=function(){a.remove(),r instanceof Function&&r()},u=function(){a.animate({left:i.position.left-o.radius,top:i.position.top-o.radius,width:2*o.radius,height:2*o.radius,opacity:0},.5*o.duration,"linear",s)},c=function(){a=t("<div />").css(n).bind("click dblclick mousedown mouseenter mouseover mousemove",e),t(i.element).after(a),a.animate({left:i.position.left-.5*o.radius,top:i.position.top-.5*o.radius,width:o.radius,height:o.radius,opacity:1},.5*o.duration,"linear",u)},l=function(){};return c(),{stop:l}},i={color:"rgba(255,0,0,0.5)",radius:300,duration:1e3},o=function(){this.id="splash-css",this.run=function(e,o,r){var a=t.extend({},i,o),s={position:"absolute",zIndex:1e3,display:"block",borderRadius:a.radius,backgroundColor:a.color,boxShadow:"0 0 30px "+a.color,left:e.position.left,top:e.position.top,width:0,height:0,opacity:.4};n(s,e,a,r)}},r={color:"rgba(255,0,0,0.5)",radius:300,duration:1e3,width:2,count:3,delay:300},a=function(){this.id="drops-css",this.run=function(e,i,o){var a,s=t.extend({},r,i),u={position:"absolute",zIndex:1e3,display:"block",borderRadius:s.radius,border:s.width+"px solid "+s.color,left:e.position.left,top:e.position.top,width:0,height:0,opacity:.4},c=function(t,i){setTimeout(function(){n(u,e,s,i)},t)},l=0;for(a=0;a<s.count;a+=1)c(l,a===s.count-1?o:void 0),l+=s.delay}},s=function(){var e=new a;this.id="drop-css",this.run=function(n,i,o){e.run(n,t.extend(i,{count:1}),o)}};t.twinkle.add(new o).add(new s).add(new a)}(jQuery),function(t){"use strict";var e={};e.Interpolator=function(t){var e,n=function(t){var e,n=1/(t.length-1),i=[];for(e=0;e<t.length;e+=1)i.push({x:n*e,y:t[e]});return i},i=function(t,e,n){var i=(e.y-t.y)/(e.x-t.x),o=t.y+i*(n-t.x);return o},o=function(t){var n,i,o;for(n=1;n<e.length;n+=1)if(i=e[n-1],o=e[n],t>=i.x&&t<=o.x)return[i,o];return void 0};e=n(t),this.get=function(t){var e;return t=Math.max(0,Math.min(1,t)),e=o(t),i(e[0],e[1],t)}},e.Interpolator.scale=function(t,e,n){return e=e||1,n=n||0,t=(t-n)/e,t>=0&&1>=t?t:void 0},function(){var n=function(t){var e=t.getContext();e.beginPath(),this.fill=function(n){return e.fillStyle=n,e.fill(),t},this.stroke=function(n,i){return e.lineWidth=n,e.strokeStyle=i,e.stroke(),t},this.draw=function(e,n,i){return this.fill(i),this.stroke(e,n),t},this.circle=function(t,n,i){return e.arc(t,n,i,0,2*Math.PI,!1),this}};e.Ctx=function(i){if(!i||!i.canvas)return void 0;if(!(this instanceof e.Ctx))return new e.Ctx(i);var o=t(i.canvas).width(),r=t(i.canvas).height();this.getContext=function(){return i},this.getWidth=function(){return o},this.getHeight=function(){return r},this.clear=function(){return this.resetTransform(),i.clearRect(0,0,o,r),this},this.resetTransform=function(){return i.setTransform(1,0,0,1,0,0),this},this.translate=function(t,e){return i.translate(t,e),this},this.rotate=function(t){return i.rotate(Math.PI*t/180),this},this.opacity=function(t){return i.globalAlpha=t,this},this.path=function(){return new n(this)}}}(),e.CanvasEffect=function(n,i,o,r,a){if(!(this instanceof e.CanvasEffect))return new e.CanvasEffect(n,i,o,r,a);var s=n.element,u=n.position.left,c=n.position.top,l={position:"absolute",zIndex:1e3,display:"block",left:u-.5*i,top:c-.5*o,width:i,height:o};this.run=function(n,u){var c,d,f,h=n/1e3*u,p=1/h,g=function(t){setTimeout(function(){d&&r({ctx:d,frac:t,millis:n*t})},n*t)},v=function(){c.remove(),c=void 0,d=void 0,a instanceof Function&&a()},w=function(t){return t.stopImmediatePropagation(),t.preventDefault(),!1};for(c=t("<canvas />").attr("width",i).attr("height",o).css(l),t(s).after(c),c.bind("click dblclick mousedown mouseenter mouseover mousemove",w),d=new e.Ctx(c.get(0).getContext("2d")),f=0;h>=f;f+=1)g(f*p);setTimeout(v,n)}},function(){var n={color:"rgba(255,0,0,0.5)",radius:300,duration:1e3},i=function(){this.id="splash",this.run=function(i,o,r){var a=t.extend({},n,o),s=2*a.radius,u=new e.Interpolator([.4,1,0]),c=new e.Interpolator([0,a.radius]),l=function(t){var e=c.get(t.frac),n=u.get(t.frac),i=t.ctx;i.clear().opacity(n).path().circle(.5*i.getWidth(),.5*i.getHeight(),e).fill(a.color)};new e.CanvasEffect(i,s,s,l,r).run(a.duration,25)}};t.twinkle.add(new i)}(),function(){var n={color:"rgba(255,0,0,0.5)",radius:300,duration:1e3,width:2},i=function(){this.id="drop",this.run=function(i,o,r){var a=t.extend({},n,o),s=2*a.radius,u=new e.Interpolator([.4,1,0]),c=new e.Interpolator([0,a.radius]),l=function(t){var e=c.get(t.frac),n=u.get(t.frac),i=t.ctx;i.clear().opacity(n).path().circle(.5*i.getWidth(),.5*i.getHeight(),e).stroke(a.width,a.color)};new e.CanvasEffect(i,s,s,l,r).run(a.duration,25)}};t.twinkle.add(new i)}(),function(){var n={color:"rgba(255,0,0,0.5)",radius:300,duration:1e3,width:2,count:3,delay:100},i=function(){this.id="drops",this.run=function(i,o,r){var a=t.extend({},n,o),s=2*a.radius,u=new e.Interpolator([.4,1,0]),c=new e.Interpolator([0,a.radius]),l=(a.duration-(a.count-1)*a.delay)/a.duration,d=a.delay/a.duration,f=function(t){var n,i,o,r,s=t.ctx,f=s.getWidth(),h=s.getHeight();for(s.clear(),n=0;n<a.count;n+=1)i=e.Interpolator.scale(t.frac,l,d*n),void 0!==i&&(o=c.get(i),r=u.get(i),s.opacity(r).path().circle(.5*f,.5*h,o).stroke(a.width,a.color))};new e.CanvasEffect(i,s,s,f,r).run(a.duration,25)}};t.twinkle.add(new i)}(),function(){var n={color:"rgba(255,0,0,0.5)",radius:100,duration:3e3},i=function(){this.id="pulse",this.run=function(i,o,r){var a=t.extend({},n,o),s=2*a.radius,u=new e.Interpolator([0,1,.6,1,.6,1,0]),c=new e.Interpolator([0,a.radius,.6*a.radius,a.radius,.6*a.radius,a.radius,0]),l=function(t){var e=c.get(t.frac),n=u.get(t.frac),i=t.ctx;i.clear().opacity(n).path().circle(.5*i.getWidth(),.5*i.getHeight(),e).fill(a.color)};new e.CanvasEffect(i,s,s,l,r).run(a.duration,25)}};t.twinkle.add(new i)}(),function(){var n={color:"rgba(255,0,0,0.5)",radius:100,duration:3e3,satellites:10,satellitesRadius:10,circulations:1.5},i=function(){this.id="orbit",this.run=function(i,o,r){var a=t.extend({},n,o),s=2*a.radius,u=new e.Interpolator([.4,1,1,.4]),c=a.radius-a.satellitesRadius,l=new e.Interpolator([0,c,c,0]),d=function(t){var e,n,i,o,r=l.get(t.frac),s=u.get(t.frac),c=2*Math.PI*a.circulations*t.frac,d=t.ctx;for(d.clear().opacity(s).translate(.5*d.getWidth(),.5*d.getHeight()),e=d.path(),n=0;n<a.satellites;n+=1)c+=2*Math.PI/a.satellites,i=Math.cos(c)*r,o=Math.sin(c)*r,e.circle(i,o,a.satellitesRadius);e.fill(a.color)};new e.CanvasEffect(i,s,s,d,r).run(a.duration,25)}};t.twinkle.add(new i)}()}(jQuery);
-},{}],62:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 DS.LSSerializer = DS.JSONSerializer.extend({
 
   addBelongsTo: function(data, record, key, association) {
@@ -74074,7 +74111,1739 @@ DS.LSAdapter = DS.Adapter.extend(Ember.Evented, {
 });
 
 
-},{}],63:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
+// super simple module for the most common nodejs use case.
+exports.markdown = require("./markdown");
+exports.parse = exports.markdown.toHTML;
+
+},{"./markdown":67}],67:[function(require,module,exports){
+// Released under MIT license
+// Copyright (c) 2009-2010 Dominic Baggott
+// Copyright (c) 2009-2010 Ash Berlin
+// Copyright (c) 2011 Christoph Dorn <christoph@christophdorn.com> (http://www.christophdorn.com)
+
+/*jshint browser:true, devel:true */
+
+(function( expose ) {
+
+/**
+ *  class Markdown
+ *
+ *  Markdown processing in Javascript done right. We have very particular views
+ *  on what constitutes 'right' which include:
+ *
+ *  - produces well-formed HTML (this means that em and strong nesting is
+ *    important)
+ *
+ *  - has an intermediate representation to allow processing of parsed data (We
+ *    in fact have two, both as [JsonML]: a markdown tree and an HTML tree).
+ *
+ *  - is easily extensible to add new dialects without having to rewrite the
+ *    entire parsing mechanics
+ *
+ *  - has a good test suite
+ *
+ *  This implementation fulfills all of these (except that the test suite could
+ *  do with expanding to automatically run all the fixtures from other Markdown
+ *  implementations.)
+ *
+ *  ##### Intermediate Representation
+ *
+ *  *TODO* Talk about this :) Its JsonML, but document the node names we use.
+ *
+ *  [JsonML]: http://jsonml.org/ "JSON Markup Language"
+ **/
+var Markdown = expose.Markdown = function(dialect) {
+  switch (typeof dialect) {
+    case "undefined":
+      this.dialect = Markdown.dialects.Gruber;
+      break;
+    case "object":
+      this.dialect = dialect;
+      break;
+    default:
+      if ( dialect in Markdown.dialects ) {
+        this.dialect = Markdown.dialects[dialect];
+      }
+      else {
+        throw new Error("Unknown Markdown dialect '" + String(dialect) + "'");
+      }
+      break;
+  }
+  this.em_state = [];
+  this.strong_state = [];
+  this.debug_indent = "";
+};
+
+/**
+ *  parse( markdown, [dialect] ) -> JsonML
+ *  - markdown (String): markdown string to parse
+ *  - dialect (String | Dialect): the dialect to use, defaults to gruber
+ *
+ *  Parse `markdown` and return a markdown document as a Markdown.JsonML tree.
+ **/
+expose.parse = function( source, dialect ) {
+  // dialect will default if undefined
+  var md = new Markdown( dialect );
+  return md.toTree( source );
+};
+
+/**
+ *  toHTML( markdown, [dialect]  ) -> String
+ *  toHTML( md_tree ) -> String
+ *  - markdown (String): markdown string to parse
+ *  - md_tree (Markdown.JsonML): parsed markdown tree
+ *
+ *  Take markdown (either as a string or as a JsonML tree) and run it through
+ *  [[toHTMLTree]] then turn it into a well-formated HTML fragment.
+ **/
+expose.toHTML = function toHTML( source , dialect , options ) {
+  var input = expose.toHTMLTree( source , dialect , options );
+
+  return expose.renderJsonML( input );
+};
+
+/**
+ *  toHTMLTree( markdown, [dialect] ) -> JsonML
+ *  toHTMLTree( md_tree ) -> JsonML
+ *  - markdown (String): markdown string to parse
+ *  - dialect (String | Dialect): the dialect to use, defaults to gruber
+ *  - md_tree (Markdown.JsonML): parsed markdown tree
+ *
+ *  Turn markdown into HTML, represented as a JsonML tree. If a string is given
+ *  to this function, it is first parsed into a markdown tree by calling
+ *  [[parse]].
+ **/
+expose.toHTMLTree = function toHTMLTree( input, dialect , options ) {
+  // convert string input to an MD tree
+  if ( typeof input ==="string" ) input = this.parse( input, dialect );
+
+  // Now convert the MD tree to an HTML tree
+
+  // remove references from the tree
+  var attrs = extract_attr( input ),
+      refs = {};
+
+  if ( attrs && attrs.references ) {
+    refs = attrs.references;
+  }
+
+  var html = convert_tree_to_html( input, refs , options );
+  merge_text_nodes( html );
+  return html;
+};
+
+// For Spidermonkey based engines
+function mk_block_toSource() {
+  return "Markdown.mk_block( " +
+          uneval(this.toString()) +
+          ", " +
+          uneval(this.trailing) +
+          ", " +
+          uneval(this.lineNumber) +
+          " )";
+}
+
+// node
+function mk_block_inspect() {
+  var util = require("util");
+  return "Markdown.mk_block( " +
+          util.inspect(this.toString()) +
+          ", " +
+          util.inspect(this.trailing) +
+          ", " +
+          util.inspect(this.lineNumber) +
+          " )";
+
+}
+
+var mk_block = Markdown.mk_block = function(block, trail, line) {
+  // Be helpful for default case in tests.
+  if ( arguments.length == 1 ) trail = "\n\n";
+
+  var s = new String(block);
+  s.trailing = trail;
+  // To make it clear its not just a string
+  s.inspect = mk_block_inspect;
+  s.toSource = mk_block_toSource;
+
+  if ( line != undefined )
+    s.lineNumber = line;
+
+  return s;
+};
+
+function count_lines( str ) {
+  var n = 0, i = -1;
+  while ( ( i = str.indexOf("\n", i + 1) ) !== -1 ) n++;
+  return n;
+}
+
+// Internal - split source into rough blocks
+Markdown.prototype.split_blocks = function splitBlocks( input, startLine ) {
+  input = input.replace(/(\r\n|\n|\r)/g, "\n");
+  // [\s\S] matches _anything_ (newline or space)
+  // [^] is equivalent but doesn't work in IEs.
+  var re = /([\s\S]+?)($|\n#|\n(?:\s*\n|$)+)/g,
+      blocks = [],
+      m;
+
+  var line_no = 1;
+
+  if ( ( m = /^(\s*\n)/.exec(input) ) != null ) {
+    // skip (but count) leading blank lines
+    line_no += count_lines( m[0] );
+    re.lastIndex = m[0].length;
+  }
+
+  while ( ( m = re.exec(input) ) !== null ) {
+    if (m[2] == "\n#") {
+      m[2] = "\n";
+      re.lastIndex--;
+    }
+    blocks.push( mk_block( m[1], m[2], line_no ) );
+    line_no += count_lines( m[0] );
+  }
+
+  return blocks;
+};
+
+/**
+ *  Markdown#processBlock( block, next ) -> undefined | [ JsonML, ... ]
+ *  - block (String): the block to process
+ *  - next (Array): the following blocks
+ *
+ * Process `block` and return an array of JsonML nodes representing `block`.
+ *
+ * It does this by asking each block level function in the dialect to process
+ * the block until one can. Succesful handling is indicated by returning an
+ * array (with zero or more JsonML nodes), failure by a false value.
+ *
+ * Blocks handlers are responsible for calling [[Markdown#processInline]]
+ * themselves as appropriate.
+ *
+ * If the blocks were split incorrectly or adjacent blocks need collapsing you
+ * can adjust `next` in place using shift/splice etc.
+ *
+ * If any of this default behaviour is not right for the dialect, you can
+ * define a `__call__` method on the dialect that will get invoked to handle
+ * the block processing.
+ */
+Markdown.prototype.processBlock = function processBlock( block, next ) {
+  var cbs = this.dialect.block,
+      ord = cbs.__order__;
+
+  if ( "__call__" in cbs ) {
+    return cbs.__call__.call(this, block, next);
+  }
+
+  for ( var i = 0; i < ord.length; i++ ) {
+    //D:this.debug( "Testing", ord[i] );
+    var res = cbs[ ord[i] ].call( this, block, next );
+    if ( res ) {
+      //D:this.debug("  matched");
+      if ( !isArray(res) || ( res.length > 0 && !( isArray(res[0]) ) ) )
+        this.debug(ord[i], "didn't return a proper array");
+      //D:this.debug( "" );
+      return res;
+    }
+  }
+
+  // Uhoh! no match! Should we throw an error?
+  return [];
+};
+
+Markdown.prototype.processInline = function processInline( block ) {
+  return this.dialect.inline.__call__.call( this, String( block ) );
+};
+
+/**
+ *  Markdown#toTree( source ) -> JsonML
+ *  - source (String): markdown source to parse
+ *
+ *  Parse `source` into a JsonML tree representing the markdown document.
+ **/
+// custom_tree means set this.tree to `custom_tree` and restore old value on return
+Markdown.prototype.toTree = function toTree( source, custom_root ) {
+  var blocks = source instanceof Array ? source : this.split_blocks( source );
+
+  // Make tree a member variable so its easier to mess with in extensions
+  var old_tree = this.tree;
+  try {
+    this.tree = custom_root || this.tree || [ "markdown" ];
+
+    blocks:
+    while ( blocks.length ) {
+      var b = this.processBlock( blocks.shift(), blocks );
+
+      // Reference blocks and the like won't return any content
+      if ( !b.length ) continue blocks;
+
+      this.tree.push.apply( this.tree, b );
+    }
+    return this.tree;
+  }
+  finally {
+    if ( custom_root ) {
+      this.tree = old_tree;
+    }
+  }
+};
+
+// Noop by default
+Markdown.prototype.debug = function () {
+  var args = Array.prototype.slice.call( arguments);
+  args.unshift(this.debug_indent);
+  if ( typeof print !== "undefined" )
+      print.apply( print, args );
+  if ( typeof console !== "undefined" && typeof console.log !== "undefined" )
+      console.log.apply( null, args );
+}
+
+Markdown.prototype.loop_re_over_block = function( re, block, cb ) {
+  // Dont use /g regexps with this
+  var m,
+      b = block.valueOf();
+
+  while ( b.length && (m = re.exec(b) ) != null ) {
+    b = b.substr( m[0].length );
+    cb.call(this, m);
+  }
+  return b;
+};
+
+/**
+ * Markdown.dialects
+ *
+ * Namespace of built-in dialects.
+ **/
+Markdown.dialects = {};
+
+/**
+ * Markdown.dialects.Gruber
+ *
+ * The default dialect that follows the rules set out by John Gruber's
+ * markdown.pl as closely as possible. Well actually we follow the behaviour of
+ * that script which in some places is not exactly what the syntax web page
+ * says.
+ **/
+Markdown.dialects.Gruber = {
+  block: {
+    atxHeader: function atxHeader( block, next ) {
+      var m = block.match( /^(#{1,6})\s*(.*?)\s*#*\s*(?:\n|$)/ );
+
+      if ( !m ) return undefined;
+
+      var header = [ "header", { level: m[ 1 ].length } ];
+      Array.prototype.push.apply(header, this.processInline(m[ 2 ]));
+
+      if ( m[0].length < block.length )
+        next.unshift( mk_block( block.substr( m[0].length ), block.trailing, block.lineNumber + 2 ) );
+
+      return [ header ];
+    },
+
+    setextHeader: function setextHeader( block, next ) {
+      var m = block.match( /^(.*)\n([-=])\2\2+(?:\n|$)/ );
+
+      if ( !m ) return undefined;
+
+      var level = ( m[ 2 ] === "=" ) ? 1 : 2;
+      var header = [ "header", { level : level }, m[ 1 ] ];
+
+      if ( m[0].length < block.length )
+        next.unshift( mk_block( block.substr( m[0].length ), block.trailing, block.lineNumber + 2 ) );
+
+      return [ header ];
+    },
+
+    code: function code( block, next ) {
+      // |    Foo
+      // |bar
+      // should be a code block followed by a paragraph. Fun
+      //
+      // There might also be adjacent code block to merge.
+
+      var ret = [],
+          re = /^(?: {0,3}\t| {4})(.*)\n?/,
+          lines;
+
+      // 4 spaces + content
+      if ( !block.match( re ) ) return undefined;
+
+      block_search:
+      do {
+        // Now pull out the rest of the lines
+        var b = this.loop_re_over_block(
+                  re, block.valueOf(), function( m ) { ret.push( m[1] ); } );
+
+        if ( b.length ) {
+          // Case alluded to in first comment. push it back on as a new block
+          next.unshift( mk_block(b, block.trailing) );
+          break block_search;
+        }
+        else if ( next.length ) {
+          // Check the next block - it might be code too
+          if ( !next[0].match( re ) ) break block_search;
+
+          // Pull how how many blanks lines follow - minus two to account for .join
+          ret.push ( block.trailing.replace(/[^\n]/g, "").substring(2) );
+
+          block = next.shift();
+        }
+        else {
+          break block_search;
+        }
+      } while ( true );
+
+      return [ [ "code_block", ret.join("\n") ] ];
+    },
+
+    horizRule: function horizRule( block, next ) {
+      // this needs to find any hr in the block to handle abutting blocks
+      var m = block.match( /^(?:([\s\S]*?)\n)?[ \t]*([-_*])(?:[ \t]*\2){2,}[ \t]*(?:\n([\s\S]*))?$/ );
+
+      if ( !m ) {
+        return undefined;
+      }
+
+      var jsonml = [ [ "hr" ] ];
+
+      // if there's a leading abutting block, process it
+      if ( m[ 1 ] ) {
+        jsonml.unshift.apply( jsonml, this.processBlock( m[ 1 ], [] ) );
+      }
+
+      // if there's a trailing abutting block, stick it into next
+      if ( m[ 3 ] ) {
+        next.unshift( mk_block( m[ 3 ] ) );
+      }
+
+      return jsonml;
+    },
+
+    // There are two types of lists. Tight and loose. Tight lists have no whitespace
+    // between the items (and result in text just in the <li>) and loose lists,
+    // which have an empty line between list items, resulting in (one or more)
+    // paragraphs inside the <li>.
+    //
+    // There are all sorts weird edge cases about the original markdown.pl's
+    // handling of lists:
+    //
+    // * Nested lists are supposed to be indented by four chars per level. But
+    //   if they aren't, you can get a nested list by indenting by less than
+    //   four so long as the indent doesn't match an indent of an existing list
+    //   item in the 'nest stack'.
+    //
+    // * The type of the list (bullet or number) is controlled just by the
+    //    first item at the indent. Subsequent changes are ignored unless they
+    //    are for nested lists
+    //
+    lists: (function( ) {
+      // Use a closure to hide a few variables.
+      var any_list = "[*+-]|\\d+\\.",
+          bullet_list = /[*+-]/,
+          number_list = /\d+\./,
+          // Capture leading indent as it matters for determining nested lists.
+          is_list_re = new RegExp( "^( {0,3})(" + any_list + ")[ \t]+" ),
+          indent_re = "(?: {0,3}\\t| {4})";
+
+      // TODO: Cache this regexp for certain depths.
+      // Create a regexp suitable for matching an li for a given stack depth
+      function regex_for_depth( depth ) {
+
+        return new RegExp(
+          // m[1] = indent, m[2] = list_type
+          "(?:^(" + indent_re + "{0," + depth + "} {0,3})(" + any_list + ")\\s+)|" +
+          // m[3] = cont
+          "(^" + indent_re + "{0," + (depth-1) + "}[ ]{0,4})"
+        );
+      }
+      function expand_tab( input ) {
+        return input.replace( / {0,3}\t/g, "    " );
+      }
+
+      // Add inline content `inline` to `li`. inline comes from processInline
+      // so is an array of content
+      function add(li, loose, inline, nl) {
+        if ( loose ) {
+          li.push( [ "para" ].concat(inline) );
+          return;
+        }
+        // Hmmm, should this be any block level element or just paras?
+        var add_to = li[li.length -1] instanceof Array && li[li.length - 1][0] == "para"
+                   ? li[li.length -1]
+                   : li;
+
+        // If there is already some content in this list, add the new line in
+        if ( nl && li.length > 1 ) inline.unshift(nl);
+
+        for ( var i = 0; i < inline.length; i++ ) {
+          var what = inline[i],
+              is_str = typeof what == "string";
+          if ( is_str && add_to.length > 1 && typeof add_to[add_to.length-1] == "string" ) {
+            add_to[ add_to.length-1 ] += what;
+          }
+          else {
+            add_to.push( what );
+          }
+        }
+      }
+
+      // contained means have an indent greater than the current one. On
+      // *every* line in the block
+      function get_contained_blocks( depth, blocks ) {
+
+        var re = new RegExp( "^(" + indent_re + "{" + depth + "}.*?\\n?)*$" ),
+            replace = new RegExp("^" + indent_re + "{" + depth + "}", "gm"),
+            ret = [];
+
+        while ( blocks.length > 0 ) {
+          if ( re.exec( blocks[0] ) ) {
+            var b = blocks.shift(),
+                // Now remove that indent
+                x = b.replace( replace, "");
+
+            ret.push( mk_block( x, b.trailing, b.lineNumber ) );
+          }
+          else {
+            break;
+          }
+        }
+        return ret;
+      }
+
+      // passed to stack.forEach to turn list items up the stack into paras
+      function paragraphify(s, i, stack) {
+        var list = s.list;
+        var last_li = list[list.length-1];
+
+        if ( last_li[1] instanceof Array && last_li[1][0] == "para" ) {
+          return;
+        }
+        if ( i + 1 == stack.length ) {
+          // Last stack frame
+          // Keep the same array, but replace the contents
+          last_li.push( ["para"].concat( last_li.splice(1, last_li.length - 1) ) );
+        }
+        else {
+          var sublist = last_li.pop();
+          last_li.push( ["para"].concat( last_li.splice(1, last_li.length - 1) ), sublist );
+        }
+      }
+
+      // The matcher function
+      return function( block, next ) {
+        var m = block.match( is_list_re );
+        if ( !m ) return undefined;
+
+        function make_list( m ) {
+          var list = bullet_list.exec( m[2] )
+                   ? ["bulletlist"]
+                   : ["numberlist"];
+
+          stack.push( { list: list, indent: m[1] } );
+          return list;
+        }
+
+
+        var stack = [], // Stack of lists for nesting.
+            list = make_list( m ),
+            last_li,
+            loose = false,
+            ret = [ stack[0].list ],
+            i;
+
+        // Loop to search over block looking for inner block elements and loose lists
+        loose_search:
+        while ( true ) {
+          // Split into lines preserving new lines at end of line
+          var lines = block.split( /(?=\n)/ );
+
+          // We have to grab all lines for a li and call processInline on them
+          // once as there are some inline things that can span lines.
+          var li_accumulate = "";
+
+          // Loop over the lines in this block looking for tight lists.
+          tight_search:
+          for ( var line_no = 0; line_no < lines.length; line_no++ ) {
+            var nl = "",
+                l = lines[line_no].replace(/^\n/, function(n) { nl = n; return ""; });
+
+            // TODO: really should cache this
+            var line_re = regex_for_depth( stack.length );
+
+            m = l.match( line_re );
+            //print( "line:", uneval(l), "\nline match:", uneval(m) );
+
+            // We have a list item
+            if ( m[1] !== undefined ) {
+              // Process the previous list item, if any
+              if ( li_accumulate.length ) {
+                add( last_li, loose, this.processInline( li_accumulate ), nl );
+                // Loose mode will have been dealt with. Reset it
+                loose = false;
+                li_accumulate = "";
+              }
+
+              m[1] = expand_tab( m[1] );
+              var wanted_depth = Math.floor(m[1].length/4)+1;
+              //print( "want:", wanted_depth, "stack:", stack.length);
+              if ( wanted_depth > stack.length ) {
+                // Deep enough for a nested list outright
+                //print ( "new nested list" );
+                list = make_list( m );
+                last_li.push( list );
+                last_li = list[1] = [ "listitem" ];
+              }
+              else {
+                // We aren't deep enough to be strictly a new level. This is
+                // where Md.pl goes nuts. If the indent matches a level in the
+                // stack, put it there, else put it one deeper then the
+                // wanted_depth deserves.
+                var found = false;
+                for ( i = 0; i < stack.length; i++ ) {
+                  if ( stack[ i ].indent != m[1] ) continue;
+                  list = stack[ i ].list;
+                  stack.splice( i+1, stack.length - (i+1) );
+                  found = true;
+                  break;
+                }
+
+                if (!found) {
+                  //print("not found. l:", uneval(l));
+                  wanted_depth++;
+                  if ( wanted_depth <= stack.length ) {
+                    stack.splice(wanted_depth, stack.length - wanted_depth);
+                    //print("Desired depth now", wanted_depth, "stack:", stack.length);
+                    list = stack[wanted_depth-1].list;
+                    //print("list:", uneval(list) );
+                  }
+                  else {
+                    //print ("made new stack for messy indent");
+                    list = make_list(m);
+                    last_li.push(list);
+                  }
+                }
+
+                //print( uneval(list), "last", list === stack[stack.length-1].list );
+                last_li = [ "listitem" ];
+                list.push(last_li);
+              } // end depth of shenegains
+              nl = "";
+            }
+
+            // Add content
+            if ( l.length > m[0].length ) {
+              li_accumulate += nl + l.substr( m[0].length );
+            }
+          } // tight_search
+
+          if ( li_accumulate.length ) {
+            add( last_li, loose, this.processInline( li_accumulate ), nl );
+            // Loose mode will have been dealt with. Reset it
+            loose = false;
+            li_accumulate = "";
+          }
+
+          // Look at the next block - we might have a loose list. Or an extra
+          // paragraph for the current li
+          var contained = get_contained_blocks( stack.length, next );
+
+          // Deal with code blocks or properly nested lists
+          if ( contained.length > 0 ) {
+            // Make sure all listitems up the stack are paragraphs
+            forEach( stack, paragraphify, this);
+
+            last_li.push.apply( last_li, this.toTree( contained, [] ) );
+          }
+
+          var next_block = next[0] && next[0].valueOf() || "";
+
+          if ( next_block.match(is_list_re) || next_block.match( /^ / ) ) {
+            block = next.shift();
+
+            // Check for an HR following a list: features/lists/hr_abutting
+            var hr = this.dialect.block.horizRule( block, next );
+
+            if ( hr ) {
+              ret.push.apply(ret, hr);
+              break;
+            }
+
+            // Make sure all listitems up the stack are paragraphs
+            forEach( stack, paragraphify, this);
+
+            loose = true;
+            continue loose_search;
+          }
+          break;
+        } // loose_search
+
+        return ret;
+      };
+    })(),
+
+    blockquote: function blockquote( block, next ) {
+      if ( !block.match( /^>/m ) )
+        return undefined;
+
+      var jsonml = [];
+
+      // separate out the leading abutting block, if any. I.e. in this case:
+      //
+      //  a
+      //  > b
+      //
+      if ( block[ 0 ] != ">" ) {
+        var lines = block.split( /\n/ ),
+            prev = [],
+            line_no = block.lineNumber;
+
+        // keep shifting lines until you find a crotchet
+        while ( lines.length && lines[ 0 ][ 0 ] != ">" ) {
+            prev.push( lines.shift() );
+            line_no++;
+        }
+
+        var abutting = mk_block( prev.join( "\n" ), "\n", block.lineNumber );
+        jsonml.push.apply( jsonml, this.processBlock( abutting, [] ) );
+        // reassemble new block of just block quotes!
+        block = mk_block( lines.join( "\n" ), block.trailing, line_no );
+      }
+
+
+      // if the next block is also a blockquote merge it in
+      while ( next.length && next[ 0 ][ 0 ] == ">" ) {
+        var b = next.shift();
+        block = mk_block( block + block.trailing + b, b.trailing, block.lineNumber );
+      }
+
+      // Strip off the leading "> " and re-process as a block.
+      var input = block.replace( /^> ?/gm, "" ),
+          old_tree = this.tree,
+          processedBlock = this.toTree( input, [ "blockquote" ] ),
+          attr = extract_attr( processedBlock );
+
+      // If any link references were found get rid of them
+      if ( attr && attr.references ) {
+        delete attr.references;
+        // And then remove the attribute object if it's empty
+        if ( isEmpty( attr ) ) {
+          processedBlock.splice( 1, 1 );
+        }
+      }
+
+      jsonml.push( processedBlock );
+      return jsonml;
+    },
+
+    referenceDefn: function referenceDefn( block, next) {
+      var re = /^\s*\[(.*?)\]:\s*(\S+)(?:\s+(?:(['"])(.*?)\3|\((.*?)\)))?\n?/;
+      // interesting matches are [ , ref_id, url, , title, title ]
+
+      if ( !block.match(re) )
+        return undefined;
+
+      // make an attribute node if it doesn't exist
+      if ( !extract_attr( this.tree ) ) {
+        this.tree.splice( 1, 0, {} );
+      }
+
+      var attrs = extract_attr( this.tree );
+
+      // make a references hash if it doesn't exist
+      if ( attrs.references === undefined ) {
+        attrs.references = {};
+      }
+
+      var b = this.loop_re_over_block(re, block, function( m ) {
+
+        if ( m[2] && m[2][0] == "<" && m[2][m[2].length-1] == ">" )
+          m[2] = m[2].substring( 1, m[2].length - 1 );
+
+        var ref = attrs.references[ m[1].toLowerCase() ] = {
+          href: m[2]
+        };
+
+        if ( m[4] !== undefined )
+          ref.title = m[4];
+        else if ( m[5] !== undefined )
+          ref.title = m[5];
+
+      } );
+
+      if ( b.length )
+        next.unshift( mk_block( b, block.trailing ) );
+
+      return [];
+    },
+
+    para: function para( block, next ) {
+      // everything's a para!
+      return [ ["para"].concat( this.processInline( block ) ) ];
+    }
+  }
+};
+
+Markdown.dialects.Gruber.inline = {
+
+    __oneElement__: function oneElement( text, patterns_or_re, previous_nodes ) {
+      var m,
+          res,
+          lastIndex = 0;
+
+      patterns_or_re = patterns_or_re || this.dialect.inline.__patterns__;
+      var re = new RegExp( "([\\s\\S]*?)(" + (patterns_or_re.source || patterns_or_re) + ")" );
+
+      m = re.exec( text );
+      if (!m) {
+        // Just boring text
+        return [ text.length, text ];
+      }
+      else if ( m[1] ) {
+        // Some un-interesting text matched. Return that first
+        return [ m[1].length, m[1] ];
+      }
+
+      var res;
+      if ( m[2] in this.dialect.inline ) {
+        res = this.dialect.inline[ m[2] ].call(
+                  this,
+                  text.substr( m.index ), m, previous_nodes || [] );
+      }
+      // Default for now to make dev easier. just slurp special and output it.
+      res = res || [ m[2].length, m[2] ];
+      return res;
+    },
+
+    __call__: function inline( text, patterns ) {
+
+      var out = [],
+          res;
+
+      function add(x) {
+        //D:self.debug("  adding output", uneval(x));
+        if ( typeof x == "string" && typeof out[out.length-1] == "string" )
+          out[ out.length-1 ] += x;
+        else
+          out.push(x);
+      }
+
+      while ( text.length > 0 ) {
+        res = this.dialect.inline.__oneElement__.call(this, text, patterns, out );
+        text = text.substr( res.shift() );
+        forEach(res, add )
+      }
+
+      return out;
+    },
+
+    // These characters are intersting elsewhere, so have rules for them so that
+    // chunks of plain text blocks don't include them
+    "]": function () {},
+    "}": function () {},
+
+    __escape__ : /^\\[\\`\*_{}\[\]()#\+.!\-]/,
+
+    "\\": function escaped( text ) {
+      // [ length of input processed, node/children to add... ]
+      // Only esacape: \ ` * _ { } [ ] ( ) # * + - . !
+      if ( this.dialect.inline.__escape__.exec( text ) )
+        return [ 2, text.charAt( 1 ) ];
+      else
+        // Not an esacpe
+        return [ 1, "\\" ];
+    },
+
+    "![": function image( text ) {
+
+      // Unlike images, alt text is plain text only. no other elements are
+      // allowed in there
+
+      // ![Alt text](/path/to/img.jpg "Optional title")
+      //      1          2            3       4         <--- captures
+      var m = text.match( /^!\[(.*?)\][ \t]*\([ \t]*([^")]*?)(?:[ \t]+(["'])(.*?)\3)?[ \t]*\)/ );
+
+      if ( m ) {
+        if ( m[2] && m[2][0] == "<" && m[2][m[2].length-1] == ">" )
+          m[2] = m[2].substring( 1, m[2].length - 1 );
+
+        m[2] = this.dialect.inline.__call__.call( this, m[2], /\\/ )[0];
+
+        var attrs = { alt: m[1], href: m[2] || "" };
+        if ( m[4] !== undefined)
+          attrs.title = m[4];
+
+        return [ m[0].length, [ "img", attrs ] ];
+      }
+
+      // ![Alt text][id]
+      m = text.match( /^!\[(.*?)\][ \t]*\[(.*?)\]/ );
+
+      if ( m ) {
+        // We can't check if the reference is known here as it likely wont be
+        // found till after. Check it in md tree->hmtl tree conversion
+        return [ m[0].length, [ "img_ref", { alt: m[1], ref: m[2].toLowerCase(), original: m[0] } ] ];
+      }
+
+      // Just consume the '!['
+      return [ 2, "![" ];
+    },
+
+    "[": function link( text ) {
+
+      var orig = String(text);
+      // Inline content is possible inside `link text`
+      var res = Markdown.DialectHelpers.inline_until_char.call( this, text.substr(1), "]" );
+
+      // No closing ']' found. Just consume the [
+      if ( !res ) return [ 1, "[" ];
+
+      var consumed = 1 + res[ 0 ],
+          children = res[ 1 ],
+          link,
+          attrs;
+
+      // At this point the first [...] has been parsed. See what follows to find
+      // out which kind of link we are (reference or direct url)
+      text = text.substr( consumed );
+
+      // [link text](/path/to/img.jpg "Optional title")
+      //                 1            2       3         <--- captures
+      // This will capture up to the last paren in the block. We then pull
+      // back based on if there a matching ones in the url
+      //    ([here](/url/(test))
+      // The parens have to be balanced
+      var m = text.match( /^\s*\([ \t]*([^"']*)(?:[ \t]+(["'])(.*?)\2)?[ \t]*\)/ );
+      if ( m ) {
+        var url = m[1];
+        consumed += m[0].length;
+
+        if ( url && url[0] == "<" && url[url.length-1] == ">" )
+          url = url.substring( 1, url.length - 1 );
+
+        // If there is a title we don't have to worry about parens in the url
+        if ( !m[3] ) {
+          var open_parens = 1; // One open that isn't in the capture
+          for ( var len = 0; len < url.length; len++ ) {
+            switch ( url[len] ) {
+            case "(":
+              open_parens++;
+              break;
+            case ")":
+              if ( --open_parens == 0) {
+                consumed -= url.length - len;
+                url = url.substring(0, len);
+              }
+              break;
+            }
+          }
+        }
+
+        // Process escapes only
+        url = this.dialect.inline.__call__.call( this, url, /\\/ )[0];
+
+        attrs = { href: url || "" };
+        if ( m[3] !== undefined)
+          attrs.title = m[3];
+
+        link = [ "link", attrs ].concat( children );
+        return [ consumed, link ];
+      }
+
+      // [Alt text][id]
+      // [Alt text] [id]
+      m = text.match( /^\s*\[(.*?)\]/ );
+
+      if ( m ) {
+
+        consumed += m[ 0 ].length;
+
+        // [links][] uses links as its reference
+        attrs = { ref: ( m[ 1 ] || String(children) ).toLowerCase(),  original: orig.substr( 0, consumed ) };
+
+        link = [ "link_ref", attrs ].concat( children );
+
+        // We can't check if the reference is known here as it likely wont be
+        // found till after. Check it in md tree->hmtl tree conversion.
+        // Store the original so that conversion can revert if the ref isn't found.
+        return [ consumed, link ];
+      }
+
+      // [id]
+      // Only if id is plain (no formatting.)
+      if ( children.length == 1 && typeof children[0] == "string" ) {
+
+        attrs = { ref: children[0].toLowerCase(),  original: orig.substr( 0, consumed ) };
+        link = [ "link_ref", attrs, children[0] ];
+        return [ consumed, link ];
+      }
+
+      // Just consume the "["
+      return [ 1, "[" ];
+    },
+
+
+    "<": function autoLink( text ) {
+      var m;
+
+      if ( ( m = text.match( /^<(?:((https?|ftp|mailto):[^>]+)|(.*?@.*?\.[a-zA-Z]+))>/ ) ) != null ) {
+        if ( m[3] ) {
+          return [ m[0].length, [ "link", { href: "mailto:" + m[3] }, m[3] ] ];
+
+        }
+        else if ( m[2] == "mailto" ) {
+          return [ m[0].length, [ "link", { href: m[1] }, m[1].substr("mailto:".length ) ] ];
+        }
+        else
+          return [ m[0].length, [ "link", { href: m[1] }, m[1] ] ];
+      }
+
+      return [ 1, "<" ];
+    },
+
+    "`": function inlineCode( text ) {
+      // Inline code block. as many backticks as you like to start it
+      // Always skip over the opening ticks.
+      var m = text.match( /(`+)(([\s\S]*?)\1)/ );
+
+      if ( m && m[2] )
+        return [ m[1].length + m[2].length, [ "inlinecode", m[3] ] ];
+      else {
+        // TODO: No matching end code found - warn!
+        return [ 1, "`" ];
+      }
+    },
+
+    "  \n": function lineBreak( text ) {
+      return [ 3, [ "linebreak" ] ];
+    }
+
+};
+
+// Meta Helper/generator method for em and strong handling
+function strong_em( tag, md ) {
+
+  var state_slot = tag + "_state",
+      other_slot = tag == "strong" ? "em_state" : "strong_state";
+
+  function CloseTag(len) {
+    this.len_after = len;
+    this.name = "close_" + md;
+  }
+
+  return function ( text, orig_match ) {
+
+    if ( this[state_slot][0] == md ) {
+      // Most recent em is of this type
+      //D:this.debug("closing", md);
+      this[state_slot].shift();
+
+      // "Consume" everything to go back to the recrusion in the else-block below
+      return[ text.length, new CloseTag(text.length-md.length) ];
+    }
+    else {
+      // Store a clone of the em/strong states
+      var other = this[other_slot].slice(),
+          state = this[state_slot].slice();
+
+      this[state_slot].unshift(md);
+
+      //D:this.debug_indent += "  ";
+
+      // Recurse
+      var res = this.processInline( text.substr( md.length ) );
+      //D:this.debug_indent = this.debug_indent.substr(2);
+
+      var last = res[res.length - 1];
+
+      //D:this.debug("processInline from", tag + ": ", uneval( res ) );
+
+      var check = this[state_slot].shift();
+      if ( last instanceof CloseTag ) {
+        res.pop();
+        // We matched! Huzzah.
+        var consumed = text.length - last.len_after;
+        return [ consumed, [ tag ].concat(res) ];
+      }
+      else {
+        // Restore the state of the other kind. We might have mistakenly closed it.
+        this[other_slot] = other;
+        this[state_slot] = state;
+
+        // We can't reuse the processed result as it could have wrong parsing contexts in it.
+        return [ md.length, md ];
+      }
+    }
+  }; // End returned function
+}
+
+Markdown.dialects.Gruber.inline["**"] = strong_em("strong", "**");
+Markdown.dialects.Gruber.inline["__"] = strong_em("strong", "__");
+Markdown.dialects.Gruber.inline["*"]  = strong_em("em", "*");
+Markdown.dialects.Gruber.inline["_"]  = strong_em("em", "_");
+
+
+// Build default order from insertion order.
+Markdown.buildBlockOrder = function(d) {
+  var ord = [];
+  for ( var i in d ) {
+    if ( i == "__order__" || i == "__call__" ) continue;
+    ord.push( i );
+  }
+  d.__order__ = ord;
+};
+
+// Build patterns for inline matcher
+Markdown.buildInlinePatterns = function(d) {
+  var patterns = [];
+
+  for ( var i in d ) {
+    // __foo__ is reserved and not a pattern
+    if ( i.match( /^__.*__$/) ) continue;
+    var l = i.replace( /([\\.*+?|()\[\]{}])/g, "\\$1" )
+             .replace( /\n/, "\\n" );
+    patterns.push( i.length == 1 ? l : "(?:" + l + ")" );
+  }
+
+  patterns = patterns.join("|");
+  d.__patterns__ = patterns;
+  //print("patterns:", uneval( patterns ) );
+
+  var fn = d.__call__;
+  d.__call__ = function(text, pattern) {
+    if ( pattern != undefined ) {
+      return fn.call(this, text, pattern);
+    }
+    else
+    {
+      return fn.call(this, text, patterns);
+    }
+  };
+};
+
+Markdown.DialectHelpers = {};
+Markdown.DialectHelpers.inline_until_char = function( text, want ) {
+  var consumed = 0,
+      nodes = [];
+
+  while ( true ) {
+    if ( text.charAt( consumed ) == want ) {
+      // Found the character we were looking for
+      consumed++;
+      return [ consumed, nodes ];
+    }
+
+    if ( consumed >= text.length ) {
+      // No closing char found. Abort.
+      return null;
+    }
+
+    var res = this.dialect.inline.__oneElement__.call(this, text.substr( consumed ) );
+    consumed += res[ 0 ];
+    // Add any returned nodes.
+    nodes.push.apply( nodes, res.slice( 1 ) );
+  }
+}
+
+// Helper function to make sub-classing a dialect easier
+Markdown.subclassDialect = function( d ) {
+  function Block() {}
+  Block.prototype = d.block;
+  function Inline() {}
+  Inline.prototype = d.inline;
+
+  return { block: new Block(), inline: new Inline() };
+};
+
+Markdown.buildBlockOrder ( Markdown.dialects.Gruber.block );
+Markdown.buildInlinePatterns( Markdown.dialects.Gruber.inline );
+
+Markdown.dialects.Maruku = Markdown.subclassDialect( Markdown.dialects.Gruber );
+
+Markdown.dialects.Maruku.processMetaHash = function processMetaHash( meta_string ) {
+  var meta = split_meta_hash( meta_string ),
+      attr = {};
+
+  for ( var i = 0; i < meta.length; ++i ) {
+    // id: #foo
+    if ( /^#/.test( meta[ i ] ) ) {
+      attr.id = meta[ i ].substring( 1 );
+    }
+    // class: .foo
+    else if ( /^\./.test( meta[ i ] ) ) {
+      // if class already exists, append the new one
+      if ( attr["class"] ) {
+        attr["class"] = attr["class"] + meta[ i ].replace( /./, " " );
+      }
+      else {
+        attr["class"] = meta[ i ].substring( 1 );
+      }
+    }
+    // attribute: foo=bar
+    else if ( /\=/.test( meta[ i ] ) ) {
+      var s = meta[ i ].split( /\=/ );
+      attr[ s[ 0 ] ] = s[ 1 ];
+    }
+  }
+
+  return attr;
+}
+
+function split_meta_hash( meta_string ) {
+  var meta = meta_string.split( "" ),
+      parts = [ "" ],
+      in_quotes = false;
+
+  while ( meta.length ) {
+    var letter = meta.shift();
+    switch ( letter ) {
+      case " " :
+        // if we're in a quoted section, keep it
+        if ( in_quotes ) {
+          parts[ parts.length - 1 ] += letter;
+        }
+        // otherwise make a new part
+        else {
+          parts.push( "" );
+        }
+        break;
+      case "'" :
+      case '"' :
+        // reverse the quotes and move straight on
+        in_quotes = !in_quotes;
+        break;
+      case "\\" :
+        // shift off the next letter to be used straight away.
+        // it was escaped so we'll keep it whatever it is
+        letter = meta.shift();
+      default :
+        parts[ parts.length - 1 ] += letter;
+        break;
+    }
+  }
+
+  return parts;
+}
+
+Markdown.dialects.Maruku.block.document_meta = function document_meta( block, next ) {
+  // we're only interested in the first block
+  if ( block.lineNumber > 1 ) return undefined;
+
+  // document_meta blocks consist of one or more lines of `Key: Value\n`
+  if ( ! block.match( /^(?:\w+:.*\n)*\w+:.*$/ ) ) return undefined;
+
+  // make an attribute node if it doesn't exist
+  if ( !extract_attr( this.tree ) ) {
+    this.tree.splice( 1, 0, {} );
+  }
+
+  var pairs = block.split( /\n/ );
+  for ( p in pairs ) {
+    var m = pairs[ p ].match( /(\w+):\s*(.*)$/ ),
+        key = m[ 1 ].toLowerCase(),
+        value = m[ 2 ];
+
+    this.tree[ 1 ][ key ] = value;
+  }
+
+  // document_meta produces no content!
+  return [];
+};
+
+Markdown.dialects.Maruku.block.block_meta = function block_meta( block, next ) {
+  // check if the last line of the block is an meta hash
+  var m = block.match( /(^|\n) {0,3}\{:\s*((?:\\\}|[^\}])*)\s*\}$/ );
+  if ( !m ) return undefined;
+
+  // process the meta hash
+  var attr = this.dialect.processMetaHash( m[ 2 ] );
+
+  var hash;
+
+  // if we matched ^ then we need to apply meta to the previous block
+  if ( m[ 1 ] === "" ) {
+    var node = this.tree[ this.tree.length - 1 ];
+    hash = extract_attr( node );
+
+    // if the node is a string (rather than JsonML), bail
+    if ( typeof node === "string" ) return undefined;
+
+    // create the attribute hash if it doesn't exist
+    if ( !hash ) {
+      hash = {};
+      node.splice( 1, 0, hash );
+    }
+
+    // add the attributes in
+    for ( a in attr ) {
+      hash[ a ] = attr[ a ];
+    }
+
+    // return nothing so the meta hash is removed
+    return [];
+  }
+
+  // pull the meta hash off the block and process what's left
+  var b = block.replace( /\n.*$/, "" ),
+      result = this.processBlock( b, [] );
+
+  // get or make the attributes hash
+  hash = extract_attr( result[ 0 ] );
+  if ( !hash ) {
+    hash = {};
+    result[ 0 ].splice( 1, 0, hash );
+  }
+
+  // attach the attributes to the block
+  for ( a in attr ) {
+    hash[ a ] = attr[ a ];
+  }
+
+  return result;
+};
+
+Markdown.dialects.Maruku.block.definition_list = function definition_list( block, next ) {
+  // one or more terms followed by one or more definitions, in a single block
+  var tight = /^((?:[^\s:].*\n)+):\s+([\s\S]+)$/,
+      list = [ "dl" ],
+      i, m;
+
+  // see if we're dealing with a tight or loose block
+  if ( ( m = block.match( tight ) ) ) {
+    // pull subsequent tight DL blocks out of `next`
+    var blocks = [ block ];
+    while ( next.length && tight.exec( next[ 0 ] ) ) {
+      blocks.push( next.shift() );
+    }
+
+    for ( var b = 0; b < blocks.length; ++b ) {
+      var m = blocks[ b ].match( tight ),
+          terms = m[ 1 ].replace( /\n$/, "" ).split( /\n/ ),
+          defns = m[ 2 ].split( /\n:\s+/ );
+
+      // print( uneval( m ) );
+
+      for ( i = 0; i < terms.length; ++i ) {
+        list.push( [ "dt", terms[ i ] ] );
+      }
+
+      for ( i = 0; i < defns.length; ++i ) {
+        // run inline processing over the definition
+        list.push( [ "dd" ].concat( this.processInline( defns[ i ].replace( /(\n)\s+/, "$1" ) ) ) );
+      }
+    }
+  }
+  else {
+    return undefined;
+  }
+
+  return [ list ];
+};
+
+// splits on unescaped instances of @ch. If @ch is not a character the result
+// can be unpredictable
+
+Markdown.dialects.Maruku.block.table = function table (block, next) {
+
+    var _split_on_unescaped = function(s, ch) {
+        ch = ch || '\\s';
+        if (ch.match(/^[\\|\[\]{}?*.+^$]$/)) { ch = '\\' + ch; }
+        var res = [ ],
+            r = new RegExp('^((?:\\\\.|[^\\\\' + ch + '])*)' + ch + '(.*)'),
+            m;
+        while(m = s.match(r)) {
+            res.push(m[1]);
+            s = m[2];
+        }
+        res.push(s);
+        return res;
+    }
+
+    var leading_pipe = /^ {0,3}\|(.+)\n {0,3}\|\s*([\-:]+[\-| :]*)\n((?:\s*\|.*(?:\n|$))*)(?=\n|$)/,
+        // find at least an unescaped pipe in each line
+        no_leading_pipe = /^ {0,3}(\S(?:\\.|[^\\|])*\|.*)\n {0,3}([\-:]+\s*\|[\-| :]*)\n((?:(?:\\.|[^\\|])*\|.*(?:\n|$))*)(?=\n|$)/,
+        i, m;
+    if (m = block.match(leading_pipe)) {
+        // remove leading pipes in contents
+        // (header and horizontal rule already have the leading pipe left out)
+        m[3] = m[3].replace(/^\s*\|/gm, '');
+    } else if (! ( m = block.match(no_leading_pipe))) {
+        return undefined;
+    }
+
+    var table = [ "table", [ "thead", [ "tr" ] ], [ "tbody" ] ];
+
+    // remove trailing pipes, then split on pipes
+    // (no escaped pipes are allowed in horizontal rule)
+    m[2] = m[2].replace(/\|\s*$/, '').split('|');
+
+    // process alignment
+    var html_attrs = [ ];
+    forEach (m[2], function (s) {
+        if (s.match(/^\s*-+:\s*$/))       html_attrs.push({align: "right"});
+        else if (s.match(/^\s*:-+\s*$/))  html_attrs.push({align: "left"});
+        else if (s.match(/^\s*:-+:\s*$/)) html_attrs.push({align: "center"});
+        else                              html_attrs.push({});
+    });
+
+    // now for the header, avoid escaped pipes
+    m[1] = _split_on_unescaped(m[1].replace(/\|\s*$/, ''), '|');
+    for (i = 0; i < m[1].length; i++) {
+        table[1][1].push(['th', html_attrs[i] || {}].concat(
+            this.processInline(m[1][i].trim())));
+    }
+
+    // now for body contents
+    forEach (m[3].replace(/\|\s*$/mg, '').split('\n'), function (row) {
+        var html_row = ['tr'];
+        row = _split_on_unescaped(row, '|');
+        for (i = 0; i < row.length; i++) {
+            html_row.push(['td', html_attrs[i] || {}].concat(this.processInline(row[i].trim())));
+        }
+        table[2].push(html_row);
+    }, this);
+
+    return [table];
+}
+
+Markdown.dialects.Maruku.inline[ "{:" ] = function inline_meta( text, matches, out ) {
+  if ( !out.length ) {
+    return [ 2, "{:" ];
+  }
+
+  // get the preceeding element
+  var before = out[ out.length - 1 ];
+
+  if ( typeof before === "string" ) {
+    return [ 2, "{:" ];
+  }
+
+  // match a meta hash
+  var m = text.match( /^\{:\s*((?:\\\}|[^\}])*)\s*\}/ );
+
+  // no match, false alarm
+  if ( !m ) {
+    return [ 2, "{:" ];
+  }
+
+  // attach the attributes to the preceeding element
+  var meta = this.dialect.processMetaHash( m[ 1 ] ),
+      attr = extract_attr( before );
+
+  if ( !attr ) {
+    attr = {};
+    before.splice( 1, 0, attr );
+  }
+
+  for ( var k in meta ) {
+    attr[ k ] = meta[ k ];
+  }
+
+  // cut out the string and replace it with nothing
+  return [ m[ 0 ].length, "" ];
+};
+
+Markdown.dialects.Maruku.inline.__escape__ = /^\\[\\`\*_{}\[\]()#\+.!\-|:]/;
+
+Markdown.buildBlockOrder ( Markdown.dialects.Maruku.block );
+Markdown.buildInlinePatterns( Markdown.dialects.Maruku.inline );
+
+var isArray = Array.isArray || function(obj) {
+  return Object.prototype.toString.call(obj) == "[object Array]";
+};
+
+var forEach;
+// Don't mess with Array.prototype. Its not friendly
+if ( Array.prototype.forEach ) {
+  forEach = function( arr, cb, thisp ) {
+    return arr.forEach( cb, thisp );
+  };
+}
+else {
+  forEach = function(arr, cb, thisp) {
+    for (var i = 0; i < arr.length; i++) {
+      cb.call(thisp || arr, arr[i], i, arr);
+    }
+  }
+}
+
+var isEmpty = function( obj ) {
+  for ( var key in obj ) {
+    if ( hasOwnProperty.call( obj, key ) ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function extract_attr( jsonml ) {
+  return isArray(jsonml)
+      && jsonml.length > 1
+      && typeof jsonml[ 1 ] === "object"
+      && !( isArray(jsonml[ 1 ]) )
+      ? jsonml[ 1 ]
+      : undefined;
+}
+
+
+
+/**
+ *  renderJsonML( jsonml[, options] ) -> String
+ *  - jsonml (Array): JsonML array to render to XML
+ *  - options (Object): options
+ *
+ *  Converts the given JsonML into well-formed XML.
+ *
+ *  The options currently understood are:
+ *
+ *  - root (Boolean): wether or not the root node should be included in the
+ *    output, or just its children. The default `false` is to not include the
+ *    root itself.
+ */
+expose.renderJsonML = function( jsonml, options ) {
+  options = options || {};
+  // include the root element in the rendered output?
+  options.root = options.root || false;
+
+  var content = [];
+
+  if ( options.root ) {
+    content.push( render_tree( jsonml ) );
+  }
+  else {
+    jsonml.shift(); // get rid of the tag
+    if ( jsonml.length && typeof jsonml[ 0 ] === "object" && !( jsonml[ 0 ] instanceof Array ) ) {
+      jsonml.shift(); // get rid of the attributes
+    }
+
+    while ( jsonml.length ) {
+      content.push( render_tree( jsonml.shift() ) );
+    }
+  }
+
+  return content.join( "\n\n" );
+};
+
+function escapeHTML( text ) {
+  return text.replace( /&/g, "&amp;" )
+             .replace( /</g, "&lt;" )
+             .replace( />/g, "&gt;" )
+             .replace( /"/g, "&quot;" )
+             .replace( /'/g, "&#39;" );
+}
+
+function render_tree( jsonml ) {
+  // basic case
+  if ( typeof jsonml === "string" ) {
+    return escapeHTML( jsonml );
+  }
+
+  var tag = jsonml.shift(),
+      attributes = {},
+      content = [];
+
+  if ( jsonml.length && typeof jsonml[ 0 ] === "object" && !( jsonml[ 0 ] instanceof Array ) ) {
+    attributes = jsonml.shift();
+  }
+
+  while ( jsonml.length ) {
+    content.push( render_tree( jsonml.shift() ) );
+  }
+
+  var tag_attrs = "";
+  for ( var a in attributes ) {
+    tag_attrs += " " + a + '="' + escapeHTML( attributes[ a ] ) + '"';
+  }
+
+  // be careful about adding whitespace here for inline elements
+  if ( tag == "img" || tag == "br" || tag == "hr" ) {
+    return "<"+ tag + tag_attrs + "/>";
+  }
+  else {
+    return "<"+ tag + tag_attrs + ">" + content.join( "" ) + "</" + tag + ">";
+  }
+}
+
+function convert_tree_to_html( tree, references, options ) {
+  var i;
+  options = options || {};
+
+  // shallow clone
+  var jsonml = tree.slice( 0 );
+
+  if ( typeof options.preprocessTreeNode === "function" ) {
+      jsonml = options.preprocessTreeNode(jsonml, references);
+  }
+
+  // Clone attributes if they exist
+  var attrs = extract_attr( jsonml );
+  if ( attrs ) {
+    jsonml[ 1 ] = {};
+    for ( i in attrs ) {
+      jsonml[ 1 ][ i ] = attrs[ i ];
+    }
+    attrs = jsonml[ 1 ];
+  }
+
+  // basic case
+  if ( typeof jsonml === "string" ) {
+    return jsonml;
+  }
+
+  // convert this node
+  switch ( jsonml[ 0 ] ) {
+    case "header":
+      jsonml[ 0 ] = "h" + jsonml[ 1 ].level;
+      delete jsonml[ 1 ].level;
+      break;
+    case "bulletlist":
+      jsonml[ 0 ] = "ul";
+      break;
+    case "numberlist":
+      jsonml[ 0 ] = "ol";
+      break;
+    case "listitem":
+      jsonml[ 0 ] = "li";
+      break;
+    case "para":
+      jsonml[ 0 ] = "p";
+      break;
+    case "markdown":
+      jsonml[ 0 ] = "html";
+      if ( attrs ) delete attrs.references;
+      break;
+    case "code_block":
+      jsonml[ 0 ] = "pre";
+      i = attrs ? 2 : 1;
+      var code = [ "code" ];
+      code.push.apply( code, jsonml.splice( i, jsonml.length - i ) );
+      jsonml[ i ] = code;
+      break;
+    case "inlinecode":
+      jsonml[ 0 ] = "code";
+      break;
+    case "img":
+      jsonml[ 1 ].src = jsonml[ 1 ].href;
+      delete jsonml[ 1 ].href;
+      break;
+    case "linebreak":
+      jsonml[ 0 ] = "br";
+    break;
+    case "link":
+      jsonml[ 0 ] = "a";
+      break;
+    case "link_ref":
+      jsonml[ 0 ] = "a";
+
+      // grab this ref and clean up the attribute node
+      var ref = references[ attrs.ref ];
+
+      // if the reference exists, make the link
+      if ( ref ) {
+        delete attrs.ref;
+
+        // add in the href and title, if present
+        attrs.href = ref.href;
+        if ( ref.title ) {
+          attrs.title = ref.title;
+        }
+
+        // get rid of the unneeded original text
+        delete attrs.original;
+      }
+      // the reference doesn't exist, so revert to plain text
+      else {
+        return attrs.original;
+      }
+      break;
+    case "img_ref":
+      jsonml[ 0 ] = "img";
+
+      // grab this ref and clean up the attribute node
+      var ref = references[ attrs.ref ];
+
+      // if the reference exists, make the link
+      if ( ref ) {
+        delete attrs.ref;
+
+        // add in the href and title, if present
+        attrs.src = ref.href;
+        if ( ref.title ) {
+          attrs.title = ref.title;
+        }
+
+        // get rid of the unneeded original text
+        delete attrs.original;
+      }
+      // the reference doesn't exist, so revert to plain text
+      else {
+        return attrs.original;
+      }
+      break;
+  }
+
+  // convert all the children
+  i = 1;
+
+  // deal with the attribute node, if it exists
+  if ( attrs ) {
+    // if there are keys, skip over it
+    for ( var key in jsonml[ 1 ] ) {
+        i = 2;
+        break;
+    }
+    // if there aren't, remove it
+    if ( i === 1 ) {
+      jsonml.splice( i, 1 );
+    }
+  }
+
+  for ( ; i < jsonml.length; ++i ) {
+    jsonml[ i ] = convert_tree_to_html( jsonml[ i ], references, options );
+  }
+
+  return jsonml;
+}
+
+
+// merges adjacent text nodes into a single node
+function merge_text_nodes( jsonml ) {
+  // skip the tag name and attribute hash
+  var i = extract_attr( jsonml ) ? 2 : 1;
+
+  while ( i < jsonml.length ) {
+    // if it's a string check the next item too
+    if ( typeof jsonml[ i ] === "string" ) {
+      if ( i + 1 < jsonml.length && typeof jsonml[ i + 1 ] === "string" ) {
+        // merge the second string into the first and remove it
+        jsonml[ i ] += jsonml.splice( i + 1, 1 )[ 0 ];
+      }
+      else {
+        ++i;
+      }
+    }
+    // if it's not a string recurse
+    else {
+      merge_text_nodes( jsonml[ i ] );
+      ++i;
+    }
+  }
+}
+
+} )( (function() {
+  if ( typeof exports === "undefined" ) {
+    window.markdown = {};
+    return window.markdown;
+  }
+  else {
+    return exports;
+  }
+} )() );
+
+},{"util":82}],68:[function(require,module,exports){
 var AccountView = Ember.View.extend({
 
 });
@@ -74082,7 +75851,7 @@ var AccountView = Ember.View.extend({
 module.exports = AccountView;
 
 
-},{}],64:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 var CalendarView = Ember.View.extend({
 	onRerender: function(){
 		this.rerender();
@@ -74093,7 +75862,7 @@ var CalendarView = Ember.View.extend({
 module.exports = CalendarView;
 
 
-},{}],65:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 var EpisodesView = Ember.View.extend({
 
 });
@@ -74101,7 +75870,15 @@ var EpisodesView = Ember.View.extend({
 module.exports = EpisodesView;
 
 
-},{}],66:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
+var InfoView = Ember.View.extend({
+
+});
+
+module.exports = InfoView;
+
+
+},{}],72:[function(require,module,exports){
 var LoadingView = Ember.View.extend({
 
 });
@@ -74109,7 +75886,7 @@ var LoadingView = Ember.View.extend({
 module.exports = LoadingView;
 
 
-},{}],67:[function(require,module,exports){
+},{}],73:[function(require,module,exports){
 var LoginView = Ember.View.extend({
 	templateName: 'login',
 
@@ -74132,7 +75909,7 @@ var LoginView = Ember.View.extend({
 module.exports = LoginView;
 
 
-},{}],68:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 var NavigationView = Ember.View.extend({
 	templateName: 'navigation'
 	
@@ -74141,7 +75918,7 @@ var NavigationView = Ember.View.extend({
 module.exports = NavigationView;
 
 
-},{}],69:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 var ShowItemView = Ember.View.extend({
 
 });
@@ -74149,7 +75926,7 @@ var ShowItemView = Ember.View.extend({
 module.exports = ShowItemView;
 
 
-},{}],70:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 var ShowView = Ember.View.extend({
 	model: function(){
 		return this.get('controller').get('model');
@@ -74159,7 +75936,7 @@ var ShowView = Ember.View.extend({
 module.exports = ShowView;
 
 
-},{}],71:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 var ShowsView = Ember.View.extend({
 	afterRender: function(){
 		console.log("Done rendering all shows!");
@@ -74170,7 +75947,7 @@ var ShowsView = Ember.View.extend({
 module.exports = ShowsView;
 
 
-},{}],72:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
 var UserView = Ember.View.extend({
 
 });
@@ -74178,7 +75955,7 @@ var UserView = Ember.View.extend({
 module.exports = UserView;
 
 
-},{}],73:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 var WatchedShowView = Ember.View.extend({
 
 });
@@ -74186,7 +75963,7 @@ var WatchedShowView = Ember.View.extend({
 module.exports = WatchedShowView;
 
 
-},{}],74:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 var WatchedView = Ember.View.extend({
 
 });
@@ -74194,5 +75971,768 @@ var WatchedView = Ember.View.extend({
 module.exports = WatchedView;
 
 
-},{}]},{},[29])
+},{}],81:[function(require,module,exports){
+
+
+//
+// The shims in this file are not fully implemented shims for the ES5
+// features, but do work for the particular usecases there is in
+// the other modules.
+//
+
+var toString = Object.prototype.toString;
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+// Array.isArray is supported in IE9
+function isArray(xs) {
+  return toString.call(xs) === '[object Array]';
+}
+exports.isArray = typeof Array.isArray === 'function' ? Array.isArray : isArray;
+
+// Array.prototype.indexOf is supported in IE9
+exports.indexOf = function indexOf(xs, x) {
+  if (xs.indexOf) return xs.indexOf(x);
+  for (var i = 0; i < xs.length; i++) {
+    if (x === xs[i]) return i;
+  }
+  return -1;
+};
+
+// Array.prototype.filter is supported in IE9
+exports.filter = function filter(xs, fn) {
+  if (xs.filter) return xs.filter(fn);
+  var res = [];
+  for (var i = 0; i < xs.length; i++) {
+    if (fn(xs[i], i, xs)) res.push(xs[i]);
+  }
+  return res;
+};
+
+// Array.prototype.forEach is supported in IE9
+exports.forEach = function forEach(xs, fn, self) {
+  if (xs.forEach) return xs.forEach(fn, self);
+  for (var i = 0; i < xs.length; i++) {
+    fn.call(self, xs[i], i, xs);
+  }
+};
+
+// Array.prototype.map is supported in IE9
+exports.map = function map(xs, fn) {
+  if (xs.map) return xs.map(fn);
+  var out = new Array(xs.length);
+  for (var i = 0; i < xs.length; i++) {
+    out[i] = fn(xs[i], i, xs);
+  }
+  return out;
+};
+
+// Array.prototype.reduce is supported in IE9
+exports.reduce = function reduce(array, callback, opt_initialValue) {
+  if (array.reduce) return array.reduce(callback, opt_initialValue);
+  var value, isValueSet = false;
+
+  if (2 < arguments.length) {
+    value = opt_initialValue;
+    isValueSet = true;
+  }
+  for (var i = 0, l = array.length; l > i; ++i) {
+    if (array.hasOwnProperty(i)) {
+      if (isValueSet) {
+        value = callback(value, array[i], i, array);
+      }
+      else {
+        value = array[i];
+        isValueSet = true;
+      }
+    }
+  }
+
+  return value;
+};
+
+// String.prototype.substr - negative index don't work in IE8
+if ('ab'.substr(-1) !== 'b') {
+  exports.substr = function (str, start, length) {
+    // did we get a negative start, calculate how much it is from the beginning of the string
+    if (start < 0) start = str.length + start;
+
+    // call the original function
+    return str.substr(start, length);
+  };
+} else {
+  exports.substr = function (str, start, length) {
+    return str.substr(start, length);
+  };
+}
+
+// String.prototype.trim is supported in IE9
+exports.trim = function (str) {
+  if (str.trim) return str.trim();
+  return str.replace(/^\s+|\s+$/g, '');
+};
+
+// Function.prototype.bind is supported in IE9
+exports.bind = function () {
+  var args = Array.prototype.slice.call(arguments);
+  var fn = args.shift();
+  if (fn.bind) return fn.bind.apply(fn, args);
+  var self = args.shift();
+  return function () {
+    fn.apply(self, args.concat([Array.prototype.slice.call(arguments)]));
+  };
+};
+
+// Object.create is supported in IE9
+function create(prototype, properties) {
+  var object;
+  if (prototype === null) {
+    object = { '__proto__' : null };
+  }
+  else {
+    if (typeof prototype !== 'object') {
+      throw new TypeError(
+        'typeof prototype[' + (typeof prototype) + '] != \'object\''
+      );
+    }
+    var Type = function () {};
+    Type.prototype = prototype;
+    object = new Type();
+    object.__proto__ = prototype;
+  }
+  if (typeof properties !== 'undefined' && Object.defineProperties) {
+    Object.defineProperties(object, properties);
+  }
+  return object;
+}
+exports.create = typeof Object.create === 'function' ? Object.create : create;
+
+// Object.keys and Object.getOwnPropertyNames is supported in IE9 however
+// they do show a description and number property on Error objects
+function notObject(object) {
+  return ((typeof object != "object" && typeof object != "function") || object === null);
+}
+
+function keysShim(object) {
+  if (notObject(object)) {
+    throw new TypeError("Object.keys called on a non-object");
+  }
+
+  var result = [];
+  for (var name in object) {
+    if (hasOwnProperty.call(object, name)) {
+      result.push(name);
+    }
+  }
+  return result;
+}
+
+// getOwnPropertyNames is almost the same as Object.keys one key feature
+//  is that it returns hidden properties, since that can't be implemented,
+//  this feature gets reduced so it just shows the length property on arrays
+function propertyShim(object) {
+  if (notObject(object)) {
+    throw new TypeError("Object.getOwnPropertyNames called on a non-object");
+  }
+
+  var result = keysShim(object);
+  if (exports.isArray(object) && exports.indexOf(object, 'length') === -1) {
+    result.push('length');
+  }
+  return result;
+}
+
+var keys = typeof Object.keys === 'function' ? Object.keys : keysShim;
+var getOwnPropertyNames = typeof Object.getOwnPropertyNames === 'function' ?
+  Object.getOwnPropertyNames : propertyShim;
+
+if (new Error().hasOwnProperty('description')) {
+  var ERROR_PROPERTY_FILTER = function (obj, array) {
+    if (toString.call(obj) === '[object Error]') {
+      array = exports.filter(array, function (name) {
+        return name !== 'description' && name !== 'number' && name !== 'message';
+      });
+    }
+    return array;
+  };
+
+  exports.keys = function (object) {
+    return ERROR_PROPERTY_FILTER(object, keys(object));
+  };
+  exports.getOwnPropertyNames = function (object) {
+    return ERROR_PROPERTY_FILTER(object, getOwnPropertyNames(object));
+  };
+} else {
+  exports.keys = keys;
+  exports.getOwnPropertyNames = getOwnPropertyNames;
+}
+
+// Object.getOwnPropertyDescriptor - supported in IE8 but only on dom elements
+function valueObject(value, key) {
+  return { value: value[key] };
+}
+
+if (typeof Object.getOwnPropertyDescriptor === 'function') {
+  try {
+    Object.getOwnPropertyDescriptor({'a': 1}, 'a');
+    exports.getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+  } catch (e) {
+    // IE8 dom element issue - use a try catch and default to valueObject
+    exports.getOwnPropertyDescriptor = function (value, key) {
+      try {
+        return Object.getOwnPropertyDescriptor(value, key);
+      } catch (e) {
+        return valueObject(value, key);
+      }
+    };
+  }
+} else {
+  exports.getOwnPropertyDescriptor = valueObject;
+}
+
+},{}],82:[function(require,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var shims = require('_shims');
+
+var formatRegExp = /%[sdj%]/g;
+exports.format = function(f) {
+  if (!isString(f)) {
+    var objects = [];
+    for (var i = 0; i < arguments.length; i++) {
+      objects.push(inspect(arguments[i]));
+    }
+    return objects.join(' ');
+  }
+
+  var i = 1;
+  var args = arguments;
+  var len = args.length;
+  var str = String(f).replace(formatRegExp, function(x) {
+    if (x === '%%') return '%';
+    if (i >= len) return x;
+    switch (x) {
+      case '%s': return String(args[i++]);
+      case '%d': return Number(args[i++]);
+      case '%j':
+        try {
+          return JSON.stringify(args[i++]);
+        } catch (_) {
+          return '[Circular]';
+        }
+      default:
+        return x;
+    }
+  });
+  for (var x = args[i]; i < len; x = args[++i]) {
+    if (isNull(x) || !isObject(x)) {
+      str += ' ' + x;
+    } else {
+      str += ' ' + inspect(x);
+    }
+  }
+  return str;
+};
+
+/**
+ * Echos the value of a value. Trys to print the value out
+ * in the best way possible given the different types.
+ *
+ * @param {Object} obj The object to print out.
+ * @param {Object} opts Optional options object that alters the output.
+ */
+/* legacy: obj, showHidden, depth, colors*/
+function inspect(obj, opts) {
+  // default options
+  var ctx = {
+    seen: [],
+    stylize: stylizeNoColor
+  };
+  // legacy...
+  if (arguments.length >= 3) ctx.depth = arguments[2];
+  if (arguments.length >= 4) ctx.colors = arguments[3];
+  if (isBoolean(opts)) {
+    // legacy...
+    ctx.showHidden = opts;
+  } else if (opts) {
+    // got an "options" object
+    exports._extend(ctx, opts);
+  }
+  // set default options
+  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
+  if (isUndefined(ctx.depth)) ctx.depth = 2;
+  if (isUndefined(ctx.colors)) ctx.colors = false;
+  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
+  if (ctx.colors) ctx.stylize = stylizeWithColor;
+  return formatValue(ctx, obj, ctx.depth);
+}
+exports.inspect = inspect;
+
+
+// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+inspect.colors = {
+  'bold' : [1, 22],
+  'italic' : [3, 23],
+  'underline' : [4, 24],
+  'inverse' : [7, 27],
+  'white' : [37, 39],
+  'grey' : [90, 39],
+  'black' : [30, 39],
+  'blue' : [34, 39],
+  'cyan' : [36, 39],
+  'green' : [32, 39],
+  'magenta' : [35, 39],
+  'red' : [31, 39],
+  'yellow' : [33, 39]
+};
+
+// Don't use 'blue' not visible on cmd.exe
+inspect.styles = {
+  'special': 'cyan',
+  'number': 'yellow',
+  'boolean': 'yellow',
+  'undefined': 'grey',
+  'null': 'bold',
+  'string': 'green',
+  'date': 'magenta',
+  // "name": intentionally not styling
+  'regexp': 'red'
+};
+
+
+function stylizeWithColor(str, styleType) {
+  var style = inspect.styles[styleType];
+
+  if (style) {
+    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
+           '\u001b[' + inspect.colors[style][1] + 'm';
+  } else {
+    return str;
+  }
+}
+
+
+function stylizeNoColor(str, styleType) {
+  return str;
+}
+
+
+function arrayToHash(array) {
+  var hash = {};
+
+  shims.forEach(array, function(val, idx) {
+    hash[val] = true;
+  });
+
+  return hash;
+}
+
+
+function formatValue(ctx, value, recurseTimes) {
+  // Provide a hook for user-specified inspect functions.
+  // Check that value is an object with an inspect function on it
+  if (ctx.customInspect &&
+      value &&
+      isFunction(value.inspect) &&
+      // Filter out the util module, it's inspect function is special
+      value.inspect !== exports.inspect &&
+      // Also filter out any prototype objects using the circular check.
+      !(value.constructor && value.constructor.prototype === value)) {
+    var ret = value.inspect(recurseTimes);
+    if (!isString(ret)) {
+      ret = formatValue(ctx, ret, recurseTimes);
+    }
+    return ret;
+  }
+
+  // Primitive types cannot have properties
+  var primitive = formatPrimitive(ctx, value);
+  if (primitive) {
+    return primitive;
+  }
+
+  // Look up the keys of the object.
+  var keys = shims.keys(value);
+  var visibleKeys = arrayToHash(keys);
+
+  if (ctx.showHidden) {
+    keys = shims.getOwnPropertyNames(value);
+  }
+
+  // Some type of object without properties can be shortcutted.
+  if (keys.length === 0) {
+    if (isFunction(value)) {
+      var name = value.name ? ': ' + value.name : '';
+      return ctx.stylize('[Function' + name + ']', 'special');
+    }
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    }
+    if (isDate(value)) {
+      return ctx.stylize(Date.prototype.toString.call(value), 'date');
+    }
+    if (isError(value)) {
+      return formatError(value);
+    }
+  }
+
+  var base = '', array = false, braces = ['{', '}'];
+
+  // Make Array say that they are Array
+  if (isArray(value)) {
+    array = true;
+    braces = ['[', ']'];
+  }
+
+  // Make functions say that they are functions
+  if (isFunction(value)) {
+    var n = value.name ? ': ' + value.name : '';
+    base = ' [Function' + n + ']';
+  }
+
+  // Make RegExps say that they are RegExps
+  if (isRegExp(value)) {
+    base = ' ' + RegExp.prototype.toString.call(value);
+  }
+
+  // Make dates with properties first say the date
+  if (isDate(value)) {
+    base = ' ' + Date.prototype.toUTCString.call(value);
+  }
+
+  // Make error with message first say the error
+  if (isError(value)) {
+    base = ' ' + formatError(value);
+  }
+
+  if (keys.length === 0 && (!array || value.length == 0)) {
+    return braces[0] + base + braces[1];
+  }
+
+  if (recurseTimes < 0) {
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    } else {
+      return ctx.stylize('[Object]', 'special');
+    }
+  }
+
+  ctx.seen.push(value);
+
+  var output;
+  if (array) {
+    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
+  } else {
+    output = keys.map(function(key) {
+      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
+    });
+  }
+
+  ctx.seen.pop();
+
+  return reduceToSingleString(output, base, braces);
+}
+
+
+function formatPrimitive(ctx, value) {
+  if (isUndefined(value))
+    return ctx.stylize('undefined', 'undefined');
+  if (isString(value)) {
+    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
+                                             .replace(/'/g, "\\'")
+                                             .replace(/\\"/g, '"') + '\'';
+    return ctx.stylize(simple, 'string');
+  }
+  if (isNumber(value))
+    return ctx.stylize('' + value, 'number');
+  if (isBoolean(value))
+    return ctx.stylize('' + value, 'boolean');
+  // For some reason typeof null is "object", so special case here.
+  if (isNull(value))
+    return ctx.stylize('null', 'null');
+}
+
+
+function formatError(value) {
+  return '[' + Error.prototype.toString.call(value) + ']';
+}
+
+
+function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
+  var output = [];
+  for (var i = 0, l = value.length; i < l; ++i) {
+    if (hasOwnProperty(value, String(i))) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          String(i), true));
+    } else {
+      output.push('');
+    }
+  }
+
+  shims.forEach(keys, function(key) {
+    if (!key.match(/^\d+$/)) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          key, true));
+    }
+  });
+  return output;
+}
+
+
+function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
+  var name, str, desc;
+  desc = shims.getOwnPropertyDescriptor(value, key) || { value: value[key] };
+  if (desc.get) {
+    if (desc.set) {
+      str = ctx.stylize('[Getter/Setter]', 'special');
+    } else {
+      str = ctx.stylize('[Getter]', 'special');
+    }
+  } else {
+    if (desc.set) {
+      str = ctx.stylize('[Setter]', 'special');
+    }
+  }
+
+  if (!hasOwnProperty(visibleKeys, key)) {
+    name = '[' + key + ']';
+  }
+  if (!str) {
+    if (shims.indexOf(ctx.seen, desc.value) < 0) {
+      if (isNull(recurseTimes)) {
+        str = formatValue(ctx, desc.value, null);
+      } else {
+        str = formatValue(ctx, desc.value, recurseTimes - 1);
+      }
+      if (str.indexOf('\n') > -1) {
+        if (array) {
+          str = str.split('\n').map(function(line) {
+            return '  ' + line;
+          }).join('\n').substr(2);
+        } else {
+          str = '\n' + str.split('\n').map(function(line) {
+            return '   ' + line;
+          }).join('\n');
+        }
+      }
+    } else {
+      str = ctx.stylize('[Circular]', 'special');
+    }
+  }
+  if (isUndefined(name)) {
+    if (array && key.match(/^\d+$/)) {
+      return str;
+    }
+    name = JSON.stringify('' + key);
+    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
+      name = name.substr(1, name.length - 2);
+      name = ctx.stylize(name, 'name');
+    } else {
+      name = name.replace(/'/g, "\\'")
+                 .replace(/\\"/g, '"')
+                 .replace(/(^"|"$)/g, "'");
+      name = ctx.stylize(name, 'string');
+    }
+  }
+
+  return name + ': ' + str;
+}
+
+
+function reduceToSingleString(output, base, braces) {
+  var numLinesEst = 0;
+  var length = shims.reduce(output, function(prev, cur) {
+    numLinesEst++;
+    if (cur.indexOf('\n') >= 0) numLinesEst++;
+    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
+  }, 0);
+
+  if (length > 60) {
+    return braces[0] +
+           (base === '' ? '' : base + '\n ') +
+           ' ' +
+           output.join(',\n  ') +
+           ' ' +
+           braces[1];
+  }
+
+  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+}
+
+
+// NOTE: These type checking functions intentionally don't use `instanceof`
+// because it is fragile and can be easily faked with `Object.create()`.
+function isArray(ar) {
+  return shims.isArray(ar);
+}
+exports.isArray = isArray;
+
+function isBoolean(arg) {
+  return typeof arg === 'boolean';
+}
+exports.isBoolean = isBoolean;
+
+function isNull(arg) {
+  return arg === null;
+}
+exports.isNull = isNull;
+
+function isNullOrUndefined(arg) {
+  return arg == null;
+}
+exports.isNullOrUndefined = isNullOrUndefined;
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+exports.isNumber = isNumber;
+
+function isString(arg) {
+  return typeof arg === 'string';
+}
+exports.isString = isString;
+
+function isSymbol(arg) {
+  return typeof arg === 'symbol';
+}
+exports.isSymbol = isSymbol;
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+exports.isUndefined = isUndefined;
+
+function isRegExp(re) {
+  return isObject(re) && objectToString(re) === '[object RegExp]';
+}
+exports.isRegExp = isRegExp;
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg;
+}
+exports.isObject = isObject;
+
+function isDate(d) {
+  return isObject(d) && objectToString(d) === '[object Date]';
+}
+exports.isDate = isDate;
+
+function isError(e) {
+  return isObject(e) && objectToString(e) === '[object Error]';
+}
+exports.isError = isError;
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+exports.isFunction = isFunction;
+
+function isPrimitive(arg) {
+  return arg === null ||
+         typeof arg === 'boolean' ||
+         typeof arg === 'number' ||
+         typeof arg === 'string' ||
+         typeof arg === 'symbol' ||  // ES6 symbol
+         typeof arg === 'undefined';
+}
+exports.isPrimitive = isPrimitive;
+
+function isBuffer(arg) {
+  return arg && typeof arg === 'object'
+    && typeof arg.copy === 'function'
+    && typeof arg.fill === 'function'
+    && typeof arg.binarySlice === 'function'
+  ;
+}
+exports.isBuffer = isBuffer;
+
+function objectToString(o) {
+  return Object.prototype.toString.call(o);
+}
+
+
+function pad(n) {
+  return n < 10 ? '0' + n.toString(10) : n.toString(10);
+}
+
+
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+              'Oct', 'Nov', 'Dec'];
+
+// 26 Feb 16:19:34
+function timestamp() {
+  var d = new Date();
+  var time = [pad(d.getHours()),
+              pad(d.getMinutes()),
+              pad(d.getSeconds())].join(':');
+  return [d.getDate(), months[d.getMonth()], time].join(' ');
+}
+
+
+// log is just a thin wrapper to console.log that prepends a timestamp
+exports.log = function() {
+  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
+};
+
+
+/**
+ * Inherit the prototype methods from one constructor into another.
+ *
+ * The Function.prototype.inherits from lang.js rewritten as a standalone
+ * function (not on Function.prototype). NOTE: If this file is to be loaded
+ * during bootstrapping this function needs to be rewritten using some native
+ * functions as prototype setup using normal JavaScript does not work as
+ * expected during bootstrapping (see mirror.js in r114903).
+ *
+ * @param {function} ctor Constructor function which needs to inherit the
+ *     prototype.
+ * @param {function} superCtor Constructor function to inherit prototype from.
+ */
+exports.inherits = function(ctor, superCtor) {
+  ctor.super_ = superCtor;
+  ctor.prototype = shims.create(superCtor.prototype, {
+    constructor: {
+      value: ctor,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
+  });
+};
+
+exports._extend = function(origin, add) {
+  // Don't do anything if add isn't an object
+  if (!add || !isObject(add)) return origin;
+
+  var keys = shims.keys(add);
+  var i = keys.length;
+  while (i--) {
+    origin[keys[i]] = add[keys[i]];
+  }
+  return origin;
+};
+
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+},{"_shims":81}]},{},[32])
 ;

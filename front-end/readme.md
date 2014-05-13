@@ -19,7 +19,9 @@ Users are able to ...
 ### Introduction
 diskett.es uses the popular jQuery based framework **EmberJS** at its base, which is a fully client side javascript Model-Viewer-Whatever framework.
 
-This means that we get some additional initial loading time for the site, but after everything has loaded, each page load happens *instantaneously*. This gives the user a very slick experience similar to a native application -- think about it, what IS an application? An application is usually downloaded code that is then run on a users machine. The code then present the user with a user interface, and allows the user to perform various actions. The difference here being that the code is downloaded and executed in the sandboxed environment of a web browser. This is why it's commonly referred to as a *web application* and not just a web site.
+This means that we get some additional initial loading time for the site, but after everything has loaded, each page load happens *instantaneously*. This gives the user a very slick experience similar to a native application -- think about it, what ***IS*** an application? 
+
+An application is usually downloaded code that is then run on a users machine. The code then present the user with a user interface, and allows the user to perform various actions. The difference here being that the code is downloaded and executed in the sandboxed environment of a web browser. This is why it's commonly referred to as a *web application* and not just a web site.
 
 ### Functionality
 The functionality listed above pretty much sums it up, but can be described more in-depth as follows:
@@ -68,9 +70,12 @@ Like with most MVC frameworks, we have *Routes* that control what context the us
 
 Ember builds on jQuery, and as such, we can access jQuery from the (only) global object `Ember`, at `Ember.$`. Even though Ember is completely build on top of jQuery, it still make use of a few other javascript libraries, albeit not to the same extent. These other libraries are:
 
-* RequireJS is used for including the right files at the right time.
-* NodeJS - this is not required, but we use it to write classes as individual NodeJS modules. Classes could also be exported as RequireJS modules.
-* HandlebarsJS - Handlebars is a very powerful but minimal templating system built on MustacheJS (named so because of its use of 'mustaches', or {{ }} for variables) but adding extra functionality such as conditional statements. This is very vital to Ember and lays the foundation of Ember's powerful data templates.
+* RequireJS 
+... RequireJS is used for including the right files at the right time.
+* NodeJS 
+... This is not required, but we use it to write classes as individual NodeJS modules. Classes could also be exported as RequireJS modules.
+* HandlebarsJS 
+... Handlebars is a very powerful but minimal templating system built on MustacheJS (named so because of its use of 'mustaches', or {{ }} for variables) but adding extra functionality such as conditional statements. This is very vital to Ember and lays the foundation of Ember's powerful data templates.
 
 #### API & Server communication
 By default, Ember makes use of its own Store. The Store is actually a separate component (which is not yet fully production ready, but it is operational) called Ember-data. This store allows data to persist in the browsers LocalStorage even on page refresh, which helps us remember things (like user sessions for example) we need, and reduces the amount of required API queries.
@@ -152,16 +157,16 @@ Files are located in the following directories:
 
 
 Configuration files:
-* /js/config/app.js
-* /js/config/store.js
-* /js/config/routes.js
+* `/js/config/app.js`
+* `/js/config/store.js
+* `/js/config/routes.js`
 
 All individual classes and templates:
-* /js/routes/
-* /js/models/
-* /js/controllers/
-* /js/views/
-* /js/templates/
+* `/js/routes/`
+* `/js/models/`
+* `/js/controllers/`
+* `/js/views/`
+* `/js/templates/`
 
 
 #### Routes

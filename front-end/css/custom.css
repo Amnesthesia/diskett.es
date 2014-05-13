@@ -12,6 +12,16 @@ h1, h2, h3, h4, h5, h6
     line-height: 1.4;
 }
 
+.container h1, .container h2, .container h3, .container h4, .container h5, .container h6 
+{
+  color: #222;
+}
+
+.seethrough h1, .seethrough h2, .seethrough h3, .seethrough h4, .seethrough h5, .seethrough h6 
+{
+  color: #FCFCFC;
+}
+
 
 
 
@@ -365,10 +375,16 @@ div.browse-item-splitter
 
    div#page-content .container
    {
-    width: 96%;
-    margin-top: 20px;
-    margin-left: 15px;
+    width: 100%;
+    margin:0px;
+    padding: 3em;
     float: left;
+    background: #FFF;
+   }
+
+   div#page-content .seethrough
+   {
+    background: transparent;
    }
 
    div.browse-item div.progress

@@ -213,7 +213,7 @@
 							 `episode`.summary as esummary, 
 							 `episode`.date as edate FROM `show` 
 							 LEFT JOIN `episode` ON (`show`.id = `episode`.show_id) 
-							 ORDER BY srating ASC;";
+							 ORDER BY sid,eseason,eepisode ASC;";
 							 $res = $this->db->read($query);
 
 
@@ -243,7 +243,7 @@
 							 `episode`.summary as esummary, 
 							 `episode`.date as edate FROM `show` 
 							 LEFT JOIN `episode` ON (`show`.id = `episode`.show_id) 
-							 WHERE `show`.id IN (".$qmarks.") ORDER BY srating ASC;";
+							 WHERE `show`.id IN (".$qmarks.") ORDER BY sid,eseason,eepisode ASC;";
 
 				
 				$showkey = "show";

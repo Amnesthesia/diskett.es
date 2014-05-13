@@ -1,5 +1,5 @@
 
-<div class="progress progress-striped browse-item-rating-progress" id="browse-show-rating-progress topbar">
+<div class="progress progress-striped browse-item-rating-progress topbar" id="browse-show-rating-progress">
   
   <div class="progress-bar {{unbound progressType}}" style="width: {{unbound ratingLength}}%">
     <div id="browse-show-rating">{{ratingText}}</div>
@@ -39,35 +39,30 @@
   </div>
   <div class="row">&nbsp;</div>
   <div class="row">&nbsp;</div>
-  <h2>Episodes</h2>
 
-{{#link-to "new_episode"}}New Episode{{/link-to}}
+<h2>Episodes</h2>
 
 
-<table>
+<table class="table table-hover table-responsive datatable">
   <thead>
-    <th>show_id</th>
-    <th>episode_id</th>
-    <th>season</th>
-    <th>poster</th>
-    <th>date</th>
-    <th>name</th>
-    <th>summary</th>
-    <th>watched</th>
+    <th>Season</th>
+    <th>Episode</th>
+    <th>Name</th>
+    <th>Synopsis</th>
+    <th>Aired</th>
+    <th>Watched</th>
   </thead>
   <tbody>
 
     {{#each episode in episodes}}
     <tr>
-      <td>{{ episode.show_id }}</td>
-      <td>{{ episode.episode_id }}</td>
       <td>{{ episode.season }}</td>
-      <td>{{ episode.poster }}</td>
-      <td>{{ episode.date }}</td>
+      <td>{{ episode.episodeNum }}</td>
       <td>{{ episode.name }}</td>
       <td>{{ episode.summary }}</td>
+      <td>{{ formatDate episode.date }}</td>
+
       <td>{{ episode.watched }}</td>
-      <td>{{#link-to "episode" episode }}view{{/link-to}}</td>
     </tr>
     {{/each}}
 

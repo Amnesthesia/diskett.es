@@ -16,28 +16,23 @@ require('../vendor/ember-animated-outlet/dist/ember-animated-outlet.min');
 // .. and booooootstraaaaaaap! <3
 require('../vendor/bootstrap-css/js/bootstrap.min');
 
-// ... and all available bootstrap components -- we can just uncomment the ones we'll use
 
-// This one first, it's a dependency for all other components
-//require('../vendor/ember-addons.bs_for_ember/dist/js/bs-core.max');
+require.config({
+	paths: {
+		"moment":'../vendor/momentjs/moment'
+	}
+})
 
-// aaaand here's all of them:
-//require('../vendor/ember-addons.bs_for_ember/dist/js/bs-alert.min');
-//require('../vendor/ember-addons.bs_for_ember/dist/js/bs-badge.min');
-//require('../vendor/ember-addons.bs_for_ember/dist/js/bs-basic.min');
-//require('../vendor/ember-addons.bs_for_ember/dist/js/bs-button.min');
-//require('../vendor/ember-addons.bs_for_ember/dist/js/bs-growl-notifications.min');
-//require('../vendor/ember-addons.bs_for_ember/dist/js/bs-items-action-bar.min');
-//require('../vendor/ember-addons.bs_for_ember/dist/js/bs-label.min');
-//require('../vendor/ember-addons.bs_for_ember/dist/js/bs-list-group.min');
-//require('../vendor/ember-addons.bs_for_ember/dist/js/bs-modal.min');
-//require('../vendor/ember-addons.bs_for_ember/dist/js/bs-nav.min');
-//require('../vendor/ember-addons.bs_for_ember/dist/js/bs-notifications.min');
-//require('../vendor/ember-addons.bs_for_ember/dist/js/bs-progressbar.min');
-//require('../vendor/ember-addons.bs_for_ember/dist/js/bs-wizard.min');
+define(["moment"],function(moment){
+	moment().format();
+});
+
 
 require('../vendor/ember-simple-auth/ember-simple-auth');
 require('../vendor/jquery.twinkle/jquery.twinkle-0.5.0.min');
+//require('../vendor/DataTables/media/js/jquery.dataTables');
+
+
 
 
 

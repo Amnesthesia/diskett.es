@@ -208,4 +208,3 @@ The construct default __MAY__ be omitted from a switch statement, but the code _
 
 
 * http://manual.phpdoc.org/HTMLSmartyConverter/HandS/phpDocumentor/Classes.html
-* Just a test

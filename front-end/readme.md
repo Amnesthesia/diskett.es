@@ -72,13 +72,13 @@ Ember builds on jQuery, and as such, we can access jQuery from the (only) global
 
 * RequireJS 
 
-... RequireJS is used for including the right files at the right time.
+    RequireJS is used for including the right files at the right time.
 * NodeJS 
 
-... This is not required, but we use it to write classes as individual NodeJS modules. Classes could also be exported as RequireJS modules.
+    This is not required, but we use it to write classes as individual NodeJS modules. Classes could also be exported as RequireJS modules.
 * HandlebarsJS 
 
-... Handlebars is a very powerful but minimal templating system built on MustacheJS (named so because of its use of 'mustaches', or {{ }} for variables) but adding extra functionality such as conditional statements. This is very vital to Ember and lays the foundation of Ember's powerful data templates.
+    Handlebars is a very powerful but minimal templating system built on MustacheJS (named so because of its use of 'mustaches', or {{ }} for variables) but adding extra functionality such as conditional statements. This is very vital to Ember and lays the foundation of Ember's powerful data templates.
 
 #### API & Server communication
 By default, Ember makes use of its own Store. The Store is actually a separate component (which is not yet fully production ready, but it is operational) called Ember-data. This store allows data to persist in the browsers LocalStorage even on page refresh, which helps us remember things (like user sessions for example) we need, and reduces the amount of required API queries.

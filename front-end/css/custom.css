@@ -487,6 +487,41 @@ div.browse-item-splitter
     font-size: 2em;
    }
 
+
+   /**
+    ** CALENDAR VIEW PAGE
+    **
+    **/
+    div.calendar-month-day
+    {
+      width: 14%;
+      height: 9em;
+      border: 1px solid #eee;
+    }
+
+    button.calendar-topbar-icon
+    {
+      width: 1em;
+      background: transparent;
+      border: none;
+      margin: 0px;
+      margin-top: -16px;
+
+    }
+
+    button.prev-button
+    {
+      float: left;
+      margin-left: 10px;
+    }
+
+    button.next-button
+    {
+      float: right;
+      margin-right: 10px;
+    }
+
+
    * {
   -webkit-border-radius: 0 !important;
      -moz-border-radius: 0 !important;

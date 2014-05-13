@@ -163,7 +163,7 @@ Files are located in the following directories:
 
 Configuration files:
 * `/js/config/app.js`
-* `/js/config/store.js
+* `/js/config/store.js`
 * `/js/config/routes.js`
 
 All individual classes and templates:

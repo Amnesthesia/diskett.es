@@ -139,45 +139,11 @@
 			{
 
 				case 'read':
-					$episodes = array("episode" => array());
-					
-					
-					foreach($args[0] as $argument)
-					{
-						$episode = new Episode(array(104641,0,1));
-						$episode->setAttribute("show",$episode->getAttribute("show_id"));
-						
-						$episodes["episode"][] = array(1);
-					}	
-
-					return $episodes;
+					return $this->getEpisodes(array_shift($args));
 					break;
 			}
 		}
 
-		public function episode()
-		{
-			$args = func_get_args();
-
-			switch($this->verb)
-			{
-
-				case 'read':
-					$episodes = array("episodes" => array());
-					
-					
-					foreach($args[0] as $argument)
-					{
-						$episode = new Episode(array(104641,0,1));
-						$episode->setAttribute("show",$episode->getAttribute("show_id"));
-						
-						$episodes["episode"][] = $episode->getAttributes();
-					}	
-
-					return $episodes;
-					break;
-			}
-		}
 
 		/**
 		 ** Just as with the other methods,
@@ -194,8 +160,10 @@
 			$showkey = "shows";
 			//$page = $_GET['page'];
 
+			// Load list
 			if(count($args[0])<1)
 			{
+				$loadingList = true;
 				$page = (isset($_GET['page']) ? 100*($_GET["page"]-1) : 0);
 				$search = (isset($_GET['search']) ? $_GET['search'] : false);
 
@@ -243,8 +211,10 @@
 							 `show`.rating as srating, 
 							 `show`.lst_update as slst_update FROM `show` LIMIT ?,5";*/
 			}
+			// Load individual
 			else
 			{
+				$loadingList = false;
 				//$page = $_GET['page'];
 				$qs = count($args[0]);
 				$qmarks = array_fill(0,$qs,"?");
@@ -319,34 +289,70 @@
 												 "lst_update" => $r["slst_update"],
 												 "episodes" => array()
 													);
+				
 			
 			}
 			
+
 			$qs = count($unique);
 			$qmarks = array_fill(0,$qs,"?");
 			$qmarks = implode($qmarks,",");
-			/*$eps = "SELECT
-						 CONCAT(`episode`.`show_id`,',',`episode`.`season`,',',`episode`.`episode`) AS eid, 
-						 `episode`.show_id as eshow,
-						 `episode`.season as eseason,
-						 `episode`.episode as eepisode, 
-						 `episode`.name as ename, 
-						 `episode`.summary as esummary, 
-						 `episode`.date as edate
-						 FROM `episode` 
-						 WHERE `episode`.show_id IN(".$qmarks.")";*/
+
+			// Because the database is huge, we avoid doing JOINS on it... Performance
+			// turned out to be really slow with joins :(
+			// It results in 2 extra queries, but we'll have to live with that ...
+			$eps = "SELECT `tvepisodes`.id AS eid, 
+						 `tvepisodes`.seriesid as eshow
+						 FROM `tvepisodes` WHERE `tvepisodes`.seriesid IN(".$qmarks.")";
+
+			$episodes = $this->db->read($eps,$unique);
+
+			$episode_ids = array();
+
+			foreach($episodes as $e)
+			{
+				$data[$showkey][$map[$e["eshow"]]]["episodes"][] = $e["eid"];
+				$episode_ids[] = $e["eid"];
+			}
+
+			// Skip loading episodes if we're loading a list of shows
+			if($loadingList)
+				return $data;
+
+			// ... otherwise, add all episodes to the array:
+			$episodeObjects = $this->getEpisodes($episode_ids);
+
+			$data["episodes"] = $episodeObjects["episodes"];
+
+			return $data;
+				
+			
+		}
+
+		/** Returns an array of "episodes" for each show ID provided as argument **/
+
+		private function getEpisodes()
+		{
+			$args = array_shift(func_get_args());
+
+			$qs = count($args);
+			$qmarks = array_fill(0,$qs,"?");
+			$qmarks = implode($qmarks,",");
+
+			// Keep all episodes in this array
+			$data = array("episodes" => array());
+
 			$eps = "SELECT `tvepisodes`.id AS eid, 
 						 `tvepisodes`.seriesid as eshow,
 						 `tvseasons`.season as eseason,
 						 `tvepisodes`.EpisodeNumber as eepisode, 
 						 `tvepisodes`.EpisodeName as ename, 
 						 `tvepisodes`.Overview as esummary, 
-						 `tvepisodes`.FirstAired as edate FROM `tvepisodes` JOIN `tvseasons` ON(`tvepisodes`.seasonid = `tvseasons`.id) WHERE `tvepisodes`.seriesid IN(".$qmarks.")";
-			$episodes = $this->db->read($eps,$unique);
+						 `tvepisodes`.FirstAired as edate FROM `tvepisodes` JOIN `tvseasons` ON(`tvepisodes`.seasonid = `tvseasons`.id) WHERE `tvepisodes`.id IN(".$qmarks.")";
+			$episodes = $this->db->read($eps,$args);
 
 			foreach($episodes as $e)
 			{
-				$data[$showkey][$map[$e["eshow"]]]["episodes"][] = $e["eid"];
 				$data["episodes"][] = array( "id" => $e["eid"],
 														"show_id" => $e["eshow"],
 														"season" => $e["eseason"],
@@ -356,8 +362,6 @@
 			}
 
 			return $data;
-				
-			
 		}
 
 		private function createUser()

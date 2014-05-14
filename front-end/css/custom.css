@@ -1,5 +1,5 @@
 body{
-  background: url(../img/stripes.png) repeat;
+  background: url(../img/bg2.png) repeat;
 }
 
 h1, h2, h3, h4, h5, h6 
@@ -274,7 +274,8 @@ div.browse-item-splitter
 
    nav.navbar .navbar-header ul#sidebar-icons
    {
-    float: left;
+    margin: auto auto;
+    text-align: center;
     list-style-type: none;
     color: white;
     font-size: 4em;
@@ -294,7 +295,7 @@ div.browse-item-splitter
       font-size: 2em;
     }
 
-    nav.navbar .navbar-header ul#sidebar-icons li a div
+    nav.navbar .navbar-header ul#sidebar-icons li a div.navlink
     {
       color: white !important;
     }
@@ -335,8 +336,10 @@ div.browse-item-splitter
    {
     padding: 0px;
    }
-   div#search-area input[type="text"]
+   div#search-area form input[type="text"]
    {
+    background: #c7c7c7 !important;
+    color: #222;
     height: 50px;
     border: none;
     border-bottom: 1px solid #222;

@@ -726,31 +726,31 @@ function program4(depth0,data) {
 function program6(depth0,data) {
   
   
-  data.buffer.push("\n						<div data-icon=\"&#xe078;\" class=\"icon\"></div>\n					");
+  data.buffer.push("\n						<div data-icon=\"&#xe078;\" class=\"icon navlink\"></div>\n					");
   }
 
 function program8(depth0,data) {
   
   
-  data.buffer.push("\n					<div data-icon=\"&#xe021;\" class=\"icon\"></div>\n				");
+  data.buffer.push("\n					<div data-icon=\"&#xe021;\" class=\"icon navlink\"></div>\n				");
   }
 
 function program10(depth0,data) {
   
   
-  data.buffer.push("\n						<div data-icon=\"&#xe067;\" class=\"icon\"></div>\n					");
+  data.buffer.push("\n						<div data-icon=\"&#xe067;\" class=\"icon navlink\"></div>\n					");
   }
 
 function program12(depth0,data) {
   
   
-  data.buffer.push("\n						<div data-icon=\"&#xe027;\" class=\"icon\"></div>\n					");
+  data.buffer.push("\n						<div data-icon=\"&#xe027;\" class=\"icon navlink\"></div>\n					");
   }
 
 function program14(depth0,data) {
   
   
-  data.buffer.push("\n					<div data-icon=\"&#xe072;\" class=\"icon\"></div>\n					");
+  data.buffer.push("\n					<div data-icon=\"&#xe072;\" class=\"icon navlink\"></div>\n					");
   }
 
 function program16(depth0,data) {
@@ -769,11 +769,13 @@ function program16(depth0,data) {
   hashContexts = {};
   stack1 = helpers['if'].call(depth0, "session.isAuthenticated", {hash:{},inverse:self.program(3, program3, data),fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n	    </div>\n	    <div class=\"navbar-header col-lg-2 navbar-btn\">\n		    <ul id=\"sidebar-icons\">\n				<!-- Link to index -->\n				<li data-toggle=\"tooltip\" data-placement=\"right\" title=\"All shows\" data-original-title=\"All shows\">\n					");
-  hashTypes = {};
-  hashContexts = {};
-  options = {hash:{},inverse:self.noop,fn:self.program(6, program6, data),contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
-  stack2 = ((stack1 = helpers['link-to'] || depth0['link-to']),stack1 ? stack1.call(depth0, "index", options) : helperMissing.call(depth0, "link-to", "index", options));
+  data.buffer.push("\n	    </div>\n	    <div class=\"navbar-header col-lg-12 navbar-btn\">\n		    <ul id=\"sidebar-icons\">\n				<!-- Link to index -->\n				<li data-toggle=\"tooltip\" data-placement=\"right\" title=\"All shows\" data-original-title=\"All shows\">\n					");
+  hashContexts = {'animations': depth0};
+  hashTypes = {'animations': "STRING"};
+  options = {hash:{
+    'animations': ("main:slideOverRight")
+  },inverse:self.noop,fn:self.program(6, program6, data),contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  stack2 = ((stack1 = helpers['link-to-animated'] || depth0['link-to-animated']),stack1 ? stack1.call(depth0, "index", options) : helperMissing.call(depth0, "link-to-animated", "index", options));
   if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
   data.buffer.push("\n				</li>\n				\n				<!-- Link to calendar view -->\n				<li data-toggle=\"tooltip\" data-placement=\"right\" title=\"New episodes\" data-original-title=\"New episodes\">\n				");
   hashContexts = {'animations': depth0};

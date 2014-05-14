@@ -22,9 +22,7 @@ var Show = DS.Model.extend({
 
   lst_update: DS.attr('string'),
 
-  watched: DS.attr('boolean'),
-
-  episodes: DS.hasMany('Episode', { inverse: 'show'})
+  watched: DS.attr('boolean')
 
 });
 

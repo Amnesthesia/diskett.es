@@ -8,7 +8,6 @@ require('./helpers/comparison.js~');
 require('./helpers/dateformat');
 require('./helpers/markdown');
 require('./helpers/markdown.js~');
-require('./helpers/modalbox');
 
 
 App.AccountController = require('./controllers/account_controller');

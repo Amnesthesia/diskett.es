@@ -29,9 +29,8 @@ h1, h2, h3, h4, h5, h6
 {
   position: absolute;
   left: 50%;
-  top: 50%;
   margin-left: -64px;
-  margin-top: -7px;
+  width: 128px;
 }
 
 #content
@@ -39,41 +38,6 @@ h1, h2, h3, h4, h5, h6
     padding: 25px;
 }
 
-/* remove codrops styles and reset the whole thing */
-#container{
-   text-align: left;
-   margin: 0;
-   padding: 0;
-   margin: 0 auto;
-   font-family: "Trebuchet MS","Myriad Pro",Arial,sans-serif;
-   border-bottom: 10px solid #555;
-}
-
-/** fonts used for the icons **/ 
-@font-face {
-    font-family: 'FontomasCustomRegular';
-    src: url('fonts/fontomas-webfont.eot');
-    src: url('fonts/fontomas-webfont.eot?#iefix') format('embedded-opentype'),
-         url('fonts/fontomas-webfont.woff') format('woff'),
-         url('fonts/fontomas-webfont.ttf') format('truetype'),
-         url('fonts/fontomas-webfont.svg#FontomasCustomRegular') format('svg');
-    font-weight: normal;
-    font-style: normal;
-}
-@font-face {
-    font-family: 'FranchiseRegular';
-    src: url('fonts/franchise-bold-webfont.eot');
-    src: url('fonts/franchise-bold-webfont.eot?#iefix') format('embedded-opentype'),
-         url('fonts/franchise-bold-webfont.woff') format('woff'),
-         url('fonts/franchise-bold-webfont.ttf') format('truetype'),
-         url('fonts/franchise-bold-webfont.svg#FranchiseRegular') format('svg');
-    font-weight: normal;
-    font-style: normal;
-
-}
-a.hiddenanchor{
-  display: none;
-}
 
 
 
@@ -324,6 +288,11 @@ div.browse-item-splitter
     {
       font-size: 2em;
     }
+
+    nav.navbar .navbar-header ul#sidebar-icons li a div
+    {
+      color: white !important;
+    }
     nav.navbar a#navbar-brand
     {
       font-size: 1em;
@@ -420,6 +389,15 @@ div.browse-item-splitter
     float: left;
     background: #FFF;
    }
+
+   /** Loading screen **/
+
+  div#page-content #loading-container
+  {
+    opacity: 0.5;
+    border-bottom: 10px solid #555;
+    padding: 34.3px;
+  }
 
    div#page-content .seethrough
    {

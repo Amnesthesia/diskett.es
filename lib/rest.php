@@ -190,10 +190,37 @@
 		private function getShows()
 		{
 			$args = func_get_args();
+			
 			$showkey = "shows";
+			//$page = $_GET['page'];
+
 
 			if(empty($args[0]) || $args[0] == NULL)
 			{
+				// New query for new database
+				/*
+				$query = "SELECT `tvseries`.id as sid,
+							 `tvseries`.IMDB_ID as simdb,
+							 `tvseries`.zap2it_id as szap2,
+							 `tvseries`.Network as schannel,
+							 
+							 `tvseries`.Genre as sgenre,
+							 `tvseries`.FirstAired as spilot_date,
+							 `tvseries`.SeriesName as sname, 
+							 `tvseries`.Overview as ssummary, 
+							 `tvseries`.Rating as srating, 
+							 `tvseries`.lastupdated as slst_update,
+							 `tvepisodes`.id AS eid, 
+							 `tvepisodes`.seriesid as eshow,
+							 `tvepisodes`.seasonid as eseason,
+							 `tvepisodes`.EpisodeNumber as eepisode, 
+							 `tvepisodes`.EpisodeName as ename, 
+							 `tvepisodes`.Overview as esummary, 
+							 `tvepisodes`.FirstAired as edate FROM `tvseries` 
+							 LEFT JOIN `tvepisodes` ON (`tvseries`.id = `tvepisodes`.seriesid) 
+							 ORDER BY sid,eseason,eepisode ASC;";
+							 $res = $this->db->read($query);*/
+
 				$query = "SELECT `show`.id as sid,
 							 `show`.imdb_id as simdb,
 							 `show`.zap2_id as szap2,
@@ -211,12 +238,13 @@
 							 `episode`.episode as eepisode, 
 							 `episode`.name as ename, 
 							 `episode`.summary as esummary, 
-							 `episode`.date as edate FROM `show` 
+							 `episode`.date as edate
+							 FROM `show` 
 							 LEFT JOIN `episode` ON (`show`.id = `episode`.show_id) 
-							 ORDER BY sid,eseason,eepisode ASC;";
+							 ORDER BY sid,eseason,eepisode ASC";
 							 $res = $this->db->read($query);
 
-
+				
 			}
 			else
 			{

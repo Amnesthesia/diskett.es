@@ -6,8 +6,13 @@ App.Router.map(function() {
   this.route('watched',{path: '/following'});
   this.route('show',{path: '/following/:show_id'});
 
-  this.resource('shows');
-  this.resource('show', {path: '/shows/:show_id'});
+  this.resource('shows', function(){
+
+    // Let users search for shows
+    this.route('search', {path: ':search_text'});
+  });
+
+  this.resource('show', {path: '/details/:show_id'});
   // end generated routes
 
   // This is the login route
@@ -17,7 +22,10 @@ App.Router.map(function() {
   this.route('account',{path: '/account'});
 
   // Route for the calendar view
-  this.route('calendar',{path: '/calendar'});
+  this.resource('calendar',{path: '/calendar'},function(){
+    this.resource('calendar',{path: '/calendar/:yearnow/:monthnow'});
+  });
+  
 
   // Route for the information view
   this.route('info');

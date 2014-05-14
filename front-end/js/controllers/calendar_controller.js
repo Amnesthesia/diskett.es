@@ -5,28 +5,14 @@ var CalendarController = Ember.ArrayController.extend({
 	sortProperties: ['show_id','date'],
 	monthNum: -1,
 	year: -1,
-
-	// Monitor this variable to rerender view when user
-	// clicks a button to change month
-	controlChange: 0,
+	monthDays: Ember.A(),
+	allowPrevious: true,
 	loopDay: 0,
 
 	// Get the name of the current month
-	month: function(num){
-		var month = new Array();
+	monthName: function(){
+		var month = [];
 		
-		if(!num || num<0 || num == null || num == 'month')
-		{
-			var date = new Date();
-			num = date.getMonth();
-			this.set('monthNum',num);
-
-			// Set the year as well, if it's not yet set
-			if(this.get('year') < 0)
-				this.set('year',1900+date.getYear());
-		}
-
-
 
 		month[0] = "January";
 		month[1] = "February";
@@ -41,8 +27,31 @@ var CalendarController = Ember.ArrayController.extend({
 		month[10] = "November";
 		month[11] = "December";
 		
-		return month[num];
-	}.property(),
+		return month[this.get('monthNum')];
+	}.property('monthNum').volatile(),
+
+	init: function(){
+		var d = new Date();
+
+		this.set('year',1900+d.getYear());
+		this.set('monthNum',d.getMonth());
+	},
+
+	allowPrev: function(){
+		var d = new Date();
+		var current = new Date(this.get('year'),this.get('monthNum'),d.getDate());
+
+		if(current - d.getTime() > (1000*90*24*3600))
+			return false;
+		else
+			return true;
+	}.property('year','monthNum'),
+
+	/** 
+		NONE of these computed properties are cached! 
+		Because we want to update the calendar, we must continuously
+		recalculate these values -- therefore, they're ALL volatile!
+	**/
 
 	// Get numbers of days in month
 	daysInMonth: function(){
@@ -53,15 +62,8 @@ var CalendarController = Ember.ArrayController.extend({
 			days.pushObject({dayNumber: i});
 
 		return days;
-	}.property(),
+	}.property().volatile(),
 
-	currentYear: function(){
-		return this.get('year');
-	}.property(),
-
-	currentMonth: function(){
-		return this.get('monthNum');
-	}.property(),
 
 	episodesByDay: function(){
 		this.set('loopDay',this.get('loopDay')+1);
@@ -79,14 +81,7 @@ var CalendarController = Ember.ArrayController.extend({
 			if(episode.get('date').getYear() == date.getYear() && episode.get('date').getMonth() == date.getMonth() && episode.get('date').getDate() == date.getDate())
 			{
 				var s = contextThis.get('store').find('show',episode.get('show_id'));
-				
-				// Workaround to avoid unbound variables on page;
-				// we cannot print any variables on the calendar
-				// and leave them unbound, because we only get empty promises.
-				// This means that variables are updated after they are printed, and 
-				// must be surrounded by <script> tags. This does not work with images.
-				// Thus, we change the property without saving, and let it print it as is.
-				
+					
 				eps.pushObject(s);
 			}
 		});
@@ -97,7 +92,7 @@ var CalendarController = Ember.ArrayController.extend({
 
 	actions: {
 		previousMonth: function(){
-			this.set('controlChange',this.get('controlChange')+1);
+
 			if(this.get('monthNum') == 0)
 			{
 				this.set('monthNum',11);
@@ -105,11 +100,12 @@ var CalendarController = Ember.ArrayController.extend({
 			}
 			else
 				this.set('monthNum',this.get('monthNum')-1);
+
 			console.log('Updated monthNum to'+this.get('monthNum'));
 		},
 
 		nextMonth: function(){
-			this.set('controlChange',this.get('controlChange')+1);
+
 			if(this.get('monthNum') == 11)
 			{
 				this.set('monthNum',0);
@@ -117,6 +113,7 @@ var CalendarController = Ember.ArrayController.extend({
 			}
 			else
 				this.set('monthNum',this.get('monthNum')+1);
+
 			console.log('Updated monthNum to'+this.get('monthNum'));
 		}
 	}

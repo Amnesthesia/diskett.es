@@ -194,34 +194,44 @@
 			$showkey = "shows";
 			//$page = $_GET['page'];
 
-
-			if(empty($args[0]) || $args[0] == NULL)
+			if(count($args[0])<1)
 			{
-				// New query for new database
-				/*
-				$query = "SELECT `tvseries`.id as sid,
-							 `tvseries`.IMDB_ID as simdb,
-							 `tvseries`.zap2it_id as szap2,
-							 `tvseries`.Network as schannel,
-							 
-							 `tvseries`.Genre as sgenre,
-							 `tvseries`.FirstAired as spilot_date,
-							 `tvseries`.SeriesName as sname, 
-							 `tvseries`.Overview as ssummary, 
-							 `tvseries`.Rating as srating, 
-							 `tvseries`.lastupdated as slst_update,
-							 `tvepisodes`.id AS eid, 
-							 `tvepisodes`.seriesid as eshow,
-							 `tvepisodes`.seasonid as eseason,
-							 `tvepisodes`.EpisodeNumber as eepisode, 
-							 `tvepisodes`.EpisodeName as ename, 
-							 `tvepisodes`.Overview as esummary, 
-							 `tvepisodes`.FirstAired as edate FROM `tvseries` 
-							 LEFT JOIN `tvepisodes` ON (`tvseries`.id = `tvepisodes`.seriesid) 
-							 ORDER BY sid,eseason,eepisode ASC;";
-							 $res = $this->db->read($query);*/
+				$page = (isset($_GET['page']) ? 100*($_GET["page"]-1) : 0);
+				$search = (isset($_GET['search']) ? $_GET['search'] : false);
 
-				$query = "SELECT `show`.id as sid,
+
+				$query = "SELECT `tvseries`.id as sid,
+						 `tvseries`.IMDB_ID as simdb,
+						 `tvseries`.zap2it_id as szap2,
+						 `tvseries`.Network as schannel,
+						 'en' as slang,
+						 `tvseries`.bannerrequest as sposter,
+						 `tvseries`.Genre as sgenre,
+						 `tvseries`.FirstAired as spilot_date,
+						 `tvseries`.SeriesName as sname, 
+						 `tvseries`.Overview as ssummary, 
+						 `tvseries`.Rating as srating, 
+						 `tvseries`.lastupdated as slst_update";
+				if($search)
+				{
+					$query .= ", MATCH(SeriesName,Overview) AGAINST(?) as relevance, 
+								 MATCH(SeriesName) AGAINST(?) as titlerelevance 
+								 FROM `tvseries` WHERE MATCH(SeriesName,Overview) 
+								 AGAINST(?) OR MATCH(SeriesName) AGAINST(?) 
+								 OR SeriesName LIKE ? 
+								 ORDER BY titlerelevance DESC, relevance DESC LIMIT ?,50";
+					$qfill = array_fill(0,5,$search);
+					$qfill[] = $page;
+					$res = $this->db->read($query,$qfill);
+				}
+				else
+				{
+					$query .= " FROM `tvseries` ORDER BY Rating DESC LIMIT ?,100";
+					$res = $this->db->read($query,$page);
+				}
+				
+				
+				/*$query = "SELECT `show`.id as sid,
 							 `show`.imdb_id as simdb,
 							 `show`.zap2_id as szap2,
 							 `show`.channel_id as schannel,
@@ -231,28 +241,17 @@
 							 `show`.name as sname, 
 							 `show`.summary as ssummary, 
 							 `show`.rating as srating, 
-							 `show`.lst_update as slst_update,
-							 CONCAT(`episode`.`show_id`,',',`episode`.`season`,',',`episode`.`episode`) AS eid, 
-							 `episode`.show_id as eshow,
-							 `episode`.season as eseason,
-							 `episode`.episode as eepisode, 
-							 `episode`.name as ename, 
-							 `episode`.summary as esummary, 
-							 `episode`.date as edate
-							 FROM `show` 
-							 LEFT JOIN `episode` ON (`show`.id = `episode`.show_id) 
-							 ORDER BY sid,eseason,eepisode ASC";
-							 $res = $this->db->read($query);
-
-				
+							 `show`.lst_update as slst_update FROM `show` LIMIT ?,5";*/
 			}
 			else
 			{
+				//$page = $_GET['page'];
 				$qs = count($args[0]);
 				$qmarks = array_fill(0,$qs,"?");
 				$qmarks = implode($qmarks,",");
+				
 
-				$query = "SELECT `show`.id as sid,
+				/*$query = "SELECT `show`.id as sid,
 							 `show`.imdb_id as simdb,
 							 `show`.zap2_id as szap2,
 							 `show`.channel_id as schannel,
@@ -262,71 +261,103 @@
 							 `show`.name as sname, 
 							 `show`.summary as ssummary, 
 							 `show`.rating as srating, 
-							 `show`.lst_update as slst_update,
-							 CONCAT(`episode`.`show_id`,',',`episode`.`season`,',',`episode`.`episode`) AS eid, 
-							 `episode`.show_id as eshow,
-							 `episode`.season as eseason,
-							 `episode`.episode as eepisode, 
-							 `episode`.name as ename, 
-							 `episode`.summary as esummary, 
-							 `episode`.date as edate FROM `show` 
-							 LEFT JOIN `episode` ON (`show`.id = `episode`.show_id) 
-							 WHERE `show`.id IN (".$qmarks.") ORDER BY sid,eseason,eepisode ASC;";
-
-				
-				$showkey = "show";
+							 `show`.lst_update as slst_update FROM `show` WHERE `show`.id 
+							 IN (".$qmarks.")";*/
+				$query = "SELECT `tvseries`.id as sid,
+						 `tvseries`.IMDB_ID as simdb,
+						 `tvseries`.zap2it_id as szap2,
+						 `tvseries`.Network as schannel,
+						 `tvseries`.bannerrequest as sposter,
+						 'en' as slang,
+						 `tvseries`.Genre as sgenre,
+						 `tvseries`.FirstAired as spilot_date,
+						 `tvseries`.SeriesName as sname, 
+						 `tvseries`.Overview as ssummary, 
+						 `tvseries`.Rating as srating, 
+						 `tvseries`.lastupdated as slst_update FROM `tvseries` WHERE `tvseries`.id IN (".$qmarks.")";
 				$res = $this->db->read($query,$args[0]);
-				
+
 			}
 
-			$data = array($showkey => array(), "episodes" => array());
+			// New query for new database
+			
 			
 
+			
+
+			
+
+			
+
+
+			// Iterate through all shows, store show_ids to get all episodes later on
+			// and set up a data array for JSON conversion
+			$data = array($showkey => array(), "episodes" => array());
+		
 			$unique = array();
 			$map = array();
-
-		
+	
 			$i = 0;
-
 			foreach($res as $r)
 			{
-				// Each row contains the same show info for many episodes;
-				// so make sure we keep the shows unique in the list and sort out 
-				// the episode data.
-				if(!in_array($r["sid"],$unique))
-				{
-					// Add the show ID to the unique-array
-					$unique[] = $r["sid"];
 
-					// Set up a map to map the shows ID to the key in the list
-					$map[$r["sid"]] = $i++;
-					$data[$showkey][] = array("id" => $r["sid"],
-													 "imdb_id" => $r["simdb"],
-													 "zap2_id" => $r["szap2"],
-													 "channel_id" => $r["schannel"],
-													 "poster" => $r["sposter"],
-													 "lang" => $r["slang"],
-													 "pilot_date" => $r["spilot_date"],
-													 "name" => $r["sname"],
-													 "summary" => $r["ssummary"],
-													 "rating" => $r["srating"],
-													 "lst_update" => $r["slst_update"],
-													 "episodes" => array($r["eid"])
-														);
-				}
-				// Continue adding episode IDs onto the show - use the map!
-				else
-					$data[$showkey][$map[$r["sid"]]]["episodes"][] = $r["eid"];
+				// Add the show ID to the unique-array
+				$unique[] = $r["sid"];
 
-				$data["episodes"][] = array("id" => $r["eid"],
-												"show_id" => $r["eshow"],
-												"season" => $r["eseason"],
-												"episode" => $r["eepisode"],
-												"summary" => $r["esummary"],
-												"date" => $r["edate"]);
+				// Set up a map to map the shows ID to the key in the list
+				$map[$r["sid"]] = $i++;
+				$data[$showkey][] = array("id" => $r["sid"],
+												 "imdb_id" => $r["simdb"],
+												 "zap2_id" => $r["szap2"],
+												 "channel_id" => $r["schannel"],
+												 "poster" => $r["sposter"],
+												 "lang" => $r["slang"],
+												 "pilot_date" => $r["spilot_date"],
+												 "name" => $r["sname"],
+												 "summary" => $r["ssummary"],
+												 "rating" => $r["srating"],
+												 "lst_update" => $r["slst_update"],
+												 "episodes" => array()
+													);
+			
+			}
+			
+			$qs = count($unique);
+			$qmarks = array_fill(0,$qs,"?");
+			$qmarks = implode($qmarks,",");
+			/*$eps = "SELECT
+						 CONCAT(`episode`.`show_id`,',',`episode`.`season`,',',`episode`.`episode`) AS eid, 
+						 `episode`.show_id as eshow,
+						 `episode`.season as eseason,
+						 `episode`.episode as eepisode, 
+						 `episode`.name as ename, 
+						 `episode`.summary as esummary, 
+						 `episode`.date as edate
+						 FROM `episode` 
+						 WHERE `episode`.show_id IN(".$qmarks.")";*/
+			$eps = "SELECT `tvepisodes`.id AS eid, 
+						 `tvepisodes`.seriesid as eshow,
+						 `tvseasons`.season as eseason,
+						 `tvepisodes`.EpisodeNumber as eepisode, 
+						 `tvepisodes`.EpisodeName as ename, 
+						 `tvepisodes`.Overview as esummary, 
+						 `tvepisodes`.FirstAired as edate FROM `tvepisodes` JOIN `tvseasons` ON(`tvepisodes`.seasonid = `tvseasons`.id) WHERE `tvepisodes`.seriesid IN(".$qmarks.")";
+			$episodes = $this->db->read($eps,$unique);
+
+			foreach($episodes as $e)
+			{
+				$data[$showkey][$map[$e["eshow"]]]["episodes"][] = $e["eid"];
+				$data["episodes"][] = array( "id" => $e["eid"],
+														"show_id" => $e["eshow"],
+														"season" => $e["eseason"],
+														"episode" => $e["eepisode"],
+														"summary" => $e["esummary"],
+														"date" => $e["edate"]);
 			}
 
 			return $data;
+				
+			
 		}
 
 		private function createUser()

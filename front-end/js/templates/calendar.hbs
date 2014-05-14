@@ -2,8 +2,10 @@
   
   <div class="progress-bar progress-bar-warning" style="width: 100%">
    	 <div id="browse-show-rating">
+   	 {{#if allowPrevious}}
    	 	<button class="calendar-topbar-icon prev-button"><div data-icon="&#xe059;" class="icon" {{action previousMonth}}></div></button>
-   	 	{{ month }}
+   	 {{/if}}
+   	 	{{ monthName }}
    	 	<button class="calendar-topbar-icon next-button"><div data-icon="&#xe061;" class="icon" {{action nextMonth}}></div></button>
    	 </div>
   </div>

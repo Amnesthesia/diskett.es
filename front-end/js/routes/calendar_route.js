@@ -2,6 +2,10 @@ var CalendarRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin,
 	model: function(params) {
   	console.log("Retrieving user shows ...");
 
+  	console.log("Year "+params.yearnow+" month"+params.monthnow)
+  	if(typeof this.get('session.account.shows') === 'undefined')
+  		return eps;
+
   	// We only want episodes aired within the past 3 months, or in the future.
   	// This method should sort out all episodes from
   	// all shows the user is currently watching, and make sure these
@@ -17,12 +21,14 @@ var CalendarRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin,
   	// Maximum time difference in milliseconds
   	var timeDiff = 1000*60*60*24*90;
 
+
   	// Iterate through all shows in the users session
     this.get('session.account.shows').forEach(function(show){
     	
     	// Iterate through all episodes for each show
     	show.get('episodes').forEach(function(ep){
-    		
+    		if(ep.get('date')==null)
+    			return;
     		// Check if air date is less than time difference, or
     		// if air date is in the fuuuuuuuuuture
     		var epTime = ep.get('date').getTime();

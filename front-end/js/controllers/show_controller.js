@@ -1,14 +1,13 @@
 var ShowController = Ember.ObjectController.extend({
-	needs: "login",
-	loginController: Ember.computed.alias("controllers.login"),
-	nSeasons: 0,
-	seasonSortedEpisodes: Ember.A(),
-  	
+	needs: "shows",
+	query: function(){return this.get('controllers.shows.search_text')}.property('controllers.shows.search_text'),
+
   	// Returns true if the user is logged in
   	isLoggedIn: function(){
   		return this.get('session').isAuthenticated;
   	}.property('session'),
 
+  	// Returns true if the user is not following this show item
   	notFollowing: function(){
   		if(!this.get('session').isAuthenticated)
   		{
@@ -28,6 +27,22 @@ var ShowController = Ember.ObjectController.extend({
   		}
   	}.property('session'),
 
+  	// Returns true if the name of the show matches the current search query
+  	matchFilter: function(){
+  		
+  		if(this.get('query')!==null)
+  		{
+  			var text = new RegExp(this.get('query'),'i');
+  			console.log("Comparing against "+text);
+  			if(this.get('name').match(text))
+  				return true;
+  			else
+  				return false;
+  			
+  		}
+  		return true;
+  	}.property('name').volatile(),
+
   	// Returns rating as length for the rating progress bar
   	ratingLength: function(){ 
     	return (this.get('rating').toFixed(1)*10);
@@ -39,6 +54,8 @@ var ShowController = Ember.ObjectController.extend({
 
   	// Returns the type of bootstrap progressbar to display for rating
   	progressType: function(){
+  		if( this.get('rating') == null)
+  			return "progress-bar-warning";
   		var rate = this.get('rating').toFixed(1);
   		if(rate < 2.5)
   			return "progress-bar-info";
@@ -48,10 +65,12 @@ var ShowController = Ember.ObjectController.extend({
   			return "progress-bar-warning";
   		else return "progress-bar-danger";
   	}.property('rating'),
+
+  	// Return true if the user is not following this show item
   	isNotWatched: function(){
   		if(this.get('session').isAuthenticated)
   		{
-  			if(this.get('session.account.shows').contains(this.get('model').get('id')))
+  			if(this.get('session.account.shows') != 'undefined' && this.get('session.account.shows').contains(this.get('model').get('id')))
   			{
   				console.log("User is not watching "+this.get('name')+": Adding to grid");
   				return true;
@@ -65,43 +84,6 @@ var ShowController = Ember.ObjectController.extend({
   			console.log("Could not get session - assuming logged out user and displaying full grid");
   		}
   		return false;
-  	},
-  	seasonCount: function(){
-  		var season = 0;
-  		if(this.get('nSeasons')>0)
-  			return this.get('nSeasons');
-
-  		this.get('episodes').forEach(function(ep){
-  			if(ep.get('season')>season)
-  				season = ep.get('season');
-  		});
-  		this.set('nSeasons',season);
-  		return season;
-
-  	},
-  	seasonSort: function(){
-  		var loop;
-  		for(loop = 1; loop <= this.get('seasonCount'); loop=loop+1)
-  		{
-  			var eps = Ember.A();
-  			this.get('episodes').filterBy('season',loop).forEach(function(ep){
-  				eps.pushObject(ep);
-  			});	
-  			this.get('seasonSortedEpisodes').pushObject(eps);
-  		}
-  			
-  	},
-  	getEpisodesBySeason: function(){
-  		this.seasonSort();
-  		return this.get('seasonSortedEpisodes');
-  	}.property('seasonSortedEpisodes'),
-  	actions: {
-  		destroy: function() {
-    	if (!confirm('Are you sure?')) return;
-    	this.get('model').deleteRecord();
-    	this.get('store').commit();
-    	this.get('target.router').transitionTo('shows');
-  		}
   	}
 
 });

@@ -1,8 +1,8 @@
 
 <div class="col-lg-12" class="topbar" id="search-area"> 
       <!-- Right Nav Section --> 
-        <form method="get" action="">
-          {{view Ember.TextField valueBinding="search" action="doSearch" placeholder="Search shows"}}
+        <form method="get" {{action update on='submit'}}>
+          {{view Ember.TextField valueBinding="search_text" placeholder="Type to filter, hit enter to search" keyDown="filterGrid"}}
         </form>
 </div>
 
@@ -10,7 +10,7 @@
 <div class="row">
   
     {{#each show in controller}}
-    
+    {{#if show.matchFilter}}
     <div class="item col-md-3 browse-list browse-item overlay-trigger" id="{{unbound show.id}}">
           <div class="progress browse-item-rating-progress">
             
@@ -42,7 +42,7 @@
           </div>
           {{/if}}
         </div>
-
+    {{/if}}
     {{/each}}
 </div>
 

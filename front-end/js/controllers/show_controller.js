@@ -29,11 +29,11 @@ var ShowController = Ember.ObjectController.extend({
 
   	// Returns true if the name of the show matches the current search query
   	matchFilter: function(){
-  		
+  		// If there's text in the query ...
   		if(this.get('query')!==null)
   		{
+  			// Set up a case insensitive regex and return comparison result
   			var text = new RegExp(this.get('query'),'i');
-  			console.log("Comparing against "+text);
   			if(this.get('name').match(text))
   				return true;
   			else

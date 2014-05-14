@@ -8,7 +8,9 @@ var User = DS.Model.extend({
 
   shows: DS.hasMany('Show'),
 
-  role: DS.belongsTo('Role')
+  role: DS.belongsTo('Role'),
+
+  episodes: DS.hasMany('Episode')
 
 });
 

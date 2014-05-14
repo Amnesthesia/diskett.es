@@ -56,16 +56,23 @@
   </thead>
   <tbody>
 
-    {{#each episode in episodes}}
-    <tr>
-      <td>{{ episode.season }}</td>
-      <td>{{ episode.episodeNum }}</td>
-      <td>{{ episode.name }}</td>
-      <td>{{ episode.summary }}</td>
-      <td>{{ episode.date }}</td>
-
-      <td>{{ episode.watched }}</td>
-    </tr>
+    {{#each episode in episodes itemController="episode"}}
+    {{#if episode.hasSeen }}
+      <tr class="episode-watched" id="{{unbound episode.id}}">
+        <td>{{ episode.season }}</td>
+        <td>{{ episode.episodeNum }}</td>
+        <td>{{ episode.name }}</td>
+        <td>{{ episode.summary }}</td>
+        <td>{{ episode.date }}</td>
+      {{else}}
+        <tr id="{{unbound episode.id}}">
+        <td {{action watchedEpisode}}>{{ episode.season }}</td>
+        <td {{action watchedEpisode}}>{{ episode.episodeNum }}</td>
+        <td {{action watchedEpisode}}>{{ episode.name }}</td>
+        <td {{action watchedEpisode}}>{{ episode.summary }}</td>
+        <td {{action watchedEpisode}}>{{ episode.date }}</td>
+      {{/if}}
+      </tr>
     {{/each}}
 
   </tbody>

@@ -1,3 +1,34 @@
-{{#each episode in model}}
-	{{ id }}
-{{/each}}
+<h2>Episodes</h2>
+
+
+<table class="table table-hover table-responsive datatable">
+  <thead>
+    <th>Season</th>
+    <th>Episode</th>
+    <th>Name</th>
+    <th>Synopsis</th>
+    <th>Aired</th>
+  </thead>
+  <tbody>
+
+    {{#each e in controller itemController="episode"}}
+    {{#if e.hasSeen }}
+      <tr class="episode-watched" id="{{unbound e.id}}" {{action toggleWatch}}>
+        <td>{{ e.season }}</td>
+        <td>{{ e.episodeNum }}</td>
+        <td>{{ e.name }}</td>
+        <td>{{ e.summary }}</td>
+        <td>{{ e.date }}</td>
+      {{else}}
+        <tr id="{{unbound e.id}}">
+        <td {{action toggleWatch}}>{{ e.season }}</td>
+        <td {{action toggleWatch}}>{{ e.episodeNum }}</td>
+        <td {{action toggleWatch}}>{{ e.name }}</td>
+        <td {{action toggleWatch}}>{{ e.summary }}</td>
+        <td {{action toggleWatch}}>{{ e.date }}</td>
+      {{/if}}
+      </tr>
+    {{/each}}
+
+  </tbody>
+</table>

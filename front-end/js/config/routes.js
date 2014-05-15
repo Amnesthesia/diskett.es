@@ -57,7 +57,7 @@ App.Router.map(function() {
 
 // Set the base URL
 App.Router.reopen({
-  rootURL: '/front-end/'
+  rootURL: App.RootURL
 });
 
 // Apply mixins for authentication :)
@@ -73,26 +73,6 @@ App.ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin
         return this.get('session.account').then(function(user){
           return user; 
         });
-    },
-    actions: {
-      logSession: function(){
-        console.log(session);
-      },
-      follow: function(show_id){
-        if(!this.get('session').isAuthenticated)
-          this.transitionTo('login');
-        
-        console.log("Attempting to follow show with ID "+show_id);
-        console.log(this.get('session.account.shows'));
-
-        var user = this.store.find('user',this.get('session.account.id'));
-        this.get('session.account.shows').pushObject(this.store.find('show',show_id));
-        this.get('session.account').then(function(response){
-         response.save();
-        });
-        // Hide the show
-        Ember.$("#"+show_id).hide("slideLeft");
-      }
     }
 });
 

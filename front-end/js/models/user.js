@@ -6,11 +6,9 @@ var User = DS.Model.extend({
 
   last_activity: DS.attr('string'),
 
-  shows: DS.hasMany('Show'),
+  shows: DS.hasMany('Show', {async: true}),
 
-  role: DS.belongsTo('Role'),
-
-  episodes: DS.hasMany('Episode')
+  role: DS.belongsTo('Role')
 
 });
 

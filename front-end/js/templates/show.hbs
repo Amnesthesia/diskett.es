@@ -27,7 +27,7 @@
           <p>{{summary}}</p>
         </div>
       </div>
-      {{#if isNotWatched}}
+      {{#if notFollowing}}
         <a class="tiny button radius" {{action follow}}>Add to watchlist</a>
       {{/if}}
     </div>
@@ -42,41 +42,8 @@
   <div class="row">&nbsp;</div>
   <div class="row">&nbsp;</div>
 
-<h2>Episodes</h2>
-
-
-<table class="table table-hover table-responsive datatable">
-  <thead>
-    <th>Season</th>
-    <th>Episode</th>
-    <th>Name</th>
-    <th>Synopsis</th>
-    <th>Aired</th>
-    <th>Watched</th>
-  </thead>
-  <tbody>
-
-    {{#each episode in episodes itemController="episode"}}
-    {{#if episode.hasSeen }}
-      <tr class="episode-watched" id="{{unbound episode.id}}">
-        <td>{{ episode.season }}</td>
-        <td>{{ episode.episodeNum }}</td>
-        <td>{{ episode.name }}</td>
-        <td>{{ episode.summary }}</td>
-        <td>{{ episode.date }}</td>
-      {{else}}
-        <tr id="{{unbound episode.id}}">
-        <td {{action watchedEpisode}}>{{ episode.season }}</td>
-        <td {{action watchedEpisode}}>{{ episode.episodeNum }}</td>
-        <td {{action watchedEpisode}}>{{ episode.name }}</td>
-        <td {{action watchedEpisode}}>{{ episode.summary }}</td>
-        <td {{action watchedEpisode}}>{{ episode.date }}</td>
-      {{/if}}
-      </tr>
-    {{/each}}
-
-  </tbody>
-</table>
+{{! Send episodes to their own controller -- that way we can sort them properly }}
+{{ render 'episodes' episodes }}
 
 
 

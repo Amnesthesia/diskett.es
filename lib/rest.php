@@ -42,48 +42,26 @@
 			
 		}
 
-		private function verifyLogin($session)
+		/**
+		 **	ALL VERBS GO HERE.
+		 ** THESE METHODS REDIRECT TO PRIVATE METHODS
+		 ** FOR FURTHER PROCESSING DEPENDING ON HTTP STATE.
+		 **/
+
+		// Retrieve, create or update user info
+		public function users()
 		{
-
-			$email = $session["identification"];
-			$password = $session["password"];
-
-			$res = $this->db->read("SELECT id,salt,password FROM user WHERE email = ?",$email);
-
-			if(!empty($res) && count($res[0])>0 && password_verify($password.$res[0]["salt"],$res[0]["password"]))
+			$args = func_get_args();
+			switch($this->verb)
 			{
-				// Hash to use for this session
-				$hash = hash("sha256",$res[0]["id"].$res[0]["salt"].time());
-				
-				// Save it ... and return it
-				$this->db->insert("user_session",array("session_data","session_ip"),array($hash,$_SERVER["REMOTE_ADDR"]));
+				case 'create':
+					return $this->createUser(array_shift($args));
+				case 'read':
+					return $this->getUsers(array_shift($args));
+				case 'update':
+					return $this->updateUsers(array_shift($args));
 
-				return array("session" => array("token" => $hash, "user_id" => $res[0]["id"]));
 			}
-			else
-				return array("session" => array("error" => 404));	
-		}
-
-
-		private function authorizeSession($session)
-		{
-
-
-
-			$res = $this->db->read("SELECT id FROM user_session WHERE session_data = ?",$session["session"]["token"]);
-
-			if(!empty($res) && count($res[0])>0)
-			{
-				return array("session" => array("token" => $session));
-			}
-			else
-				return array("session" => array("token" => NULL));
-		}
-
-		private function deauthorizeSession($session)
-		{
-			$res = $this->db->read("DELETE FROM user_session WHERE session_data = ?",$session[0]);
-			return array("session" => array());
 		}
 
 		// Fetch shows
@@ -100,36 +78,6 @@
 
 		}
 
-		public function users()
-		{
-			$args = func_get_args();
-			switch($this->verb)
-			{
-				case 'create':
-					return $this->createUser(array_shift($args));
-				case 'read':
-					return $this->getUsers(array_shift($args));
-				case 'update':
-					return $this->updateUsers(array_shift($args));
-
-			}
-		}
-
-		// Update one or several users
-		private function updateUsers($args)
-		{
-			$id = array_shift($args);
-			$user = array_shift($args);
-
-			$query = "UPDATE user SET password = ?, last_activity = NOW() WHERE id = ?;";
-			$this->db->update($query,$user["password"],$id);
-
-			foreach($user["shows"] as $show_id)
-				$this->db->insert("user_show",array("user_id","show_id"),array($id,$show_id));
-
-			return $this->users($id);
-		}
-
 		// Fetch all episodes by owner show
 		public function episodes()
 		{
@@ -144,10 +92,142 @@
 			}
 		}
 
+		// Follow a show
+		public function follow()
+		{
+			switch($this->verb)
+			{
+				// This is really ugly, stupid and unconventional; dont do this...
+				case 'read':
+					return $this->followShow($_GET);
+			}
+		}
+
+		// Mark an episode as watched
+		public function watch()
+		{
+			switch($this->verb)
+			{
+				// this too..
+				case 'read':
+					return $this->watchEpisode($_GET);
+			}
+		}
+
+		public function seen()
+		{
+			switch($this->verb)
+			{
+				case 'read':
+					return $this->watchedEpisodes($_REQUEST);
+			}
+		}
+
+
+
+
+		// Verify login information from email and password
+		private function verifyLogin($session)
+		{
+
+			$email = $session["identification"];
+			$password = $session["password"];
+
+			$res = $this->db->read("SELECT id,salt,password FROM user WHERE email = ?",$email);
+
+			if(!empty($res) && count($res[0])>0 && password_verify($password.$res[0]["salt"],$res[0]["password"]))
+			{
+				// Hash to use for this session
+				$hash = hash("sha256",$res[0]["id"].$res[0]["salt"].time());
+				
+				// Save it ... and return it
+				$this->db->insert("user_session",array("id", "session_data","session_ip"),array($res[0]["id"],$hash,$_SERVER["REMOTE_ADDR"]));
+
+				return array("session" => array("token" => $hash, "user_id" => $res[0]["id"]));
+			}
+			else
+				return array("session" => array("error" => 401));	
+		}
+
+		// Verify that a session exists (return token if it does, otherwise return null)
+		private function authorizeSession($session)
+		{
+
+
+
+			$res = $this->db->read("SELECT id FROM user_session WHERE session_data = ?",$session["session"]["token"]);
+
+			if(!empty($res) && count($res[0])>0)
+			{
+				return array("session" => array("token" => $session));
+			}
+			else
+				return array("session" => array("token" => NULL));
+		}
+
+		
+		// Log a user out
+		private function deauthorizeSession($session)
+		{
+			$res = $this->db->read("DELETE FROM user_session WHERE session_data = ?",$session[0]);
+			return array("session" => array());
+		}
+
+
+		// Returns all episodes a user has watched from a series
+		private function watchedEpisodes()
+		{
+			$args = array_shift(func_get_args());
+
+			if(!isset($args["token"]) || !isset($args["sid"]))
+				return array();
+
+			$res = $this->db->read("SELECT episode_id FROM user_episodes WHERE user_id=(SELECT user_id FROM user_session WHERE session_data = ?) AND show_id = ?",$args["token"],$args["sid"]);
+			$ids = array();
+
+			foreach($res as $r)
+				$ids[] = $r["episode_id"];
+
+			return $ids;
+		}
+
+
+		// Let a user follow a show (or unfollow if it's already followed)
+		private function followShow($args)
+		{
+			if(!isset($args['token']) || !isset($args['sid']))
+				return array("session" => array("error" => 401));
+
+			// Insert if nothing was deleted
+			if(!$this->db->rowsChanged("DELETE FROM user_show WHERE user_id=(SELECT id FROM user_session WHERE session_data = ?) AND show_id=?;",array($args['token'],$args['sid'])))
+			{
+				$this->db->rowsChanged("REPLACE INTO user_show VALUES((SELECT id FROM user_session WHERE session_data = ?), ?,0);",array($args['token'],$args['sid']));
+			}
+			
+			return array("session" => array("token" => $args['token']));
+		}
+
+		// Let a user mark an episode as watched (or unmark it if it's already watched)
+		private function watchEpisode($args)
+		{
+			if(!isset($args['token']) || !isset($args['eid']))
+				var_dump($args);
+
+			// Insert if nothing was deleted
+			if(!$this->db->rowsChanged("DELETE FROM user_episodes WHERE user_id=(SELECT id FROM user_session WHERE session_data = ?) AND episode_id=?;",array($args['token'],$args['eid'])))
+			{
+				$this->db->rowsChanged("REPLACE INTO user_episodes VALUES((SELECT id FROM user_session WHERE session_data = ?), ?);",array($args['token'],$args['eid']));
+			}
+			
+			return array("session" => array("token" => $args['token']));
+		}
+
+		
+		
 
 		/**
 		 ** Just as with the other methods,
-		 ** this one returns all shows and its episodes if 
+		 ** this one returns all shows and its episodes (for individual shows) if 
 		 ** no show_id is provided. If a show ID is provided,
 		 ** it ... as you may have guessed... returns that (or those)
 		 ** specific shows
@@ -155,6 +235,10 @@
 		 **/
 		private function getShows()
 		{
+			// If we get a list of IDs for shows, we'll get them as ids[]=id1&ids[]=id2 etc
+			$args = array_shift(func_get_args());
+			if(count($args)<1 && isset($_GET['ids']) && count($_GET['ids'])>0)
+				$args = $_GET['ids'];
 			$args = func_get_args();
 			
 			$showkey = "shows";
@@ -172,7 +256,6 @@
 						 `tvseries`.IMDB_ID as simdb,
 						 `tvseries`.zap2it_id as szap2,
 						 `tvseries`.Network as schannel,
-						 'en' as slang,
 						 `tvseries`.bannerrequest as sposter,
 						 `tvseries`.Genre as sgenre,
 						 `tvseries`.FirstAired as spilot_date,
@@ -199,21 +282,12 @@
 				}
 				
 				
-				/*$query = "SELECT `show`.id as sid,
-							 `show`.imdb_id as simdb,
-							 `show`.zap2_id as szap2,
-							 `show`.channel_id as schannel,
-							 `show`.poster as sposter,
-							 `show`.lang as slang,
-							 `show`.pilot_date as spilot_date,
-							 `show`.name as sname, 
-							 `show`.summary as ssummary, 
-							 `show`.rating as srating, 
-							 `show`.lst_update as slst_update FROM `show` LIMIT ?,5";*/
+				
 			}
 			// Load individual
 			else
 			{
+				//$showkey = "show";
 				$loadingList = false;
 				//$page = $_GET['page'];
 				$qs = count($args[0]);
@@ -221,24 +295,12 @@
 				$qmarks = implode($qmarks,",");
 				
 
-				/*$query = "SELECT `show`.id as sid,
-							 `show`.imdb_id as simdb,
-							 `show`.zap2_id as szap2,
-							 `show`.channel_id as schannel,
-							 `show`.poster as sposter,
-							 `show`.lang as slang,
-							 `show`.pilot_date as spilot_date,
-							 `show`.name as sname, 
-							 `show`.summary as ssummary, 
-							 `show`.rating as srating, 
-							 `show`.lst_update as slst_update FROM `show` WHERE `show`.id 
-							 IN (".$qmarks.")";*/
+				
 				$query = "SELECT `tvseries`.id as sid,
 						 `tvseries`.IMDB_ID as simdb,
 						 `tvseries`.zap2it_id as szap2,
 						 `tvseries`.Network as schannel,
 						 `tvseries`.bannerrequest as sposter,
-						 'en' as slang,
 						 `tvseries`.Genre as sgenre,
 						 `tvseries`.FirstAired as spilot_date,
 						 `tvseries`.SeriesName as sname, 
@@ -249,18 +311,8 @@
 
 			}
 
-			// New query for new database
-			
-			
 
-			
-
-			
-
-			
-
-
-			// Iterate through all shows, store show_ids to get all episodes later on
+			// Iterate through results, store show_ids to get all episodes later on
 			// and set up a data array for JSON conversion
 			$data = array($showkey => array(), "episodes" => array());
 		
@@ -277,11 +329,10 @@
 				// Set up a map to map the shows ID to the key in the list
 				$map[$r["sid"]] = $i++;
 				$data[$showkey][] = array("id" => $r["sid"],
-												 "imdb_id" => $r["simdb"],
-												 "zap2_id" => $r["szap2"],
-												 "channel_id" => $r["schannel"],
+												 "imdb" => $r["simdb"],
+												 "zap2" => $r["szap2"],
+												 "channel" => $r["schannel"],
 												 "poster" => $r["sposter"],
-												 "lang" => $r["slang"],
 												 "pilot_date" => $r["spilot_date"],
 												 "name" => $r["sname"],
 												 "summary" => $r["ssummary"],
@@ -329,11 +380,14 @@
 			
 		}
 
-		/** Returns an array of "episodes" for each show ID provided as argument **/
+		/** Returns an array of "episodes" for each episode ID provided as argument **/
 
 		private function getEpisodes()
 		{
+			// If we get a list of IDs for episodes, we'll get them as ids[]=id1&ids[]=id2 etc
 			$args = array_shift(func_get_args());
+			if(count($args)<1 && isset($_GET['ids']) && count($_GET['ids'])>0)
+				$args = $_GET['ids'];
 
 			$qs = count($args);
 			$qmarks = array_fill(0,$qs,"?");
@@ -348,7 +402,7 @@
 						 `tvepisodes`.EpisodeNumber as eepisode, 
 						 `tvepisodes`.EpisodeName as ename, 
 						 `tvepisodes`.Overview as esummary, 
-						 `tvepisodes`.FirstAired as edate FROM `tvepisodes` JOIN `tvseasons` ON(`tvepisodes`.seasonid = `tvseasons`.id) WHERE `tvepisodes`.id IN(".$qmarks.")";
+						 `tvepisodes`.FirstAired as edate FROM `tvepisodes` JOIN `tvseasons` ON(`tvepisodes`.seasonid = `tvseasons`.id) WHERE `tvepisodes`.id IN(".$qmarks.") ORDER BY eseason ASC,eepisode ASC";
 			$episodes = $this->db->read($eps,$args);
 
 			foreach($episodes as $e)
@@ -356,7 +410,8 @@
 				$data["episodes"][] = array( "id" => $e["eid"],
 														"show_id" => $e["eshow"],
 														"season" => $e["eseason"],
-														"episode" => $e["eepisode"],
+														"name" => $e["ename"],
+														"episodeNum" => $e["eepisode"],
 														"summary" => $e["esummary"],
 														"date" => $e["edate"]);
 			}
@@ -364,6 +419,151 @@
 			return $data;
 		}
 
+
+		/**
+		 ** If no user ID(s) are provided, it returns 
+		 ** all users WITHOUT their associated shows.
+		 ** If a user ID is specified, it returns
+		 ** the user object, together with all shows
+		 ** watched by that user.
+		 **
+		 **/
+		private function getUsers()
+		{
+			$args = func_get_args();
+			$userkey = "users";
+
+			if(empty($args[0]) || $args[0] == NULL)
+			{
+				$query = "SELECT user.id as uid,
+						  		 user.email as uemail,
+						  		 user.password as upassword,
+						  		 user.role_id as urole,
+						  		 user.country_id as ucountry,
+						  		 user.last_activity as ulastactive,
+						  		 roles.id as rid,
+						  		 roles.name as rname,
+						  		 roles.description as rdescription,
+						  		 roles.is_admin as risadmin,
+						  		 user_show.show_id as usid,
+						  		 user_show.user_id as usuid,
+						  		 user_show.is_favorite as usisfav,
+						  		 user_episodes.episode_id as epid  
+						  		 FROM user JOIN roles 
+						  		 ON(user.role_id=roles.id) 
+						  		 LEFT JOIN user_show 
+						  		 LEFT JOIN user_episodes
+						  		 ON(user_episodes.user_id = user.id)
+						  		 ON(user.id = user_show.user_id);";
+							 $res = $this->db->read($query);
+			}
+			else
+			{
+				$qs = count($args[0]);
+				$qmarks = array_fill(0,$qs,"?");
+				$qmarks = implode($qmarks,",");
+
+				$query = "SELECT user.id as uid,
+						  		 user.email as uemail,
+						  		 user.password as upassword,
+						  		 user.role_id as urole,
+						  		 user.country_id as ucountry,
+						  		 user.last_activity as ulastactive,
+						  		 roles.id as rid,
+						  		 roles.name as rname,
+						  		 roles.description as rdescription,
+						  		 roles.is_admin as risadmin,
+						  		 user_show.show_id as usid,
+						  		 user_show.user_id as usuid,
+						  		 user_show.is_favorite as usisfav,
+						  		 user_episodes.episode_id as epid 
+						  		 FROM user JOIN roles 
+						  		 ON(user.role_id=roles.id) 
+						  		 LEFT JOIN user_show 
+						  		 ON(user.id = user_show.user_id)
+						  		 LEFT JOIN user_episodes
+						  		 ON(user_episodes.user_id = user.id)
+						  		 WHERE user.id IN (".$qmarks.")";
+
+				$userkey = "user";
+
+				$res = $this->db->read($query,$args[0]);
+			}
+
+			// Sideload role with user
+			$data = array($userkey => array(), "role" => array());
+			
+
+			$unique = array();
+			$map = array();
+
+		
+			$i = 0;
+
+			foreach($res as $r)
+			{
+				// Each row contains the same user info for ids;
+				// so make sure we keep the user data unique in the list and sort out 
+				// the episode data.
+				if(!in_array($r["uid"],$unique))
+				{
+					// Add the show ID to the unique-array
+					$unique[] = $r["uid"];
+
+					// Set up a map to map the shows ID to the key in the list
+					$map[$r["uid"]] = $i++;
+					if($r["usid"] != NULL && $r["usid"] != "NULL")
+					{
+
+						$data[$userkey][] = array("id" => $r["uid"],
+													 "email" => $r["uemail"],
+													 "password" => $r["upassword"],
+													 "role_id" => (int)$r["urole"],
+													 "country_id" => $r["ucountry"],
+													 "last_activity" => $r["ulastactive"],
+													 "shows" => array($r["usid"])
+														);
+					}
+					else
+						$data[$userkey][] = array("id" => $r["uid"],
+													 "email" => $r["uemail"],
+													 "password" => $r["upassword"],
+													 "role_id" => (int)$r["urole"],
+													 "country_id" => $r["ucountry"],
+													 "last_activity" => $r["ulastactive"],
+													 "shows" => array()
+														);
+					$data["role"][] = array("id" => $r["rid"],
+											 "name" => $r["rname"],
+											 "description" => $r["rdescription"],
+											 "is_admin" => $r["risadmin"]);
+				}
+				// Continue adding show IDs and episode IDs onto the user - use the map!
+				else
+				{
+					if(!in_array($r["usid"],$data[$userkey][$map[$r["uid"]]]["shows"]))
+						$data[$userkey][$map[$r["uid"]]]["shows"][] = $r["usid"];
+					if(!in_array($r["epid"],$data[$userkey][$map[$r["uid"]]]["watchitems"]))
+						$data[$userkey][$map[$r["uid"]]]["episodes"][] = $r["epid"];
+					
+				}
+
+				/*$data["episodes"][] = array("id" => $r["eid"],
+												"show_id" => $r["eshow"],
+												"season" => $r["eseason"],
+												"episode" => $r["eepisode"],
+												"summary" => $r["esummary"],
+												"date" => $r["edate"]);*/
+			}
+
+			if(!empty($args[0]) && $args[0] != NULL && count($data[$userkey][0]["shows"])>0)
+				return array_merge($data,$this->shows($data[$userkey][0]["shows"]));
+
+			return $data;
+		}
+
+
+		// Creates a new user from JSON
 		private function createUser()
 		{
 			$data = json_decode(file_get_contents("php://input")); // Work-around for JSON POST..?
@@ -424,129 +624,18 @@
 			return $data;
 		}
 
-		/**
-		 ** If no user ID(s) are provided, it returns 
-		 ** all users WITHOUT their associated shows.
-		 ** If a user ID is specified, it returns
-		 ** the user object, together with all shows
-		 ** watched by that user.
-		 **
-		 **/
-		private function getUsers()
+
+		// Update one a
+		private function updateUser($args)
 		{
-			$args = func_get_args();
-			$userkey = "users";
+			$id = array_shift($args);
+			$user = array_shift($args);
 
-			if(empty($args[0]) || $args[0] == NULL)
-			{
-				$query = "SELECT user.id as uid,
-						  		 user.email as uemail,
-						  		 user.password as upassword,
-						  		 user.role_id as urole,
-						  		 user.country_id as ucountry,
-						  		 user.last_activity as ulastactive,
-						  		 roles.id as rid,
-						  		 roles.name as rname,
-						  		 roles.description as rdescription,
-						  		 roles.is_admin as risadmin,
-						  		 user_show.show_id as usid,
-						  		 user_show.user_id as usuid,
-						  		 user_show.is_favorite as usisfav 
-						  		 FROM user JOIN roles 
-						  		 ON(user.role_id=roles.id) 
-						  		 LEFT JOIN user_show 
-						  		 ON(user.id = user_show.user_id);";
-							 $res = $this->db->read($query);
-			}
-			else
-			{
-				$qs = count($args[0]);
-				$qmarks = array_fill(0,$qs,"?");
-				$qmarks = implode($qmarks,",");
+			$query = "UPDATE user SET password = ?, last_activity = NOW() WHERE id = ?;";
+			$this->db->update($query,$user["password"],$id);
 
-				$query = "SELECT user.id as uid,
-						  		 user.email as uemail,
-						  		 user.password as upassword,
-						  		 user.role_id as urole,
-						  		 user.country_id as ucountry,
-						  		 user.last_activity as ulastactive,
-						  		 roles.id as rid,
-						  		 roles.name as rname,
-						  		 roles.description as rdescription,
-						  		 roles.is_admin as risadmin,
-						  		 user_show.show_id as usid,
-						  		 user_show.user_id as usuid,
-						  		 user_show.is_favorite as usisfav 
-						  		 FROM user JOIN roles 
-						  		 ON(user.role_id=roles.id) 
-						  		 LEFT JOIN user_show 
-						  		 ON(user.id = user_show.user_id)
-						  		 WHERE user.id IN (".$qmarks.")";
 
-				$userkey = "user";
-
-				$res = $this->db->read($query,$args[0]);
-			}
-			$data = array($userkey => array(), "role" => array());
-			
-
-			$unique = array();
-			$map = array();
-
-		
-			$i = 0;
-
-			foreach($res as $r)
-			{
-				// Each row contains the same show info for many show_ids;
-				// so make sure we keep the user data unique in the list and sort out 
-				// the episode data.
-				if(!in_array($r["uid"],$unique))
-				{
-					// Add the show ID to the unique-array
-					$unique[] = $r["uid"];
-
-					// Set up a map to map the shows ID to the key in the list
-					$map[$r["uid"]] = $i++;
-					if($r["usid"] != NULL && $r["usid"] != "NULL")
-						$data[$userkey][] = array("id" => $r["uid"],
-													 "email" => $r["uemail"],
-													 "password" => $r["upassword"],
-													 "role_id" => (int)$r["urole"],
-													 "country_id" => $r["ucountry"],
-													 "last_activity" => $r["ulastactive"],
-													 "shows" => array($r["usid"])
-														);
-					else
-						$data[$userkey][] = array("id" => $r["uid"],
-													 "email" => $r["uemail"],
-													 "password" => $r["upassword"],
-													 "role_id" => (int)$r["urole"],
-													 "country_id" => $r["ucountry"],
-													 "last_activity" => $r["ulastactive"],
-													 "shows" => array()
-														);
-					$data["role"][] = array("id" => $r["rid"],
-											 "name" => $r["rname"],
-											 "description" => $r["rdescription"],
-											 "is_admin" => $r["risadmin"]);
-				}
-				// Continue adding show IDs onto the user - use the map!
-				else
-					$data[$userkey][$map[$r["uid"]]]["shows"][] = $r["usid"];
-
-				/*$data["episodes"][] = array("id" => $r["eid"],
-												"show_id" => $r["eshow"],
-												"season" => $r["eseason"],
-												"episode" => $r["eepisode"],
-												"summary" => $r["esummary"],
-												"date" => $r["edate"]);*/
-			}
-
-			if(!empty($args[0]) && $args[0] != NULL && count($data[$userkey][0]["shows"])>0)
-				return array_merge($data,$this->shows($data[$userkey][0]["shows"]));
-
-			return $data;
+			return $this->users($id);
 		}
 	}
 ?>

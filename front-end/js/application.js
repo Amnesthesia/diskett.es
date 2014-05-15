@@ -22,6 +22,7 @@ require('../vendor/ember-simple-auth/ember-simple-auth');
 require('../vendor/jquery.twinkle/jquery.twinkle-0.5.0.min');
 
 
+
 // We need this to do login!
 // With this code right here, we initialize the application,
 // and at the same time we add a computed property (that function right there, you see?)
@@ -37,14 +38,18 @@ Ember.Application.initializer({
 
   	  // Let's set up the user session so that it contains the logged in user!
     Ember.SimpleAuth.Session.reopen({
+
     	account: function(serverSession){
 
     		var user_id = this.get('user_id');
-    		if(!Ember.isEmpty(user_id)){
+    		if(!Ember.isEmpty(user_id))
+    		{
     			return container.lookup('store:main').find('user',user_id);
-    		}
-    		console.log(user_id);
-    	}.property('user_id')
+    			
+    		}	
+    		console.log("User ID was "+user_id);
+    	}.property('user_id'),
+
     });
 
 
@@ -52,8 +57,8 @@ Ember.Application.initializer({
     // redirect to after authentication, and what authorizerfactory
     // we use to verify the session
     Ember.SimpleAuth.setup(container, application,function(){
-    	routeAfterAuthentication: 'shows'
-    	authorizerFactory: 'authorizer:custom'
+    	authorizerFactory: 'authorizer:custom';
+    	routeAfterAuthentication: 'shows';
     });
 
    
@@ -67,11 +72,28 @@ var App = Ember.Application.create({
 App.name = "diskett .es";
 
 
+// Change these variables to run on other location
+App.APINamespace = "api";
+App.RootURL = "/front-end/";
+
+
 // Set up our REST API
 App.ApplicationAdapter = DS.RESTAdapter;
 DS.RESTAdapter.reopen({
-	namespace: 'api'
+	namespace: App.APINamespace
 	// host: 'we-could-change-backend-location.com'
+});
+
+// We want to use a non-standard Ember object on a model, namely, an array.
+// Thus, we register a JSON transformer for the REST adapter:
+
+App.RawTransform= DS.Transform.extend({
+    deserialize: function(serialized) {
+        return serialized;
+    },  
+    serialize: function(deserialized) {
+        return deserialized;
+    }   
 });
 
 /**
@@ -139,12 +161,12 @@ App.CustomAuthenticator = Ember.SimpleAuth.Authenticators.Base.extend({
 		});
 	}
 });
-App.CustomAuthorizer = Ember.SimpleAuth.Authorizers.Base.extend({});
 
-// We also need to authorize the token, to make sure that we're 
-// actually logged in after that part is over. Thus, we need
-// this authorizer right here!
-App.CustomAuthorizer = Ember.SimpleAuth.Authorizers.Base.reopen({
+
+// We also need to pass our token in the Authorization header, 
+// to make sure that we're actually logged in after that part is over. 
+// Thus, we need this authorizer right here!
+App.CustomAuthorizer = Ember.SimpleAuth.Authorizers.Base.extend({
 	authorize: function(jqXHR, requestOptions){
 		if(this.get('session.isAuthenticated') && !Ember.isEmpty(this.get('session.token'))){
 			jqXHR.setRequestHeader('Authorization','Token: '+this.get('session.token'));
@@ -221,7 +243,7 @@ App.Router.map(function() {
 
 // Set the base URL
 App.Router.reopen({
-  rootURL: '/front-end/'
+  rootURL: App.RootURL
 });
 
 // Apply mixins for authentication :)
@@ -237,26 +259,6 @@ App.ApplicationRoute = Ember.Route.extend(Ember.SimpleAuth.ApplicationRouteMixin
         return this.get('session.account').then(function(user){
           return user; 
         });
-    },
-    actions: {
-      logSession: function(){
-        console.log(session);
-      },
-      follow: function(show_id){
-        if(!this.get('session').isAuthenticated)
-          this.transitionTo('login');
-        
-        console.log("Attempting to follow show with ID "+show_id);
-        console.log(this.get('session.account.shows'));
-
-        var user = this.store.find('user',this.get('session.account.id'));
-        this.get('session.account.shows').pushObject(this.store.find('show',show_id));
-        this.get('session.account').then(function(response){
-         response.save();
-        });
-        // Hide the show
-        Ember.$("#"+show_id).hide("slideLeft");
-      }
     }
 });
 
@@ -542,50 +544,59 @@ module.exports = EditCountryController;
 },{}],9:[function(require,module,exports){
 var EpisodeController = Ember.ObjectController.extend({
 
+ needs: "show",
 
-  // Return the episode number (the number within the season)
-  episodeNum: function(){
-  	
-  	var id = this.get('id').split(',');
-
-  	return id[2];
-  }.property('episode_id'),
-
-  show: function(){
+ show: function(){
   	//console.log("Trying to find show with id" + this.get('show_id'));
 
-  	var show = this.get('store').find('show',this.get('show_id'));
+  	//var show = this.get('store').find('show',this.get('show_id'));
 
-  	return show;
-  }.property('show_id'),
+  	return this.get('show');
+  }.property('show'),
 
   // Has user seen this episode?
   hasSeen: function(){
   	if(this.get('session').isAuthenticated)
   	{
-  		if(typeof this.get('session.account.episodes') !== 'undefined' && this.get('session.account.episodes').contains(this.get('model')))
+  		if(this.get('show.userSeenEpisodes').contains(this.get('id')))
   			return true;
   		else
   			return false;
+ 
   	}
   	return false;
-  }.property(),
+  }.property('session','show','id'),
 
   actions: {
-  	watchedEpisode: function(){
+  	toggleWatch: function(){
         if(!this.get('session').isAuthenticated)
-          return;
+          this.transitionToRoute('login');
         
-        console.log("Attempting to follow episode with ID "+this.get('id'));
+  		var episode = this;
+  		var user = this.get('session.account');
 
-        // Push object into users episode array
-        this.get('session.account.episodes').pushObject(this.get('model'));
-        this.get('session.account').then(function(response){
-         response.save();
-        });
+  		// Check if the episode is contained in the array for episodes the user has
+  		// seen in this show
+  		if(this.get('hasSeen'))
+  			this.get('show').then(function(s){ s.get('userSeenEpisodes').removeObject(this.get('id'))});
+  		else
+  			this.get('show.userSeenEpisodes').then(function(s){ s.get('userSeenEpisodes').pushObject(this.get('id'))});
+
+  		// Now perform the toggle-request to the server as well :)
+  		Ember.$.ajax({
+  			url: '/'+App.APINamespace+"/watch",
+  			type: 'GET',
+  			data: Ember.$.param({token: this.get('session.token'), eid: episode.get('id')}),
+  			success: function(data) {
+    			console.log('Server returned '+data+" after attempting to follow episode "+episode.get('id'));
+  				console.log("Successfully followed show.");
+			}	
+		});
+	  	
         // Add class to episode
-        Ember.$("#"+this.get('id')).addClass("episode-watched");
-      }
+        Ember.$("#"+this.get('id')).toggleClass("episode-watched");
+      
+  	}
   }
 
 });
@@ -595,7 +606,10 @@ module.exports = EpisodeController;
 
 },{}],10:[function(require,module,exports){
 var EpisodesController = Ember.ArrayController.extend({
-	itemController: 'episode'
+	itemController: 'episode',
+
+	// Sort on season first, then episode
+	sortProperties: ['season','episodeNum']
 
 });
 
@@ -822,6 +836,7 @@ module.exports = NewCountryController;
 var ShowController = Ember.ObjectController.extend({
 	needs: "shows",
 	query: function(){return this.get('controllers.shows.search_text')}.property('controllers.shows.search_text'),
+	seenEpisode: Ember.A(),
 
   	// Returns true if the user is logged in
   	isLoggedIn: function(){
@@ -836,16 +851,19 @@ var ShowController = Ember.ObjectController.extend({
   			return true;
   		}
 
-  		if(this.get('session.account.shows').contains(this.get('model')))
-  		{
-  			console.log("Show model found in users watchlist - graying out follow button");
-  			return false;
-  		}
-  		else
-  		{
-  			console.log("Show model not found in users watchlist - displaying element");
-  			return true;
-  		}
+  		return this.get('session.account').then(function(acc){
+	  		if(acc.contains(this.get('model')))
+	  		{
+	  			console.log("Show model found in users watchlist - graying out follow button");
+	  			return false;
+	  		}
+	  		else
+	  		{
+	  			console.log("Show model not found in users watchlist - displaying element");
+	  			return true;
+	  		}
+  		});
+  		
   	}.property('session'),
 
   	// Returns true if the name of the show matches the current search query
@@ -864,20 +882,45 @@ var ShowController = Ember.ObjectController.extend({
   		return true;
   	}.property('name').volatile(),
 
+  	// Check what episode the user has seen in this series
+  	userSeenEpisodes: function(){
+  		// Skip this if user is not logged in
+  		if(!this.get('session').isAuthenticated)
+  			return;
+
+  		if(!Ember.isEmpty(this.get('seenEpisodes')))
+  			return this.get('seenEpisodes');
+
+  		Ember.$.ajax({
+  			url: '/'+App.APINamespace+"/seen",
+  			type: 'GET',
+  			data: Ember.$.param({token: this.get('session.token'), sid: episode.get('id')}),
+  			success: function(data) {
+  				var arr = Ember.$.parseJSON(data);
+  				console.log(arr);
+
+  				// Break on empty response
+  				if(Ember.isEmpty(arr))
+  					return;
+    			this.get('seenEpisodes',arr);
+    		}
+		});
+  	}.property('seenEpisodes','session.token'),
+
   	// Returns rating as length for the rating progress bar
   	ratingLength: function(){ 
-    	return (this.get('rating').toFixed(1)*10);
+    	return (this.get('rating')*10);
   	}.property('rating'),
   	// Returns rating as text to display on the rating progress bar
   	ratingText: function(){
-  		return (this.get('rating').toFixed(1));
+  		return (this.get('rating'));
   	}.property('rating'),
 
   	// Returns the type of bootstrap progressbar to display for rating
   	progressType: function(){
-  		if( this.get('rating') == null)
+  		if( this.get('rating') === null)
   			return "progress-bar-warning";
-  		var rate = this.get('rating').toFixed(1);
+  		var rate = this.get('rating');
   		if(rate < 2.5)
   			return "progress-bar-info";
   		else if(rate < 5)
@@ -887,24 +930,43 @@ var ShowController = Ember.ObjectController.extend({
   		else return "progress-bar-danger";
   	}.property('rating'),
 
-  	// Return true if the user is not following this show item
-  	isNotWatched: function(){
-  		if(this.get('session').isAuthenticated)
-  		{
-  			if(this.get('session.account.shows') != 'undefined' && this.get('session.account.shows').contains(this.get('model').get('id')))
-  			{
-  				console.log("User is not watching "+this.get('name')+": Adding to grid");
-  				return true;
-  			}
-  			else{
-  				console.log("User already watches "+this.get('name')+": Hiding from grid");
-  				return false;
-  			}
-  		}
-  		else{
-  			console.log("Could not get session - assuming logged out user and displaying full grid");
-  		}
-  		return false;
+
+  	actions: {
+  		// Let a user follow a show if the user is logged in and has a token
+	  	follow: function(){
+	  		
+	  		// This method will not proceed unless user is authenticated
+	  		if(!this.get('session').isAuthenticated)
+	  			 this.transitionTo('login');
+	  		
+	  		var show = this;
+	  		var user = this.get('session.account');
+	  		console.log("Attempting to follow show "+this.get('id')+" on user account "+this.get('session.account.id')+" with session token "+this.get('session.token'));
+	  		console.log(Ember.$.param({uid: this.get('session.account.id'), sid: this.get('id')}));
+	  		// We avoid using Ember's store here, because we do not want to 
+	  		// send the WHOLE user object and ALL of the shows with it. 
+	  		// We consider this unnecessary, and instead we make a simple, custom
+	  		// PUT request with only the user's ID, the show ID and the token.
+	  		
+	  		// If there are no shows in users show array yet, set up empty array
+	  		if(Ember.isEmpty(user.get('shows')) || typeof user.get('shows') === 'undefined') 
+  					user.set('shows',Ember.A());
+
+
+	  		Ember.$.ajax({
+	  			url: '/'+App.APINamespace+"/follow",
+	  			type: 'GET',
+	  			data: Ember.$.param({token: this.get('session.token'), sid: this.get('id')}),
+	  			success: function(data) {
+	    			console.log('Server returned '+data+" after attempting to follow show "+show.get('id'));
+	  				console.log("Successfully followed show.");
+	
+	  				user.get('shows').pushObject(show);
+	  				Ember.$("#"+show.get('id')).hide("slideLeft");
+	  			}
+			});
+	  	}
+
   	}
 
 });
@@ -1115,13 +1177,11 @@ module.exports = Country;
 },{}],28:[function(require,module,exports){
 var Episode = DS.Model.extend({
 
-  show_id: DS.attr('number'),
-
-  episode_id: DS.attr('number'),
+  episodeNum: DS.attr('number'),
 
   season: DS.attr('number'),
 
-  poster: DS.attr('string'),
+  //poster: DS.attr('string'),
 
   date: DS.attr('date'),
 
@@ -1155,29 +1215,25 @@ module.exports = Role;
 },{}],30:[function(require,module,exports){
 var Show = DS.Model.extend({
 
-  imdb_id: DS.attr('number'),
+  imdb: DS.attr("string"),
 
-  zap2_id: DS.attr('number'),
+  zap2: DS.attr("string"),
 
-  channel_id: DS.attr('number'),
+  channel: DS.attr("string"),
 
-  poster: DS.attr('string'),
+  poster: DS.attr("string"),
 
-  pilot_date: DS.attr('date'),
+  pilot_date: DS.attr("string"),
 
-  name: DS.attr('string'),
+  name: DS.attr("string"),
 
-  summary: DS.attr('string'),
+  summary: DS.attr("string"),
 
-  lang: DS.attr('string'),
+  rating: DS.attr("string"),
 
-  rating: DS.attr('number'),
+  lst_update: DS.attr("number"),
 
-  episodecount: DS.attr('number'),
-
-  lst_update: DS.attr('string'),
-
-  watched: DS.attr('boolean')
+  episodes: DS.hasMany('Episode',{async: true})
 
 });
 
@@ -1193,11 +1249,9 @@ var User = DS.Model.extend({
 
   last_activity: DS.attr('string'),
 
-  shows: DS.hasMany('Show'),
+  shows: DS.hasMany('Show', {async: true}),
 
-  role: DS.belongsTo('Role'),
-
-  episodes: DS.hasMany('Episode')
+  role: DS.belongsTo('Role')
 
 });
 
@@ -1486,7 +1540,7 @@ module.exports = NewShowRoute;
 var ShowRoute = Ember.Route.extend({
   model: function(params){
   	
-  	return this.store.find('shows',params.show_id);
+  	return this.store.find('show',params.show_id);
   },
   renderTemplate: function(){
     var controller = this.controllerFor('navigation');
@@ -2163,24 +2217,114 @@ function program3(depth0,data) {
 Ember.TEMPLATES['episodes'] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
 this.compilerInfo = [4,'>= 1.0.0'];
 helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-  var stack1, hashTypes, hashContexts, escapeExpression=this.escapeExpression, self=this;
+  var buffer = '', stack1, hashContexts, hashTypes, escapeExpression=this.escapeExpression, self=this;
 
 function program1(depth0,data) {
   
-  var buffer = '', hashTypes, hashContexts;
-  data.buffer.push("\n	");
+  var buffer = '', stack1, hashTypes, hashContexts;
+  data.buffer.push("\n    ");
   hashTypes = {};
   hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "id", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("\n");
+  stack1 = helpers['if'].call(depth0, "e.hasSeen", {hash:{},inverse:self.program(4, program4, data),fn:self.program(2, program2, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n      </tr>\n    ");
+  return buffer;
+  }
+function program2(depth0,data) {
+  
+  var buffer = '', hashTypes, hashContexts;
+  data.buffer.push("\n      <tr class=\"episode-watched\" id=\"");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.unbound.call(depth0, "e.id", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("\" ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "toggleWatch", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(">\n        <td>");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "e.season", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("</td>\n        <td>");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "e.episodeNum", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("</td>\n        <td>");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "e.name", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("</td>\n        <td>");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "e.summary", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("</td>\n        <td>");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "e.date", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("</td>\n      ");
   return buffer;
   }
 
+function program4(depth0,data) {
+  
+  var buffer = '', hashTypes, hashContexts;
+  data.buffer.push("\n        <tr id=\"");
   hashTypes = {};
   hashContexts = {};
-  stack1 = helpers.each.call(depth0, "episode", "in", "model", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  data.buffer.push(escapeExpression(helpers.unbound.call(depth0, "e.id", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("\">\n        <td ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "toggleWatch", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(">");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "e.season", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("</td>\n        <td ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "toggleWatch", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(">");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "e.episodeNum", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("</td>\n        <td ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "toggleWatch", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(">");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "e.name", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("</td>\n        <td ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "toggleWatch", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(">");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "e.summary", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("</td>\n        <td ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "toggleWatch", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(">");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "e.date", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("</td>\n      ");
+  return buffer;
+  }
+
+  data.buffer.push("<h2>Episodes</h2>\n\n\n<table class=\"table table-hover table-responsive datatable\">\n  <thead>\n    <th>Season</th>\n    <th>Episode</th>\n    <th>Name</th>\n    <th>Synopsis</th>\n    <th>Aired</th>\n  </thead>\n  <tbody>\n\n    ");
+  hashContexts = {'itemController': depth0};
+  hashTypes = {'itemController': "STRING"};
+  stack1 = helpers.each.call(depth0, "e", "in", "controller", {hash:{
+    'itemController': ("episode")
+  },inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  else { data.buffer.push(''); }
+  data.buffer.push("\n\n  </tbody>\n</table>");
+  return buffer;
   
 });
 
@@ -2338,31 +2482,31 @@ function program4(depth0,data) {
 function program6(depth0,data) {
   
   
-  data.buffer.push("\n						<div data-icon=\"&#xe078;\" class=\"icon navlink\"></div>\n					");
+  data.buffer.push("\n						<div data-icon=\"&#xe078;\" class=\"icon navlink\" style=\"color:white;\"></div>\n					");
   }
 
 function program8(depth0,data) {
   
   
-  data.buffer.push("\n					<div data-icon=\"&#xe021;\" class=\"icon navlink\"></div>\n				");
+  data.buffer.push("\n					<div data-icon=\"&#xe021;\" class=\"icon navlink\" style=\"color:white;\"></div>\n				");
   }
 
 function program10(depth0,data) {
   
   
-  data.buffer.push("\n						<div data-icon=\"&#xe067;\" class=\"icon navlink\"></div>\n					");
+  data.buffer.push("\n						<div data-icon=\"&#xe067;\" class=\"icon navlink\" style=\"color:white;\"></div>\n					");
   }
 
 function program12(depth0,data) {
   
   
-  data.buffer.push("\n						<div data-icon=\"&#xe027;\" class=\"icon navlink\"></div>\n					");
+  data.buffer.push("\n						<div data-icon=\"&#xe027;\" class=\"icon navlink\" style=\"color:white;\"></div>\n					");
   }
 
 function program14(depth0,data) {
   
   
-  data.buffer.push("\n					<div data-icon=\"&#xe072;\" class=\"icon navlink\"></div>\n					");
+  data.buffer.push("\n					<div data-icon=\"&#xe072;\" class=\"icon navlink\" style=\"color:white;\"></div>\n					");
   }
 
 function program16(depth0,data) {
@@ -2463,99 +2607,6 @@ function program1(depth0,data) {
 
 function program3(depth0,data) {
   
-  var buffer = '', stack1, hashTypes, hashContexts;
-  data.buffer.push("\n    ");
-  hashTypes = {};
-  hashContexts = {};
-  stack1 = helpers['if'].call(depth0, "episode.hasSeen", {hash:{},inverse:self.program(6, program6, data),fn:self.program(4, program4, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n      </tr>\n    ");
-  return buffer;
-  }
-function program4(depth0,data) {
-  
-  var buffer = '', hashTypes, hashContexts;
-  data.buffer.push("\n      <tr class=\"episode-watched\" id=\"");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers.unbound.call(depth0, "episode.id", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("\">\n        <td>");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "episode.season", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("</td>\n        <td>");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "episode.episodeNum", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("</td>\n        <td>");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "episode.name", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("</td>\n        <td>");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "episode.summary", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("</td>\n        <td>");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "episode.date", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("</td>\n      ");
-  return buffer;
-  }
-
-function program6(depth0,data) {
-  
-  var buffer = '', hashTypes, hashContexts;
-  data.buffer.push("\n        <tr id=\"");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers.unbound.call(depth0, "episode.id", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("\">\n        <td ");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "watchedEpisode", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push(">");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "episode.season", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("</td>\n        <td ");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "watchedEpisode", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push(">");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "episode.episodeNum", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("</td>\n        <td ");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "watchedEpisode", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push(">");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "episode.name", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("</td>\n        <td ");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "watchedEpisode", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push(">");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "episode.summary", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("</td>\n        <td ");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "watchedEpisode", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push(">");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "episode.date", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("</td>\n      ");
-  return buffer;
-  }
-
-function program8(depth0,data) {
-  
   
   data.buffer.push("←All Shows");
   }
@@ -2587,21 +2638,20 @@ function program8(depth0,data) {
   data.buffer.push("</p>\n        </div>\n      </div>\n      ");
   hashTypes = {};
   hashContexts = {};
-  stack1 = helpers['if'].call(depth0, "isNotWatched", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  stack1 = helpers['if'].call(depth0, "notFollowing", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n    </div>\n  </div>\n  <div class=\"row\">\n    <div class=\"col-lg-4 columns\">\n      <ul class=\"inline-list\">\n      \n      </ul>\n    </div>\n  </div>\n  <div class=\"row\">&nbsp;</div>\n  <div class=\"row\">&nbsp;</div>\n\n<h2>Episodes</h2>\n\n\n<table class=\"table table-hover table-responsive datatable\">\n  <thead>\n    <th>Season</th>\n    <th>Episode</th>\n    <th>Name</th>\n    <th>Synopsis</th>\n    <th>Aired</th>\n    <th>Watched</th>\n  </thead>\n  <tbody>\n\n    ");
-  hashContexts = {'itemController': depth0};
-  hashTypes = {'itemController': "STRING"};
-  stack1 = helpers.each.call(depth0, "episode", "in", "episodes", {hash:{
-    'itemController': ("episode")
-  },inverse:self.noop,fn:self.program(3, program3, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n\n  </tbody>\n</table>\n\n\n\n");
+  data.buffer.push("\n    </div>\n  </div>\n  <div class=\"row\">\n    <div class=\"col-lg-4 columns\">\n      <ul class=\"inline-list\">\n      \n      </ul>\n    </div>\n  </div>\n  <div class=\"row\">&nbsp;</div>\n  <div class=\"row\">&nbsp;</div>\n\n");
+  data.buffer.push("\n");
+  hashTypes = {};
+  hashContexts = {};
+  options = {hash:{},contexts:[depth0,depth0],types:["STRING","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  data.buffer.push(escapeExpression(((stack1 = helpers.render || depth0.render),stack1 ? stack1.call(depth0, "episodes", "episodes", options) : helperMissing.call(depth0, "render", "episodes", "episodes", options))));
+  data.buffer.push("\n\n\n\n");
   hashContexts = {'animations': depth0};
   hashTypes = {'animations': "STRING"};
   options = {hash:{
     'animations': ("main:slideLeft")
-  },inverse:self.noop,fn:self.program(8, program8, data),contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  },inverse:self.noop,fn:self.program(3, program3, data),contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   stack2 = ((stack1 = helpers['link-to-animated'] || depth0['link-to-animated']),stack1 ? stack1.call(depth0, "index", options) : helperMissing.call(depth0, "link-to-animated", "index", options));
   if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
   return buffer;

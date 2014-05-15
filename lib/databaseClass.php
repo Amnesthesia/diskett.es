@@ -154,6 +154,20 @@ class DatabaseHandler implements iDatabase
 	}
 
 	/**
+	 * Returns amount of rows affected by running provided query
+	 * @param  string $query
+	 * @param  array    $variables
+	 * @return int    Number of affected rows
+	 */
+	public function rowsChanged($query, $variables)
+	{
+		$stmt = $this->databaseHandler->prepare($query);
+		$stmt->execute($variables);
+
+		return $stmt->rowCount(); // How many affected rows?
+	}
+
+	/**
 	 * Terminate the database connection
 	 */
 	public function __destruct()

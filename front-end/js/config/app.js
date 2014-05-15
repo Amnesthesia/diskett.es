@@ -21,6 +21,7 @@ require('../vendor/ember-simple-auth/ember-simple-auth');
 require('../vendor/jquery.twinkle/jquery.twinkle-0.5.0.min');
 
 
+
 // We need this to do login!
 // With this code right here, we initialize the application,
 // and at the same time we add a computed property (that function right there, you see?)
@@ -36,14 +37,18 @@ Ember.Application.initializer({
 
   	  // Let's set up the user session so that it contains the logged in user!
     Ember.SimpleAuth.Session.reopen({
+
     	account: function(serverSession){
 
     		var user_id = this.get('user_id');
-    		if(!Ember.isEmpty(user_id)){
+    		if(!Ember.isEmpty(user_id))
+    		{
     			return container.lookup('store:main').find('user',user_id);
-    		}
-    		console.log(user_id);
-    	}.property('user_id')
+    			
+    		}	
+    		console.log("User ID was "+user_id);
+    	}.property('user_id'),
+
     });
 
 
@@ -51,8 +56,8 @@ Ember.Application.initializer({
     // redirect to after authentication, and what authorizerfactory
     // we use to verify the session
     Ember.SimpleAuth.setup(container, application,function(){
-    	routeAfterAuthentication: 'shows'
-    	authorizerFactory: 'authorizer:custom'
+    	authorizerFactory: 'authorizer:custom';
+    	routeAfterAuthentication: 'shows';
     });
 
    
@@ -66,11 +71,28 @@ var App = Ember.Application.create({
 App.name = "diskett .es";
 
 
+// Change these variables to run on other location
+App.APINamespace = "api";
+App.RootURL = "/front-end/";
+
+
 // Set up our REST API
 App.ApplicationAdapter = DS.RESTAdapter;
 DS.RESTAdapter.reopen({
-	namespace: 'api'
+	namespace: App.APINamespace
 	// host: 'we-could-change-backend-location.com'
+});
+
+// We want to use a non-standard Ember object on a model, namely, an array.
+// Thus, we register a JSON transformer for the REST adapter:
+
+App.RawTransform= DS.Transform.extend({
+    deserialize: function(serialized) {
+        return serialized;
+    },  
+    serialize: function(deserialized) {
+        return deserialized;
+    }   
 });
 
 /**
@@ -138,12 +160,12 @@ App.CustomAuthenticator = Ember.SimpleAuth.Authenticators.Base.extend({
 		});
 	}
 });
-App.CustomAuthorizer = Ember.SimpleAuth.Authorizers.Base.extend({});
 
-// We also need to authorize the token, to make sure that we're 
-// actually logged in after that part is over. Thus, we need
-// this authorizer right here!
-App.CustomAuthorizer = Ember.SimpleAuth.Authorizers.Base.reopen({
+
+// We also need to pass our token in the Authorization header, 
+// to make sure that we're actually logged in after that part is over. 
+// Thus, we need this authorizer right here!
+App.CustomAuthorizer = Ember.SimpleAuth.Authorizers.Base.extend({
 	authorize: function(jqXHR, requestOptions){
 		if(this.get('session.isAuthenticated') && !Ember.isEmpty(this.get('session.token'))){
 			jqXHR.setRequestHeader('Authorization','Token: '+this.get('session.token'));

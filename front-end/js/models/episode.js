@@ -1,12 +1,10 @@
 var Episode = DS.Model.extend({
 
-  show_id: DS.attr('number'),
-
-  episode_id: DS.attr('number'),
+  episodeNum: DS.attr('number'),
 
   season: DS.attr('number'),
 
-  poster: DS.attr('string'),
+  //poster: DS.attr('string'),
 
   date: DS.attr('date'),
 

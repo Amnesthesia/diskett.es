@@ -1,7 +1,7 @@
 var ShowRoute = Ember.Route.extend({
   model: function(params){
   	
-  	return this.store.find('shows',params.show_id);
+  	return this.store.find('show',params.show_id);
   },
   renderTemplate: function(){
     var controller = this.controllerFor('navigation');

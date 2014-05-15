@@ -1,28 +1,24 @@
 var Show = DS.Model.extend({
 
-  imdb_id: DS.attr('number'),
+  imdb: DS.attr("string"),
 
-  zap2_id: DS.attr('number'),
+  zap2: DS.attr("string"),
 
-  channel_id: DS.attr('number'),
+  channel: DS.attr("string"),
 
-  poster: DS.attr('string'),
+  poster: DS.attr("string"),
 
-  pilot_date: DS.attr('date'),
+  pilot_date: DS.attr("string"),
 
-  name: DS.attr('string'),
+  name: DS.attr("string"),
 
-  summary: DS.attr('string'),
+  summary: DS.attr("string"),
 
-  lang: DS.attr('string'),
+  rating: DS.attr("string"),
 
-  rating: DS.attr('number'),
+  lst_update: DS.attr("number"),
 
-  episodecount: DS.attr('number'),
-
-  lst_update: DS.attr('string'),
-
-  watched: DS.attr('boolean')
+  episodes: DS.hasMany('Episode',{async: true})
 
 });
 

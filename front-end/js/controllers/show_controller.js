@@ -16,10 +16,10 @@ var ShowController = Ember.ObjectController.extend({
   			console.log("User is not authenticated. Displaying show.")
   			return true;
   		}
-
+  		var show = this;
   		return this.get('session.account').then(function(acc){
-	  		return this.get('shows').then(function(s){
-	  			if(s.contains(this.get('model')))
+	  		return acc.get('shows').then(function(s){
+	  			if(s.contains(show.get('model')))
 	  			{
 	  				console.log("Show model found in users watchlist - graying out follow button");
 	  				return false;
@@ -115,7 +115,7 @@ var ShowController = Ember.ObjectController.extend({
 	  		var show = this;
 	  		var session = this.get('session');
 	  		this.get('session.account').then(function(u){
-	  			console.log("Attempting to follow show "+this.get('id')+" on user account "+u.get('id')+" with session token "+session.get('session.token'));
+	  			console.log("Attempting to follow show "+show.get('id')+" on user account "+u.get('id')+" with session token "+session.get('token'));
 		  		console.log(Ember.$.param({uid: u.get('id'), sid: show.get('id')}));
 		  		// We avoid using Ember's store here, because we do not want to 
 		  		// send the WHOLE user object and ALL of the shows with it. 
@@ -124,7 +124,7 @@ var ShowController = Ember.ObjectController.extend({
 		  		
 		  		// If there are no shows in users show array yet, set up empty array
 		  		if(Ember.isEmpty(u.get('shows')) || typeof u.get('shows') === 'undefined') 
-	  					u.set('shows',Ember.A());
+	  					u.set('shows',[]);
 	  		});
 
 	  		// Run an AJAX call against the server to mark the show as followed
@@ -138,6 +138,7 @@ var ShowController = Ember.ObjectController.extend({
 	
 	  				session.get('account').then(function(u){
 	  					u.get('shows').pushObject(show);
+	  					console.log(u.get('shows'));
 	  				});
 	  				Ember.$("#"+show.get('id')).hide("slideLeft");
 	  			}

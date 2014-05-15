@@ -236,10 +236,11 @@
 		private function getShows()
 		{
 			// If we get a list of IDs for shows, we'll get them as ids[]=id1&ids[]=id2 etc
-			$args = array_shift(func_get_args());
+			
+			$args = func_get_args();
 			if(count($args)<1 && isset($_GET['ids']) && count($_GET['ids'])>0)
 				$args = $_GET['ids'];
-			$args = func_get_args();
+
 			
 			$showkey = "shows";
 			//$page = $_GET['page'];
@@ -248,9 +249,9 @@
 			if(count($args[0])<1)
 			{
 				$loadingList = true;
-				$page = (isset($_GET['page']) ? 100*($_GET["page"]-1) : 0);
+				$page = (isset($_GET['page']) ? 25*($_GET["page"]-1) : 0);
 				$search = (isset($_GET['search']) ? $_GET['search'] : false);
-
+				$token = (isset($_GET['token']) ? $_GET['token'] : false);
 
 				$query = "SELECT `tvseries`.id as sid,
 						 `tvseries`.IMDB_ID as simdb,
@@ -263,6 +264,7 @@
 						 `tvseries`.Overview as ssummary, 
 						 `tvseries`.Rating as srating, 
 						 `tvseries`.lastupdated as slst_update";
+
 				if($search)
 				{
 					$query .= ", MATCH(SeriesName,Overview) AGAINST(?) as relevance, 
@@ -275,9 +277,28 @@
 					$qfill[] = $page;
 					$res = $this->db->read($query,$qfill);
 				}
+				else if($token)
+				{
+
+					$query = "SELECT `user_show`.show_id,
+						 `tvseries`.id as sid,
+						 `tvseries`.IMDB_ID as simdb,
+						 `tvseries`.zap2it_id as szap2,
+						 `tvseries`.Network as schannel,
+						 `tvseries`.bannerrequest as sposter,
+						 `tvseries`.Genre as sgenre,
+						 `tvseries`.FirstAired as spilot_date,
+						 `tvseries`.SeriesName as sname, 
+						 `tvseries`.Overview as ssummary, 
+						 `tvseries`.Rating as srating, 
+						 `tvseries`.lastupdated as slst_update FROM user_session 
+						 JOIN user_show ON(user_show.user_id = user_session.id) JOIN `tvseries`  
+						 ON (user_show.show_id=`tvseries`.id) WHERE `user_session`.session_data = ?";
+					$res = $this->db->read($query,$token);
+				}
 				else
 				{
-					$query .= " FROM `tvseries` ORDER BY Rating DESC LIMIT ?,100";
+					$query .= " FROM `tvseries` ORDER BY Rating DESC LIMIT ?,25";
 					$res = $this->db->read($query,$page);
 				}
 				

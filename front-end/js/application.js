@@ -836,7 +836,11 @@ var ShowController = Ember.ObjectController.extend({
 	  		
   		});
   		
-  	}.property('session'),
+  	}.property('session').volatile(),
+
+  	isFollowing: function(){
+  		return !this.get('notFollowing');
+  	}.property('notFollowing').volatile(),
 
   	// Returns true if the name of the show matches the current search query
   	matchFilter: function(){
@@ -928,6 +932,8 @@ var ShowController = Ember.ObjectController.extend({
 		  		// If there are no shows in users show array yet, set up empty array
 		  		if(Ember.isEmpty(u.get('shows')) || typeof u.get('shows') === 'undefined') 
 	  					u.set('shows',[]);
+
+
 	  		});
 
 	  		// Run an AJAX call against the server to mark the show as followed
@@ -940,8 +946,15 @@ var ShowController = Ember.ObjectController.extend({
 	  				console.log("Successfully followed show.");
 	
 	  				session.get('account').then(function(u){
-	  					u.get('shows').pushObject(show);
-	  					console.log(u.get('shows'));
+	  					if(u.get('shows').contains(show))
+	  					{
+	  						console.log("Show found in user session; removing...");
+	  						u.get('shows').removeObject(show);
+	  					}
+	  					else{
+	  						console.log("Show not found in user session; adding...")
+	  						u.get('shows').pushObject(show);
+	  					}
 	  				});
 	  				Ember.$("#"+show.get('id')).hide("slideLeft");
 	  			}
@@ -962,6 +975,7 @@ var ShowsController = Ember.ArrayController.extend({
 	needs: 'show',
 	originalContent: [],
 	search_text: '',
+	page: 1,
 
 	
 	actions:{
@@ -976,6 +990,13 @@ var ShowsController = Ember.ArrayController.extend({
   				this.transitionToRoute('index');
   			else
   				this.transitionToRoute('/shows/'+this.get('search_text'));
+  		},
+
+  		forward: function(){
+  			this.set('page',this.get('page')+1);
+  			this.set('content',this.store.filter('show',{page: this.get('page')},function(shows){return shows;}));
+  			console.log("Advancing page");
+  		
   		}
 	}
 });
@@ -1553,8 +1574,7 @@ var ShowsRoute = Ember.Route.extend({
     	return this.store.find('show',{page: params.page});
    	else
    		return this.store.find('show',{id: params.show_id});*/
-   	var shows = this.store.find('show',{page: this.get('page'), search: params.search_text});
-   	this.set('originalContent',shows);
+   	var shows = this.store.filter('show',{page: this.get('page'), search: params.search_text},function(shows){return shows;});
    	return shows;
   },
 
@@ -1569,12 +1589,6 @@ var ShowsRoute = Ember.Route.extend({
     })
   },
 
-  actions: {
-  	nextPage: function(){
-  		this.set('page',this.get('page')+1);
-  		this.refresh();
-  	}
-  }
 
 });
 
@@ -1621,13 +1635,13 @@ module.exports = UserRoute;
 },{}],47:[function(require,module,exports){
 var WatchedRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin,{
 	model: function(){
-
-    	return this.get('session.account').then(function(shows){
-    		return shows.get('shows');
-    	},function(){
-    		var user = this.store.find('user',this.get('session.account.id'));
-    		return user.get('shows');
-    	});
+		return this.get('session.account').then(function(acc){
+			if(!Ember.isEmpty(acc.get('shows')))
+				return this.get('store').filter('show',{ token: this.get('session.token') }, function(show){
+				return show;
+			});
+		});
+ 
     	
 	},
   renderTemplate: function(){
@@ -2582,11 +2596,26 @@ function program1(depth0,data) {
   hashTypes = {};
   hashContexts = {};
   data.buffer.push(escapeExpression(helpers.action.call(depth0, "follow", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push(">Add to watchlist</a>\n      ");
+  data.buffer.push(">Add to watchlist</a>\n        \n      ");
   return buffer;
   }
 
 function program3(depth0,data) {
+  
+  var buffer = '', hashTypes, hashContexts;
+  data.buffer.push("\n        <button id=\"");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.unbound.call(depth0, "id", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("\" class=\"btn btn-danger btn-lg\" ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "follow", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(">Unfollow</button>\n      ");
+  return buffer;
+  }
+
+function program5(depth0,data) {
   
   
   data.buffer.push("←All Shows");
@@ -2619,7 +2648,7 @@ function program3(depth0,data) {
   data.buffer.push("</p>\n        </div>\n      </div>\n      ");
   hashTypes = {};
   hashContexts = {};
-  stack1 = helpers['if'].call(depth0, "notFollowing", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  stack1 = helpers['if'].call(depth0, "isFollowing", {hash:{},inverse:self.program(3, program3, data),fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n    </div>\n  </div>\n  <div class=\"row\">\n    <div class=\"col-lg-4 columns\">\n      <ul class=\"inline-list\">\n      \n      </ul>\n    </div>\n  </div>\n  <div class=\"row\">&nbsp;</div>\n  <div class=\"row\">&nbsp;</div>\n\n");
   data.buffer.push("\n");
@@ -2632,7 +2661,7 @@ function program3(depth0,data) {
   hashTypes = {'animations': "STRING"};
   options = {hash:{
     'animations': ("main:slideLeft")
-  },inverse:self.noop,fn:self.program(3, program3, data),contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  },inverse:self.noop,fn:self.program(5, program5, data),contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   stack2 = ((stack1 = helpers['link-to-animated'] || depth0['link-to-animated']),stack1 ? stack1.call(depth0, "index", options) : helperMissing.call(depth0, "link-to-animated", "index", options));
   if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
   return buffer;
@@ -2770,7 +2799,11 @@ function program10(depth0,data) {
   hashContexts = {};
   stack1 = helpers.each.call(depth0, "show", "in", "controller", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n</div>\n\n</div>");
+  data.buffer.push("\n</div>\n<div class=\"row\">\n<button class=\"col-lg-12 btn btn-info\" ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "forward", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(">Load more</button>\n</div>\n</div>");
   return buffer;
   
 });
@@ -74125,7 +74158,10 @@ var ShowView = Ember.View.extend({
 		return this.get('controller').get('model');
 	},
 
-	
+	redrawPage: function(){
+		this.rerender();
+		console.log("User seems to have followed or unfollowed the show, redrawing");
+	}.observes('session.account.shows')
 });
 
 module.exports = ShowView;

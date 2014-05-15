@@ -33,7 +33,11 @@ var ShowController = Ember.ObjectController.extend({
 	  		
   		});
   		
-  	}.property('session'),
+  	}.property('session').volatile(),
+
+  	isFollowing: function(){
+  		return !this.get('notFollowing');
+  	}.property('notFollowing').volatile(),
 
   	// Returns true if the name of the show matches the current search query
   	matchFilter: function(){
@@ -125,6 +129,8 @@ var ShowController = Ember.ObjectController.extend({
 		  		// If there are no shows in users show array yet, set up empty array
 		  		if(Ember.isEmpty(u.get('shows')) || typeof u.get('shows') === 'undefined') 
 	  					u.set('shows',[]);
+
+
 	  		});
 
 	  		// Run an AJAX call against the server to mark the show as followed
@@ -137,8 +143,15 @@ var ShowController = Ember.ObjectController.extend({
 	  				console.log("Successfully followed show.");
 	
 	  				session.get('account').then(function(u){
-	  					u.get('shows').pushObject(show);
-	  					console.log(u.get('shows'));
+	  					if(u.get('shows').contains(show))
+	  					{
+	  						console.log("Show found in user session; removing...");
+	  						u.get('shows').removeObject(show);
+	  					}
+	  					else{
+	  						console.log("Show not found in user session; adding...")
+	  						u.get('shows').pushObject(show);
+	  					}
 	  				});
 	  				Ember.$("#"+show.get('id')).hide("slideLeft");
 	  			}

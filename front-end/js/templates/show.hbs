@@ -27,8 +27,11 @@
           <p>{{summary}}</p>
         </div>
       </div>
-      {{#if notFollowing}}
+      {{#if isFollowing}}
         <a class="tiny button radius" {{action follow}}>Add to watchlist</a>
+        
+      {{else}}
+        <button id="{{unbound id}}" class="btn btn-danger btn-lg" {{action follow}}>Unfollow</button>
       {{/if}}
     </div>
   </div>

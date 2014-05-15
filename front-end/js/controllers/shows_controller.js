@@ -4,6 +4,7 @@ var ShowsController = Ember.ArrayController.extend({
 	needs: 'show',
 	originalContent: [],
 	search_text: '',
+	page: 1,
 
 	
 	actions:{
@@ -18,6 +19,13 @@ var ShowsController = Ember.ArrayController.extend({
   				this.transitionToRoute('index');
   			else
   				this.transitionToRoute('/shows/'+this.get('search_text'));
+  		},
+
+  		forward: function(){
+  			this.set('page',this.get('page')+1);
+  			this.set('content',this.store.filter('show',{page: this.get('page')},function(shows){return shows;}));
+  			console.log("Advancing page");
+  		
   		}
 	}
 });

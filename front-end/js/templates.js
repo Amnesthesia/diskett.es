@@ -935,11 +935,26 @@ function program1(depth0,data) {
   hashTypes = {};
   hashContexts = {};
   data.buffer.push(escapeExpression(helpers.action.call(depth0, "follow", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push(">Add to watchlist</a>\n      ");
+  data.buffer.push(">Add to watchlist</a>\n        \n      ");
   return buffer;
   }
 
 function program3(depth0,data) {
+  
+  var buffer = '', hashTypes, hashContexts;
+  data.buffer.push("\n        <button id=\"");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.unbound.call(depth0, "id", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("\" class=\"btn btn-danger btn-lg\" ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "follow", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(">Unfollow</button>\n      ");
+  return buffer;
+  }
+
+function program5(depth0,data) {
   
   
   data.buffer.push("←All Shows");
@@ -972,7 +987,7 @@ function program3(depth0,data) {
   data.buffer.push("</p>\n        </div>\n      </div>\n      ");
   hashTypes = {};
   hashContexts = {};
-  stack1 = helpers['if'].call(depth0, "notFollowing", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  stack1 = helpers['if'].call(depth0, "isFollowing", {hash:{},inverse:self.program(3, program3, data),fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n    </div>\n  </div>\n  <div class=\"row\">\n    <div class=\"col-lg-4 columns\">\n      <ul class=\"inline-list\">\n      \n      </ul>\n    </div>\n  </div>\n  <div class=\"row\">&nbsp;</div>\n  <div class=\"row\">&nbsp;</div>\n\n");
   data.buffer.push("\n");
@@ -985,7 +1000,7 @@ function program3(depth0,data) {
   hashTypes = {'animations': "STRING"};
   options = {hash:{
     'animations': ("main:slideLeft")
-  },inverse:self.noop,fn:self.program(3, program3, data),contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  },inverse:self.noop,fn:self.program(5, program5, data),contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   stack2 = ((stack1 = helpers['link-to-animated'] || depth0['link-to-animated']),stack1 ? stack1.call(depth0, "index", options) : helperMissing.call(depth0, "link-to-animated", "index", options));
   if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
   return buffer;
@@ -1123,7 +1138,11 @@ function program10(depth0,data) {
   hashContexts = {};
   stack1 = helpers.each.call(depth0, "show", "in", "controller", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n</div>\n\n</div>");
+  data.buffer.push("\n</div>\n<div class=\"row\">\n<button class=\"col-lg-12 btn btn-info\" ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "forward", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(">Load more</button>\n</div>\n</div>");
   return buffer;
   
 });

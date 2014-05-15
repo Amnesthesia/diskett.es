@@ -13,8 +13,7 @@ var ShowsRoute = Ember.Route.extend({
     	return this.store.find('show',{page: params.page});
    	else
    		return this.store.find('show',{id: params.show_id});*/
-   	var shows = this.store.find('show',{page: this.get('page'), search: params.search_text});
-   	this.set('originalContent',shows);
+   	var shows = this.store.filter('show',{page: this.get('page'), search: params.search_text},function(shows){return shows;});
    	return shows;
   },
 
@@ -29,12 +28,6 @@ var ShowsRoute = Ember.Route.extend({
     })
   },
 
-  actions: {
-  	nextPage: function(){
-  		this.set('page',this.get('page')+1);
-  		this.refresh();
-  	}
-  }
 
 });
 

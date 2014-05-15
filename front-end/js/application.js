@@ -1635,9 +1635,11 @@ module.exports = UserRoute;
 },{}],47:[function(require,module,exports){
 var WatchedRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin,{
 	model: function(){
+		var store = this.get('store');
+		var session = this.get('session');
 		return this.get('session.account').then(function(acc){
 			if(!Ember.isEmpty(acc.get('shows')))
-				return this.get('store').filter('show',{ token: this.get('session.token') }, function(show){
+				return store.filter('show',{ token: session.get('token') }, function(show){
 				return show;
 			});
 		});
@@ -2433,7 +2435,11 @@ function program1(depth0,data) {
   hashContexts = {};
   stack2 = helpers['if'].call(depth0, "loginFailed", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack2 || stack2 === 0) { data.buffer.push(stack2); }
-  data.buffer.push("\n  		\n  		<button class=\"btn btn-info\" >Log in</button>\n\n  	</div>\n</form>\n</div>");
+  data.buffer.push("\n  		\n  		<button class=\"btn btn-info\" ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "authenticate", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(">Log in</button>\n\n  	</div>\n</form>\n</div>");
   return buffer;
   
 });
@@ -2853,17 +2859,11 @@ helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
     'focus-out': ("validateSignupVerification")
   },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
   data.buffer.push(escapeExpression(((stack1 = helpers.input || depth0.input),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "input", options))));
-  data.buffer.push("\n  		\n  	</div>\n  	<div class=\"alert alert-warning col-lg-4 alert-dismissable\" style=\"display:none;margin:auto auto;\" id=\"verifywarning\"> \n  			<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-hidden=\"true\">&times;</button>\n  			<b>Uhm..</b> Your passwords must, you know, match :/</b>\n  		</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5\">\n  		");
-  hashContexts = {'class': depth0,'disabled': depth0,'type': depth0,'value': depth0};
-  hashTypes = {'class': "STRING",'disabled': "ID",'type': "STRING",'value': "STRING"};
-  options = {hash:{
-    'class': ("btn btn-success"),
-    'disabled': ("signupFormIsValid"),
-    'type': ("submit"),
-    'value': ("Sign up")
-  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
-  data.buffer.push(escapeExpression(((stack1 = helpers.input || depth0.input),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "input", options))));
-  data.buffer.push("\n  	</div>\n</form>\n</div>");
+  data.buffer.push("\n  		\n  	</div>\n  	<div class=\"alert alert-warning col-lg-4 alert-dismissable\" style=\"display:none;margin:auto auto;\" id=\"verifywarning\"> \n  			<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-hidden=\"true\">&times;</button>\n  			<b>Uhm..</b> Your passwords must, you know, match :/</b>\n  		</div>\n</div>\n<div class=\"row\">\n  	<div class=\"col-lg-5\">\n  		<input type=\"submit\" class=\"btn btn-success\" ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "signUp", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(" value=\"Sign up\" />\n  	</div>\n</form>\n</div>");
   return buffer;
   
 });

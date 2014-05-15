@@ -3,7 +3,7 @@ var ShowsController = Ember.ArrayController.extend({
 	content: [],
 	needs: 'show',
 	originalContent: [],
-	search_text: null,
+	search_text: '',
 
 	
 	actions:{

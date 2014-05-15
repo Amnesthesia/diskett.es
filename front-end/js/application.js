@@ -84,17 +84,6 @@ DS.RESTAdapter.reopen({
 	// host: 'we-could-change-backend-location.com'
 });
 
-// We want to use a non-standard Ember object on a model, namely, an array.
-// Thus, we register a JSON transformer for the REST adapter:
-
-App.RawTransform= DS.Transform.extend({
-    deserialize: function(serialized) {
-        return serialized;
-    },  
-    serialize: function(deserialized) {
-        return deserialized;
-    }   
-});
 
 /**
  ** To do authentication in EmberJS, we use an adapter called
@@ -546,27 +535,6 @@ var EpisodeController = Ember.ObjectController.extend({
 
  needs: "show",
 
- show: function(){
-  	//console.log("Trying to find show with id" + this.get('show_id'));
-
-  	//var show = this.get('store').find('show',this.get('show_id'));
-
-  	return this.get('show');
-  }.property('show'),
-
-  // Has user seen this episode?
-  hasSeen: function(){
-  	if(this.get('session').isAuthenticated)
-  	{
-  		if(this.get('show.userSeenEpisodes').contains(this.get('id')))
-  			return true;
-  		else
-  			return false;
- 
-  	}
-  	return false;
-  }.property('session','show','id'),
-
   actions: {
   	toggleWatch: function(){
         if(!this.get('session').isAuthenticated)
@@ -577,10 +545,10 @@ var EpisodeController = Ember.ObjectController.extend({
 
   		// Check if the episode is contained in the array for episodes the user has
   		// seen in this show
-  		if(this.get('hasSeen'))
-  			this.get('show').then(function(s){ s.get('userSeenEpisodes').removeObject(this.get('id'))});
-  		else
-  			this.get('show.userSeenEpisodes').then(function(s){ s.get('userSeenEpisodes').pushObject(this.get('id'))});
+  		//if(this.get('hasSeen'))
+  		//	this.get('show').then(function(s){ s.get('userSeenEpisodes').removeObject(this.get('id'))});
+  		//else
+  		//	this.get('show.userSeenEpisodes').then(function(s){ s.get('userSeenEpisodes').pushObject(this.get('id'))});
 
   		// Now perform the toggle-request to the server as well :)
   		Ember.$.ajax({
@@ -838,6 +806,7 @@ var ShowController = Ember.ObjectController.extend({
 	query: function(){return this.get('controllers.shows.search_text')}.property('controllers.shows.search_text'),
 	seenEpisode: Ember.A(),
 
+
   	// Returns true if the user is logged in
   	isLoggedIn: function(){
   		return this.get('session').isAuthenticated;
@@ -852,16 +821,19 @@ var ShowController = Ember.ObjectController.extend({
   		}
 
   		return this.get('session.account').then(function(acc){
-	  		if(acc.contains(this.get('model')))
-	  		{
-	  			console.log("Show model found in users watchlist - graying out follow button");
-	  			return false;
-	  		}
-	  		else
-	  		{
-	  			console.log("Show model not found in users watchlist - displaying element");
-	  			return true;
-	  		}
+	  		return this.get('shows').then(function(s){
+	  			if(s.contains(this.get('model')))
+	  			{
+	  				console.log("Show model found in users watchlist - graying out follow button");
+	  				return false;
+	  			}
+	  			else
+	  			{
+	  				console.log("Show model not found in users watchlist - displaying element");
+	  				return true;
+	  			}
+	  		});
+	  		
   		});
   		
   	}.property('session'),
@@ -884,28 +856,32 @@ var ShowController = Ember.ObjectController.extend({
 
   	// Check what episode the user has seen in this series
   	userSeenEpisodes: function(){
+  		console.log("Running");
   		// Skip this if user is not logged in
   		if(!this.get('session').isAuthenticated)
-  			return;
+  			return Ember.A();
+  		console.log("Is logged in");
 
   		if(!Ember.isEmpty(this.get('seenEpisodes')))
   			return this.get('seenEpisodes');
-
+  		console.log("Non empty array");
   		Ember.$.ajax({
   			url: '/'+App.APINamespace+"/seen",
   			type: 'GET',
-  			data: Ember.$.param({token: this.get('session.token'), sid: episode.get('id')}),
-  			success: function(data) {
-  				var arr = Ember.$.parseJSON(data);
-  				console.log(arr);
-
-  				// Break on empty response
-  				if(Ember.isEmpty(arr))
-  					return;
-    			this.get('seenEpisodes',arr);
-    		}
+  			data: Ember.$.param({token: this.get('session.token'), sid: this.get('id')}),
+		}).then(function(data){
+			var arr = Ember.$.parseJSON(data);
+  			console.log(arr);
+  			console.log("Ajax call finished with "+data);
+  			// Break on empty response
+  			if(Ember.isEmpty(arr))
+  				return Ember.A();
+    		this.set('seenEpisodes',arr);
 		});
-  	}.property('seenEpisodes','session.token'),
+
+		
+		return this.get('seenEpisodes');
+  	}.property('seenEpisodes','session.token').volatile(),
 
   	// Returns rating as length for the rating progress bar
   	ratingLength: function(){ 
@@ -940,19 +916,21 @@ var ShowController = Ember.ObjectController.extend({
 	  			 this.transitionTo('login');
 	  		
 	  		var show = this;
-	  		var user = this.get('session.account');
-	  		console.log("Attempting to follow show "+this.get('id')+" on user account "+this.get('session.account.id')+" with session token "+this.get('session.token'));
-	  		console.log(Ember.$.param({uid: this.get('session.account.id'), sid: this.get('id')}));
-	  		// We avoid using Ember's store here, because we do not want to 
-	  		// send the WHOLE user object and ALL of the shows with it. 
-	  		// We consider this unnecessary, and instead we make a simple, custom
-	  		// PUT request with only the user's ID, the show ID and the token.
-	  		
-	  		// If there are no shows in users show array yet, set up empty array
-	  		if(Ember.isEmpty(user.get('shows')) || typeof user.get('shows') === 'undefined') 
-  					user.set('shows',Ember.A());
+	  		var session = this.get('session');
+	  		this.get('session.account').then(function(u){
+	  			console.log("Attempting to follow show "+this.get('id')+" on user account "+u.get('id')+" with session token "+session.get('session.token'));
+		  		console.log(Ember.$.param({uid: u.get('id'), sid: show.get('id')}));
+		  		// We avoid using Ember's store here, because we do not want to 
+		  		// send the WHOLE user object and ALL of the shows with it. 
+		  		// We consider this unnecessary, and instead we make a simple, custom
+		  		// PUT request with only the user's ID, the show ID and the token.
+		  		
+		  		// If there are no shows in users show array yet, set up empty array
+		  		if(Ember.isEmpty(u.get('shows')) || typeof u.get('shows') === 'undefined') 
+	  					u.set('shows',Ember.A());
+	  		});
 
-
+	  		// Run an AJAX call against the server to mark the show as followed
 	  		Ember.$.ajax({
 	  			url: '/'+App.APINamespace+"/follow",
 	  			type: 'GET',
@@ -961,7 +939,9 @@ var ShowController = Ember.ObjectController.extend({
 	    			console.log('Server returned '+data+" after attempting to follow show "+show.get('id'));
 	  				console.log("Successfully followed show.");
 	
-	  				user.get('shows').pushObject(show);
+	  				session.get('account').then(function(u){
+	  					u.get('shows').pushObject(show);
+	  				});
 	  				Ember.$("#"+show.get('id')).hide("slideLeft");
 	  			}
 			});
@@ -980,7 +960,7 @@ var ShowsController = Ember.ArrayController.extend({
 	content: [],
 	needs: 'show',
 	originalContent: [],
-	search_text: null,
+	search_text: '',
 
 	
 	actions:{
@@ -1641,7 +1621,7 @@ module.exports = UserRoute;
 var WatchedRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin,{
 	model: function(){
 
-    	return this.get('session.account').then(function(shows){
+    	return this.get('session.account.shows').then(function(shows){
     		return shows.get('shows');
     	});
 

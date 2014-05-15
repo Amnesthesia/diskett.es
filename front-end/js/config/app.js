@@ -83,17 +83,6 @@ DS.RESTAdapter.reopen({
 	// host: 'we-could-change-backend-location.com'
 });
 
-// We want to use a non-standard Ember object on a model, namely, an array.
-// Thus, we register a JSON transformer for the REST adapter:
-
-App.RawTransform= DS.Transform.extend({
-    deserialize: function(serialized) {
-        return serialized;
-    },  
-    serialize: function(deserialized) {
-        return deserialized;
-    }   
-});
 
 /**
  ** To do authentication in EmberJS, we use an adapter called

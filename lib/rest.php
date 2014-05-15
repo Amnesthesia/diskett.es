@@ -211,7 +211,7 @@
 		private function watchEpisode($args)
 		{
 			if(!isset($args['token']) || !isset($args['eid']))
-				var_dump($args);
+				return $array;
 
 			// Insert if nothing was deleted
 			if(!$this->db->rowsChanged("DELETE FROM user_episodes WHERE user_id=(SELECT id FROM user_session WHERE session_data = ?) AND episode_id=?;",array($args['token'],$args['eid'])))
@@ -344,7 +344,10 @@
 			
 			}
 			
-
+			if(count($unique)<1)
+			{
+				return $data;
+			}	
 			$qs = count($unique);
 			$qmarks = array_fill(0,$qs,"?");
 			$qmarks = implode($qmarks,",");
@@ -482,7 +485,7 @@
 						  		 LEFT JOIN user_show 
 						  		 ON(user.id = user_show.user_id)
 						  		 LEFT JOIN user_episodes
-						  		 ON(user_episodes.user_id = user.id)
+						  		 ON(user_episodes.show_id = user_show.show_id)
 						  		 WHERE user.id IN (".$qmarks.")";
 
 				$userkey = "user";
@@ -543,8 +546,6 @@
 				{
 					if(!in_array($r["usid"],$data[$userkey][$map[$r["uid"]]]["shows"]))
 						$data[$userkey][$map[$r["uid"]]]["shows"][] = $r["usid"];
-					if(!in_array($r["epid"],$data[$userkey][$map[$r["uid"]]]["watchitems"]))
-						$data[$userkey][$map[$r["uid"]]]["episodes"][] = $r["epid"];
 					
 				}
 

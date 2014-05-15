@@ -146,7 +146,7 @@
 				return array("session" => array("token" => $hash, "user_id" => $res[0]["id"]));
 			}
 			else
-				return array("session" => array("error" => 401));	
+				header('HTTP/1.0 401 Unauthorized');
 		}
 
 		// Verify that a session exists (return token if it does, otherwise return null)

@@ -426,10 +426,24 @@ In the example given above, we can see a bunch of different Handlebars-specific 
 ## Worklog
 
 ### Week 15
-After looking at what we could do with the previous project in form of user interface, we came to the conclusion that it would be interesting to try to do it *fully* client-side. We looked into three different alternatives for this: ReactJS, AngularJS and EmberJS. Still, the assignment is largely about jQuery, and therefore we decided to go with EmberJS which is built on jQuery. Having some past experience with jQuery, it felt like an interesting challenge to take it one step further.
+After looking at what we could do with the previous project in form of user interface, we came to the conclusion that it would be interesting to try to do it *fully* client-side. We looked into three different alternatives for this: ReactJS, AngularJS and EmberJS. Still, the assignment is largely about jQuery, and therefore we decided to go with EmberJS which is built on jQuery. Having some past experience with jQuery, it felt like an interesting challenge to take it one step further and at the same time get to learn a bit more about templating and clientside MVC.
 
 ### Week 16
+Having started with a front-end in Ember, and been trying to write it and rewrite it endlessly, it became apparent how steep the learning curve was of this framework. After finding some nifty tools for maintaining a good project structure, things started getting a little better, and we were able to get a prototype going.
 
 ### Week 17
+During the third week of the project we started looking at connecting the application to the database. This proved to be a lot easier said than done, as we had to get a RESTful API going, and (regrettably) wrote this on top of the previous back-end. After realizing that our previously written classes were very slow when loading lists of objects, only to then extract the attributes and convert them to JSON, we decided to mainly use the database class. In the end, our REST API ended up becoming rather messy, as we were mainly trying to get the server-communication to work and mostly focusing on the javascript part.
 
 ### Week 18
+After we got the database to work, we continued with looking back at our previous project and asking ourselves what subpages we wanted. We started with trying to replicate the front-page in Ember, after which we moved on to trying to get authorization to work which proved to be rather cumbersome. When we got authorization working, we ended up with new problems, such as getting hasMany relationships to work properly. The first page we added was the Account page, which lets the user change his or her password.
+
+### Week 19
+We proceeded to add sign up form, and some functionality for registering users and keeping track of user sessions. We also started trying out views and helpers, and wrote some custom form validation in pure jquery which we added to the hooks. We also added the calendar page and Following page (which we rewrote twice).
+
+### Week 20
+This week was very stressy, as we tried to finalize the design, and get rid of some big flaws we had, most notably we got more issues with the relationships when we tried to save the user object after the user had subscribed to a lot of shows. This lead to an initial loading size of almost 30Mb (!!), and every time the user wanted to follow a new show, 30mb was sent in a PUT request. Therefore, we spent a lot of time rewriting and rethinking this in custom jQuery AJAX requests, and also tried to add features for marking individual episodes as watched. This feature does not fully work yet as we ran out of time -- it works on the server side, and the AJAX requests are fine, but we didn't manage to save episodes in the session object and verify their existance there. A few other problems we know the application has is:
+
+* Lack of continuous authorization on requests after login (user is logged in until logged out or session clears)
+* Loading more items on the index page doesn't flush previous content (this is fine but may be bothersome when you reach thousands of items in the DOM)
+* Sometimes, episodes on the Following page may be cached even if the user unfollows them. When the user has no followed shows, all shows are visible instead ("its not a bug its a feature?")
+

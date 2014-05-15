@@ -424,3 +424,12 @@ In the example given above, we can see a bunch of different Handlebars-specific 
 
 
 ## Worklog
+
+### Week 15
+After looking at what we could do with the previous project in form of user interface, we came to the conclusion that it would be interesting to try to do it *fully* client-side. We looked into three different alternatives for this: ReactJS, AngularJS and EmberJS. Still, the assignment is largely about jQuery, and therefore we decided to go with EmberJS which is built on jQuery. Having some past experience with jQuery, it felt like an interesting challenge to take it one step further.
+
+### Week 16
+
+### Week 17
+
+### Week 18

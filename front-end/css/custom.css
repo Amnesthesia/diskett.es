@@ -248,7 +248,7 @@ div.browse-item-splitter
    nav.navbar
    {
     z-index: 10000;
-    width: 7.5%;
+    width: 100px;
     height: 100%;
     border-right: 1px solid #252525;
    }
@@ -534,7 +534,9 @@ div.browse-item-splitter
           border-radius: 0 !important;
 }
 
-@media (max-width: 980px) { 
+@media (max-width: 995px) { 
+    nav.navigation{ width: 66px;}
+    nav.navigation .login-btn{ width: 100%; height: 69px;}
     .browse-item { width:100%; }
     .browse-item a img {width: 100%;}
     .browse-item .browse-item-rating {font-size: 5em; margin-top:0.4em;}

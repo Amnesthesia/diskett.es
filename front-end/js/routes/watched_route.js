@@ -3,10 +3,10 @@ var WatchedRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin,{
 		var store = this.get('store');
 		var session = this.get('session');
 		return this.get('session.account').then(function(acc){
-			if(!Ember.isEmpty(acc.get('shows')))
-				return store.filter('show',{ token: session.get('token') }, function(show){
-				return show;
-			});
+				//return store.filter('show',{ token: session.get('token') }, function(show){
+				console.log(session.get('shows'));
+				return session.get('shows');
+			//});
 		});
  
     	

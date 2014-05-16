@@ -31,7 +31,10 @@
         <a class="tiny button radius" {{action follow}}>Add to watchlist</a>
         
       {{else}}
-        <button id="{{unbound id}}" class="btn btn-danger btn-lg" {{action follow}}>Unfollow</button>
+        {{#if isLoggedIn}
+          {{#if isFollowing}}
+            <button id="{{unbound id}}" class="btn btn-danger btn-lg" {{action follow}}>Unfollow</button>
+          {{/if}}
       {{/if}}
     </div>
   </div>

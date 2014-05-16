@@ -126,9 +126,7 @@ var ShowController = Ember.ObjectController.extend({
 		  		// We consider this unnecessary, and instead we make a simple, custom
 		  		// PUT request with only the user's ID, the show ID and the token.
 		  		
-		  		// If there are no shows in users show array yet, set up empty array
-		  		if(Ember.isEmpty(u.get('shows')) || typeof u.get('shows') === 'undefined') 
-	  					u.set('shows',[]);
+
 
 
 	  		});

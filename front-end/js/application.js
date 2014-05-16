@@ -929,9 +929,7 @@ var ShowController = Ember.ObjectController.extend({
 		  		// We consider this unnecessary, and instead we make a simple, custom
 		  		// PUT request with only the user's ID, the show ID and the token.
 		  		
-		  		// If there are no shows in users show array yet, set up empty array
-		  		if(Ember.isEmpty(u.get('shows')) || typeof u.get('shows') === 'undefined') 
-	  					u.set('shows',[]);
+
 
 
 	  		});
@@ -1638,10 +1636,10 @@ var WatchedRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin,{
 		var store = this.get('store');
 		var session = this.get('session');
 		return this.get('session.account').then(function(acc){
-			if(!Ember.isEmpty(acc.get('shows')))
-				return store.filter('show',{ token: session.get('token') }, function(show){
-				return show;
-			});
+				//return store.filter('show',{ token: session.get('token') }, function(show){
+				console.log(session.get('account.shows'));
+				return session.get('account.shows');
+			//});
 		});
  
     	
@@ -2958,7 +2956,7 @@ function program2(depth0,data) {
   data.buffer.push("<div class=\"progress progress-striped browse-item-rating-progress\" id=\"browse-show-rating-progress\">\n  \n  <div class=\"progress-bar progress-bar-success\" style=\"width: 100%\">\n    <div id=\"browse-show-rating\">Following</div>\n  </div>\n\n</div>\n<div class=\"container\">\n<div class=\"row\" id=\"watched\">\n  \n    ");
   hashTypes = {};
   hashContexts = {};
-  stack1 = helpers.each.call(depth0, "show", "in", "controller", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  stack1 = helpers.each.call(depth0, "show", "in", "usersession", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0,depth0,depth0],types:["ID","ID","ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
   if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
   data.buffer.push("\n</div>\n\n</div>");
   return buffer;

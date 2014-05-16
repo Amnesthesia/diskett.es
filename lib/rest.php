@@ -509,7 +509,7 @@
 						  		 ON(user_episodes.show_id = user_show.show_id)
 						  		 WHERE user.id IN (".$qmarks.")";
 
-				$userkey = "user";
+				$userkey = "users";
 
 				$res = $this->db->read($query,$args[0]);
 			}

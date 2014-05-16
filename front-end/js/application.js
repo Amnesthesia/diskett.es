@@ -821,8 +821,8 @@ var ShowController = Ember.ObjectController.extend({
   		}
   		var show = this;
   		return this.get('session.account').then(function(acc){
-	  		return acc.get('shows').then(function(s){
-	  			if(s.contains(show.get('model')))
+	  		
+	  			if(acc.get('shows').contains(show.get('model')))
 	  			{
 	  				console.log("Show model found in users watchlist - graying out follow button");
 	  				return false;
@@ -832,7 +832,7 @@ var ShowController = Ember.ObjectController.extend({
 	  				console.log("Show model not found in users watchlist - displaying element");
 	  				return true;
 	  			}
-	  		});
+	  		
 	  		
   		});
   		
@@ -1249,9 +1249,11 @@ var User = DS.Model.extend({
 
   last_activity: DS.attr('string'),
 
-  shows: DS.hasMany('Show', {async: true}),
+  shows: DS.hasMany('Show'),
 
-  role: DS.belongsTo('Role')
+  role: DS.belongsTo('Role'),
+
+  episodes: DS.hasMany('Episode')
 
 });
 
@@ -1635,12 +1637,14 @@ var WatchedRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin,{
 	model: function(){
 		var store = this.get('store');
 		var session = this.get('session');
-		return this.get('session.account').then(function(acc){
+
+		return this.get('store').find('user',session.get('account.id')).get('shows');
+		/*return session.get('account').then(function(acc){
 				//return store.filter('show',{ token: session.get('token') }, function(show){
 				console.log(session.get('shows'));
 				return session.get('shows');
 			//});
-		});
+		});*/
  
     	
 	},

@@ -18,8 +18,8 @@ var ShowController = Ember.ObjectController.extend({
   		}
   		var show = this;
   		return this.get('session.account').then(function(acc){
-	  		return acc.get('shows').then(function(s){
-	  			if(s.contains(show.get('model')))
+	  		
+	  			if(acc.get('shows').contains(show.get('model')))
 	  			{
 	  				console.log("Show model found in users watchlist - graying out follow button");
 	  				return false;
@@ -29,7 +29,7 @@ var ShowController = Ember.ObjectController.extend({
 	  				console.log("Show model not found in users watchlist - displaying element");
 	  				return true;
 	  			}
-	  		});
+	  		
 	  		
   		});
   		

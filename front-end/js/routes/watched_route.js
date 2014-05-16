@@ -2,12 +2,14 @@ var WatchedRoute = Ember.Route.extend(Ember.SimpleAuth.AuthenticatedRouteMixin,{
 	model: function(){
 		var store = this.get('store');
 		var session = this.get('session');
-		return this.get('session.account').then(function(acc){
+
+		return this.get('store').find('user',session.get('account.id')).get('shows');
+		/*return session.get('account').then(function(acc){
 				//return store.filter('show',{ token: session.get('token') }, function(show){
 				console.log(session.get('shows'));
 				return session.get('shows');
 			//});
-		});
+		});*/
  
     	
 	},
